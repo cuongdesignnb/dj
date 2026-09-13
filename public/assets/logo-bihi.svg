@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+      <g transform="translate(10, 5)">
+        <!-- Gold Wings Path -->
+        <path d="M 60 40 C 40 20, 20 30, 10 50 C 25 50, 45 42, 60 40 Z" fill="#D4AF37" opacity="0.8" />
+        <path d="M 60 40 C 35 15, 15 22, 5 45 C 20 45, 40 37, 60 40 Z" fill="#D4AF37" opacity="0.6" />
+        <path d="M 60 40 C 30 10, 10 15, 0 40 C 15 40, 35 32, 60 40 Z" fill="#D4AF37" opacity="0.4" />
+        
+        <path d="M 120 40 C 140 20, 160 30, 170 50 C 155 50, 135 42, 120 40 Z" fill="#D4AF37" opacity="0.8" />
+        <path d="M 120 40 C 145 15, 165 22, 175 45 C 160 45, 140 37, 120 40 Z" fill="#D4AF37" opacity="0.6" />
+        <path d="M 120 40 C 150 10, 170 15, 180 40 C 165 40, 145 32, 120 40 Z" fill="#D4AF37" opacity="0.4" />
+        
+        <text x="90" y="42" font-family="'Oswald', sans-serif" font-size="28" font-weight="bold" fill="#D4AF37" text-anchor="middle" letter-spacing="3">BIHI</text>
+        <text x="90" y="60" font-family="'Inter', sans-serif" font-size="7" font-weight="bold" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">ENTERTAINMENT</text>
+      </g>
+    </svg>

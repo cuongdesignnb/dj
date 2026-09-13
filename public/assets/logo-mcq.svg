@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+      <g transform="translate(10, 10)">
+        <!-- Green Box 'M' -->
+        <rect x="0" y="0" width="50" height="50" rx="8" fill="#4CAF50" />
+        <text x="25" y="36" font-family="'Oswald', sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF" text-anchor="middle">M</text>
+        
+        <!-- Yellow/Orange Box 'C' -->
+        <rect x="58" y="0" width="50" height="50" rx="8" fill="#FF9800" />
+        <text x="83" y="36" font-family="'Oswald', sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF" text-anchor="middle">C</text>
+        
+        <!-- Purple Box 'Q' -->
+        <rect x="116" y="0" width="50" height="50" rx="8" fill="#9C27B0" />
+        <text x="141" y="36" font-family="'Oswald', sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Q</text>
+        
+        <!-- TEXT BELOW -->
+        <text x="83" y="72" font-family="'Oswald', sans-serif" font-size="16" font-weight="bold" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">SUPERMARKET</text>
+      </g>
+    </svg>
