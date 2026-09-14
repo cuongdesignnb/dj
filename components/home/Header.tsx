@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { navItems } from '@/lib/data';
+import { navItems, siteNav } from '@/lib/data';
 
 interface HeaderProps {
   ctaHref?: string;
@@ -59,8 +59,8 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
     return false;
   };
 
-  const resolvedCtaHref = ctaHref ?? '/tickets';
-  const resolvedCtaLabel = ctaLabel ?? 'Get Tickets';
+  const resolvedCtaHref = ctaHref ?? siteNav.ctaHref;
+  const resolvedCtaLabel = ctaLabel ?? siteNav.ctaLabel;
 
   return (
     <>

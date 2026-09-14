@@ -1,10 +1,18 @@
 export const navItems = [
   { label: "Home", href: "/" },
-  { label: "Event", href: "/event" },
-  { label: "Ticket", href: "/tickets" },
-  { label: "Table", href: "/tables" },
-  { label: "Booked Now", href: "/book-now" },
+  { label: "About", href: "/about" },
+  { label: "Events", href: "/events" },
+  { label: "Artists", href: "/artists" },
+  { label: "Merchandise", href: "/shop" },
+  { label: "Contact", href: "/contact" },
 ];
+
+export const siteNav = {
+  brandName: "CONNECTION",
+  tagline: "Sound Meets Soul",
+  ctaLabel: "Explore Events",
+  ctaHref: "/events",
+};
 
 export const artists = [
   { name: "RYAL", country: "VIETNAM", year: "2026", href: "/lineup/ryal", image: "/assets/artist-ryal.jpg" },

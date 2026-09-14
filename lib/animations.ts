@@ -210,3 +210,52 @@ export const loopShake = {
   x: [-5, 5, -5],
   transition: { duration: 0.3, repeat: Infinity, ease: "easeInOut" }
 };
+
+// ===== ABOUT-PAGE-SPECIFIC VARIANTS =====
+// Reused across the /about tree. Components should prefer these over
+// ad-hoc inlining.
+
+export const aboutReveal: Variants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      ease: easeCubic,
+    },
+  },
+};
+
+export const aboutStagger: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+export const aboutHeroLineReveal: Variants = {
+  hidden: { y: 50, opacity: 0, clipPath: 'inset(100% 0 0 0)' },
+  visible: {
+    y: 0,
+    opacity: 1,
+    clipPath: 'inset(0% 0 0 0)',
+    transition: { duration: 0.7, ease: easeCubic },
+  },
+};
+
+export const aboutImageReveal: Variants = {
+  hidden: { scale: 1.06, clipPath: 'inset(0 0 100% 0)' },
+  visible: {
+    scale: 1,
+    clipPath: 'inset(0 0 0% 0)',
+    transition: { duration: 1.0, ease: easeCubic },
+  },
+};
+
+export const aboutCardLift: Variants = {
+  rest: { y: 0, scale: 1 },
+  hover: { y: -8, scale: 1.015, transition: springSnappy },
+};
