@@ -50,12 +50,17 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
 
   // Determine which nav item is active based on the current pathname.
   // The homepage is matched exactly; other items match their own root path.
+  // Spec: `/event` and `/events` both highlight the Event nav item.
   const isActive = (href: string): boolean => {
     const norm = normalize(href);
     if (norm === '/') return pathname === '/';
     if (pathname === norm) return true;
-    // Sub-route match (e.g. /event/anything matches /event)
     if (pathname.startsWith(norm + '/')) return true;
+    // Alias: /events/* also activates /event so the nav lights up on the
+    // upcoming-events listing page (which is a future /event detail migration).
+    if (norm === '/event' && (pathname === '/events' || pathname.startsWith('/events/'))) {
+      return true;
+    }
     return false;
   };
 
@@ -174,7 +179,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
               aria-expanded={mobileOpen}
-              aria-controls="event-mobile-menu"
+              aria-controls="primary-mobile-menu"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -197,7 +202,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
-              id="event-mobile-menu"
+              id="primary-mobile-menu"
               role="dialog"
               aria-modal="true"
               aria-label="Mobile menu"

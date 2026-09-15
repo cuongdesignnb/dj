@@ -1,17 +1,16 @@
 export const navItems = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Events", href: "/events" },
-  { label: "Artists", href: "/artists" },
-  { label: "Merchandise", href: "/shop" },
-  { label: "Contact", href: "/contact" },
+  { label: "Event", href: "/event" },
+  { label: "Ticket", href: "/tickets" },
+  { label: "Table", href: "/tables" },
+  { label: "Booked Now", href: "/book-now" },
 ];
 
 export const siteNav = {
   brandName: "CONNECTION",
   tagline: "Sound Meets Soul",
-  ctaLabel: "Explore Events",
-  ctaHref: "/events",
+  ctaLabel: "Get Tickets",
+  ctaHref: "/tickets",
 };
 
 export const artists = [

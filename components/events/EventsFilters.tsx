@@ -1,0 +1,93 @@
+'use client';
+
+import { useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Check, Clock, LayoutGrid, Star, Ticket } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { EventFilter } from '@/lib/events/listing-types';
+import { useEventsFilter } from './EventsFilterProvider';
+
+interface FilterOption {
+  value: EventFilter;
+  label: string;
+  Icon: LucideIcon;
+}
+
+const OPTIONS: FilterOption[] = [
+  { value: 'all', label: 'All Events', Icon: LayoutGrid },
+  { value: 'featured', label: 'Featured', Icon: Star },
+  { value: 'tickets-available', label: 'Tickets Available', Icon: Ticket },
+  { value: 'coming-soon', label: 'Coming Soon', Icon: Clock },
+];
+
+/**
+ * Filter chips for the ALL EVENTS grid.
+ *
+ * Built as a radio group so arrow keys move between options and screen readers
+ * announce the selected one. The active chip is marked by a check icon and
+ * `aria-checked` as well as colour, so the state is never colour-only.
+ */
+export default function EventsFilters({ controls }: { controls?: string }) {
+  const { filter, setFilter } = useEventsFilter();
+  const buttons = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const move = (from: number, delta: number) => {
+    const next = (from + delta + OPTIONS.length) % OPTIONS.length;
+    setFilter(OPTIONS[next].value);
+    buttons.current[next]?.focus();
+  };
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Filter events"
+      aria-controls={controls}
+      className="flex flex-wrap items-center gap-2.5 sm:gap-3"
+    >
+      {OPTIONS.map((option, index) => {
+        const active = option.value === filter;
+        const { Icon } = option;
+
+        return (
+          <motion.button
+            key={option.value}
+            ref={(node) => {
+              buttons.current[index] = node;
+            }}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            tabIndex={active ? 0 : -1}
+            onClick={() => setFilter(option.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                event.preventDefault();
+                move(index, 1);
+              } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                move(index, -1);
+              }
+            }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            className={`inline-flex items-center gap-2 rounded-[14px] border px-4 py-2.5 font-heading text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black ${
+              active
+                ? 'border-rave-red bg-rave-red/12 text-white shadow-[0_0_20px_rgba(255,23,61,0.28)]'
+                : 'border-white/[0.10] bg-white/[0.02] text-rave-muted hover:text-white hover:border-white/25 hover:bg-white/[0.05]'
+            }`}
+          >
+            <span
+              aria-hidden
+              className={`grid h-5 w-5 place-items-center rounded-md transition-colors ${
+                active ? 'bg-rave-red/20 text-rave-red' : 'text-rave-muted'
+              }`}
+            >
+              {active ? <Check className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
+            </span>
+            <span>{option.label}</span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}

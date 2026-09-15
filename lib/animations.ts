@@ -287,3 +287,39 @@ export const partnerImageReveal: Variants = {
     transition: { duration: 0.9, ease: easeCubic },
   },
 };
+
+// ===== EVENTS-PAGE-SPECIFIC VARIANTS =====
+
+export const eventsReveal: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.65, ease: easeCubic },
+  },
+};
+
+export const eventsStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+export const eventImageReveal: Variants = {
+  hidden: { opacity: 0, scale: 1.05, clipPath: 'inset(0 100% 0 0)' },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    clipPath: 'inset(0 0% 0 0)',
+    transition: { duration: 0.9, ease: easeCubic },
+  },
+};
+
+export const eventHeroLineReveal: Variants = {
+  hidden: { y: 36, opacity: 0, clipPath: 'inset(100% 0 0 0)' },
+  visible: {
+    y: 0,
+    opacity: 1,
+    clipPath: 'inset(0% 0 0 0)',
+    transition: { duration: 0.7, ease: easeCubic },
+  },
+};
