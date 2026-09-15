@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Music, Sparkles, Ticket, Users } from 'lucide-react';
+import { Heart, Music, Music2, Sparkles, Ticket, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { eventsReveal, eventsStagger } from '@/lib/animations';
@@ -11,12 +11,29 @@ import EventsSectionHeading from './EventsSectionHeading';
 
 const ICONS: Record<string, LucideIcon> = {
   Music,
+  Music2,
   Sparkles,
   Users,
   Ticket,
+  Heart,
 };
 
-export default function EventBenefits({ benefits }: { benefits: EventBenefit[] }) {
+/**
+ * Benefit grid shared by /events ("why attend") and /events/past ("why our
+ * nights last"). Heading and context line come from the caller; the cards are
+ * always data-driven.
+ */
+export default function EventBenefits({
+  benefits,
+  title = 'WHY ATTEND OUR EVENTS',
+  titleId = 'event-benefits-title',
+  context = ['Music', 'People', 'Culture', 'A Brighter Tomorrow'],
+}: {
+  benefits: EventBenefit[];
+  title?: string;
+  titleId?: string;
+  context?: string[];
+}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
@@ -25,19 +42,28 @@ export default function EventBenefits({ benefits }: { benefits: EventBenefit[] }
   return (
     <section
       ref={ref}
-      aria-labelledby="event-benefits-title"
+      aria-labelledby={titleId}
       className="relative bg-rave-deep py-16 md:py-24"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-rave-grid opacity-[0.07]" />
 
       <Container className="relative z-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <EventsSectionHeading title="WHY ATTEND OUR EVENTS" titleId="event-benefits-title" />
-          <p className="font-heading text-[11px] uppercase tracking-[0.28em] text-rave-muted sm:text-xs md:pb-2">
-            Music <span aria-hidden className="text-rave-red">&times;</span> People{' '}
-            <span aria-hidden className="text-rave-red">&times;</span> Culture{' '}
-            <span aria-hidden className="text-rave-red">&times;</span> A Brighter Tomorrow
-          </p>
+          <EventsSectionHeading title={title} titleId={titleId} />
+          {context.length > 0 && (
+            <p className="font-heading text-[11px] uppercase tracking-[0.28em] text-rave-muted sm:text-xs md:pb-2">
+              {context.map((word, i) => (
+                <span key={word}>
+                  {i > 0 && (
+                    <span aria-hidden className="text-rave-red">
+                      {' '}&times;{' '}
+                    </span>
+                  )}
+                  {word}
+                </span>
+              ))}
+            </p>
+          )}
         </div>
 
         <motion.ul

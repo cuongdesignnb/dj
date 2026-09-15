@@ -5,10 +5,12 @@
 //
 //   MockEventsRepository  — local content, the default
 //   HttpEventsRepository  — GET {base}/api/v1/pages/events
+//                           GET {base}/api/v1/pages/events/past
 //
 // Selected by NEXT_PUBLIC_DATA_SOURCE / NEXT_PUBLIC_API_BASE_URL.
 
 import type {
+  ArchiveContentType,
   EventBenefit,
   EventStatus,
   EventSummary,
@@ -18,25 +20,37 @@ import type {
   EventsPageData,
   LinkAction,
   MediaAsset,
+  PastEventSummary,
+  PastEventsHeroData,
+  PastEventsPageData,
 } from './listing-types';
 import { EVENTS_MOCK } from './mock';
+import { buildPastEventsMock } from './past-mock';
 
 export interface EventsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
   message: string;
 }
 
-export type EventsRepositoryResult =
-  | { ok: true; data: EventsPageData }
+export type RepositoryResult<T> =
+  | { ok: true; data: T }
   | { ok: false; error: EventsRepositoryError };
+
+export type EventsRepositoryResult = RepositoryResult<EventsPageData>;
+export type PastEventsRepositoryResult = RepositoryResult<PastEventsPageData>;
 
 export interface EventsRepository {
   getEventsPage(): Promise<EventsRepositoryResult>;
+  getPastEventsPage(): Promise<PastEventsRepositoryResult>;
 }
 
 export class MockEventsRepository implements EventsRepository {
   async getEventsPage(): Promise<EventsRepositoryResult> {
     return { ok: true, data: EVENTS_MOCK };
+  }
+
+  async getPastEventsPage(): Promise<PastEventsRepositoryResult> {
+    return { ok: true, data: buildPastEventsMock() };
   }
 }
 
@@ -231,14 +245,103 @@ export function normalizeEventsPage(raw: unknown): EventsPageData | null {
   };
 }
 
+const ARCHIVE_CONTENT_TYPES: ArchiveContentType[] = ['recap', 'gallery', 'highlights'];
+
+/** ISO date in, ISO date out — formatting stays in the presentation layer. */
+function isoDate(value: unknown): string | null {
+  const raw = nullableStr(value);
+  if (!raw) return null;
+  return Number.isNaN(Date.parse(raw)) ? null : raw;
+}
+
+function pastEventSummary(value: unknown): PastEventSummary | null {
+  if (!isRecord(value)) return null;
+  const id = str(value.id) || str(value.slug);
+  const title = str(value.title);
+  if (!id || !title) return null;
+
+  const contentTypes = Array.isArray(value.contentTypes)
+    ? value.contentTypes.filter((t): t is ArchiveContentType =>
+        ARCHIVE_CONTENT_TYPES.includes(t as ArchiveContentType),
+      )
+    : [];
+
+  return {
+    id,
+    slug: str(value.slug, id),
+    title,
+    subtitle: typeof value.subtitle === 'string' ? value.subtitle : undefined,
+    image: media(value.image),
+    location: nullableStr(value.location),
+    startDate: isoDate(value.startDate),
+    genres: Array.isArray(value.genres)
+      ? value.genres.filter((g): g is string => typeof g === 'string')
+      : [],
+    excerpt: typeof value.excerpt === 'string' ? value.excerpt : undefined,
+    featured: value.featured === true,
+    isPlaceholder: value.isPlaceholder === true,
+    contentTypes,
+    recapHref: nullableStr(value.recapHref),
+    galleryHref: nullableStr(value.galleryHref),
+    highlightsHref: nullableStr(value.highlightsHref),
+  };
+}
+
+function pastHero(value: unknown): PastEventsHeroData | null {
+  const base = hero(value);
+  if (!base) return null;
+  const note =
+    isRecord(value) && isRecord(value.visualAnnotations) && Array.isArray(value.visualAnnotations.note)
+      ? value.visualAnnotations.note.filter((l): l is string => typeof l === 'string')
+      : undefined;
+  return {
+    ...base,
+    visualAnnotations: base.visualAnnotations
+      ? { side: base.visualAnnotations.side, note }
+      : undefined,
+  };
+}
+
+/**
+ * Normalizes an API payload into PastEventsPageData. Like its sibling above it
+ * returns null rather than blending in local content, so a bad response shows
+ * as an error instead of as an archive that reads real.
+ */
+export function normalizePastEventsPage(raw: unknown): PastEventsPageData | null {
+  if (!isRecord(raw)) return null;
+
+  const heroData = pastHero(raw.hero);
+  const ctaData = finalCta(raw.finalCta);
+  if (!heroData || !ctaData) return null;
+
+  const events = Array.isArray(raw.events)
+    ? raw.events.flatMap((e) => {
+        const parsed = pastEventSummary(e);
+        return parsed ? [parsed] : [];
+      })
+    : [];
+
+  return {
+    hero: heroData,
+    featuredRecap: pastEventSummary(raw.featuredRecap),
+    events,
+    benefits: benefits(raw.benefits),
+    finalCta: ctaData,
+    footer: footer(raw.footer),
+  };
+}
+
 export class HttpEventsRepository implements EventsRepository {
   constructor(
     private readonly baseUrl: string,
     private readonly revalidateSeconds = 300,
   ) {}
 
-  async getEventsPage(): Promise<EventsRepositoryResult> {
-    const url = `${this.baseUrl.replace(/\/$/, '')}/api/v1/pages/events`;
+  private async getPage<T>(
+    path: string,
+    normalize: (raw: unknown) => T | null,
+  ): Promise<RepositoryResult<T>> {
+    const url = `${this.baseUrl.replace(/\/$/, '')}${path}`;
 
     let response: Response;
     try {
@@ -276,7 +379,7 @@ export class HttpEventsRepository implements EventsRepository {
       };
     }
 
-    const data = normalizeEventsPage(raw);
+    const data = normalize(raw);
     if (!data) {
       return {
         ok: false,
@@ -288,6 +391,14 @@ export class HttpEventsRepository implements EventsRepository {
     }
 
     return { ok: true, data };
+  }
+
+  getEventsPage(): Promise<EventsRepositoryResult> {
+    return this.getPage('/api/v1/pages/events', normalizeEventsPage);
+  }
+
+  getPastEventsPage(): Promise<PastEventsRepositoryResult> {
+    return this.getPage('/api/v1/pages/events/past', normalizePastEventsPage);
   }
 }
 

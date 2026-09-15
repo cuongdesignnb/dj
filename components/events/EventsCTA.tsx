@@ -8,7 +8,13 @@ import { eventsReveal, eventsStagger } from '@/lib/animations';
 import type { EventsFinalCta } from '@/lib/events/listing-types';
 import EventAction from './EventAction';
 
-export default function EventsCTA({ cta }: { cta: EventsFinalCta }) {
+export default function EventsCTA({
+  cta,
+  titleId = 'events-cta-title',
+}: {
+  cta: EventsFinalCta;
+  titleId?: string;
+}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   const reduced = useReducedMotion();
@@ -20,7 +26,7 @@ export default function EventsCTA({ cta }: { cta: EventsFinalCta }) {
   return (
     <section
       ref={ref}
-      aria-labelledby="events-cta-title"
+      aria-labelledby={titleId}
       className="relative isolate overflow-hidden bg-rave-black py-20 md:py-28"
     >
       {cta.background?.src && (
@@ -66,7 +72,7 @@ export default function EventsCTA({ cta }: { cta: EventsFinalCta }) {
             )}
 
             <motion.h2
-              id="events-cta-title"
+              id={titleId}
               variants={eventsReveal}
               className="mt-4 font-heading text-3xl font-black uppercase leading-[1.03] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-[52px]"
             >

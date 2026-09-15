@@ -1,4 +1,9 @@
-import type { EventStatus, EventSummary } from '@/lib/events/listing-types';
+import type {
+  ArchiveContentType,
+  EventStatus,
+  EventSummary,
+  PastEventSummary,
+} from '@/lib/events/listing-types';
 
 /**
  * Display labels derived from an event's status fields.
@@ -35,4 +40,49 @@ export function statusLabel(event: EventSummary): string {
 
 export function statusLabelText(status: EventStatus): string {
   return STATUS_LABELS[status];
+}
+
+// --- Archive (/events/past) ---------------------------------------------
+
+/**
+ * Formats a stored ISO date for display.
+ *
+ * Fixed to en-AU with an explicit UTC time zone so the server and the client
+ * produce the same string — a locale-dependent format here would be a
+ * hydration mismatch waiting to happen.
+ */
+export function archiveDateLabel(event: PastEventSummary): string {
+  if (!event.startDate) return 'Date to be confirmed';
+  const parsed = new Date(event.startDate);
+  if (Number.isNaN(parsed.getTime())) return 'Date to be confirmed';
+  return new Intl.DateTimeFormat('en-AU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(parsed);
+}
+
+export function archiveLocationLabel(event: PastEventSummary): string {
+  return event.location ?? 'Location to be confirmed';
+}
+
+const CONTENT_TYPE_LABELS: Record<ArchiveContentType, string> = {
+  recap: 'Event Recap',
+  gallery: 'Gallery Available',
+  highlights: 'Artist Highlights',
+};
+
+export function contentTypeLabel(type: ArchiveContentType): string {
+  return CONTENT_TYPE_LABELS[type];
+}
+
+/**
+ * Badge text for an archive card, derived from what content actually exists
+ * rather than asserted by the component.
+ */
+export function archiveBadgeLabel(event: PastEventSummary): string {
+  if (event.contentTypes.includes('gallery')) return 'Gallery';
+  if (event.contentTypes.includes('recap')) return 'Recap';
+  return 'Archived';
 }

@@ -141,3 +141,95 @@ export function parseFilter(value: string | string[] | undefined): EventFilter {
   const raw = Array.isArray(value) ? value[0] : value;
   return EVENT_FILTERS.includes(raw as EventFilter) ? (raw as EventFilter) : 'all';
 }
+
+// ---------------------------------------------------------------------------
+// Past events / archive (/events/past)
+//
+// Shares MediaAsset, LinkAction, EventBenefit and the footer/CTA shapes above.
+// A past event is described by what archive content exists for it, not by
+// ticketing or scheduling, so it gets its own summary type.
+// ---------------------------------------------------------------------------
+
+export type ArchiveContentType = 'recap' | 'gallery' | 'highlights';
+
+export interface PastEventSummary {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  image: MediaAsset;
+  location?: string | null;
+  /**
+   * ISO 8601 date, never a pre-formatted string: the display format belongs to
+   * the presentation layer so a backend can send plain dates.
+   */
+  startDate?: string | null;
+  genres?: string[];
+  excerpt?: string;
+  featured: boolean;
+  /**
+   * True for entries that exist to fill out the design rather than to record a
+   * real night. Placeholder entries must never be presented as history.
+   */
+  isPlaceholder?: boolean;
+  contentTypes: ArchiveContentType[];
+  recapHref?: string | null;
+  galleryHref?: string | null;
+  highlightsHref?: string | null;
+}
+
+export interface PastEventsHeroData {
+  eyebrow: string;
+  titleLines: string[];
+  description: string;
+  primaryCta: LinkAction;
+  secondaryCta?: LinkAction;
+  visual: MediaAsset;
+  visualAnnotations?: { side: string[]; note?: string[] };
+}
+
+export type ArchiveBenefit = EventBenefit;
+
+export interface PastEventsPageData {
+  hero: PastEventsHeroData;
+  featuredRecap?: PastEventSummary | null;
+  events: PastEventSummary[];
+  benefits: ArchiveBenefit[];
+  finalCta: EventsFinalCta;
+  footer: EventsFooterData;
+}
+
+export type PastEventFilter = 'all' | 'featured' | 'gallery' | 'highlights';
+
+export const PAST_EVENT_FILTERS: PastEventFilter[] = [
+  'all',
+  'featured',
+  'gallery',
+  'highlights',
+];
+
+export function matchesPastFilter(
+  event: PastEventSummary,
+  filter: PastEventFilter,
+): boolean {
+  switch (filter) {
+    case 'featured':
+      return event.featured;
+    case 'gallery':
+      return event.contentTypes.includes('gallery');
+    case 'highlights':
+      return event.contentTypes.includes('highlights');
+    case 'all':
+    default:
+      return true;
+  }
+}
+
+export function parsePastFilter(
+  value: string | string[] | undefined,
+): PastEventFilter {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return PAST_EVENT_FILTERS.includes(raw as PastEventFilter)
+    ? (raw as PastEventFilter)
+    : 'all';
+}
