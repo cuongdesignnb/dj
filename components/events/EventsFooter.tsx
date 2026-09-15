@@ -57,6 +57,7 @@ const SOCIAL_ICON: Record<string, (props: { className?: string }) => ReactElemen
 export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
   const year = new Date().getFullYear();
   const socials = footer.socials.filter((social) => social.url);
+  const partners = footer.partners ?? [];
 
   return (
     <footer className="relative border-t border-white/[0.06] bg-rave-black">
@@ -68,7 +69,7 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8 md:py-16"
+          className={`grid grid-cols-1 gap-10 py-12 sm:grid-cols-2 lg:gap-8 md:py-16 ${partners.length > 0 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}
         >
           <motion.div variants={fadeUp}>
             <div className="mb-4 flex items-center gap-3">
@@ -109,6 +110,31 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
               </div>
             )}
           </motion.div>
+
+          {partners.length > 0 && (
+            <motion.div variants={fadeUp}>
+              <h2 className="mb-4 font-heading text-sm font-semibold uppercase tracking-[0.2em] text-white">
+                In Partnership With
+              </h2>
+              <div className="flex flex-wrap items-center gap-5">
+                {partners.map((partner, index) => (
+                  <div key={partner.id} className="flex items-center gap-5">
+                    {index > 0 && (
+                      <span aria-hidden className="font-heading text-sm text-rave-muted/50">
+                        &times;
+                      </span>
+                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={partner.logo.src}
+                      alt={partner.logo.alt || partner.name}
+                      className="h-8 w-auto object-contain opacity-80 transition-opacity duration-300 hover:opacity-100"
+                    />
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           <motion.div variants={fadeUp}>
             <h2 className="mb-4 font-heading text-sm font-semibold uppercase tracking-[0.2em] text-white">

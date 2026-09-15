@@ -323,3 +323,19 @@ export const eventHeroLineReveal: Variants = {
     transition: { duration: 0.7, ease: easeCubic },
   },
 };
+
+// ===== TICKETS-PAGE-SPECIFIC VARIANTS =====
+
+export const ticketReveal: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: easeCubic },
+  },
+};
+
+export const ticketStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};

@@ -92,11 +92,19 @@ export interface EventsSocialLink {
   url: string | null;
 }
 
+export interface FooterPartner {
+  id: string;
+  name: string;
+  logo: MediaAsset;
+}
+
 export interface EventsFooterData {
   /** Null renders the "to be confirmed" fallback rather than a fake address. */
   email?: string | null;
   phone?: string | null;
   socials: EventsSocialLink[];
+  /** Optional "in partnership with" strip; omitted when there are none. */
+  partners?: FooterPartner[];
   legalTermsHref?: string | null;
   legalPrivacyHref?: string | null;
 }
