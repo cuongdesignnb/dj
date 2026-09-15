@@ -259,3 +259,31 @@ export const aboutCardLift: Variants = {
   rest: { y: 0, scale: 1 },
   hover: { y: -8, scale: 1.015, transition: springSnappy },
 };
+
+// ===== PARTNERS-PAGE-SPECIFIC VARIANTS =====
+
+export const partnerReveal: Variants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.65, ease: easeCubic },
+  },
+};
+
+export const partnerStagger: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+export const partnerImageReveal: Variants = {
+  hidden: { opacity: 0, scale: 1.06, clipPath: 'inset(0 100% 0 0)' },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    clipPath: 'inset(0 0% 0 0)',
+    transition: { duration: 0.9, ease: easeCubic },
+  },
+};

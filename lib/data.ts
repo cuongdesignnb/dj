@@ -97,6 +97,7 @@ export const footerLinks = [
   { label: "Ticket", href: "/tickets" },
   { label: "Table", href: "/tables" },
   { label: "Booked Now", href: "/book-now" },
+  { label: "Partners", href: "/partners" },
   { label: "Gallery", href: "/gallery" },
   { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
