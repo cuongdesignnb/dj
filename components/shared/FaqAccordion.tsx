@@ -5,17 +5,35 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from 'framer-mot
 import { Plus } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { ticketReveal, ticketStagger } from '@/lib/animations';
-import type { TicketFaqItem } from '@/lib/tickets/types';
+
+export interface FaqAccordionItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
 
 /**
- * FAQ accordion.
+ * FAQ accordion, shared by /tickets, /tables and /book-now.
  *
  * Any number of items can be open at once — simpler to reason about than a
  * single-open accordion, and it never closes something the reader is mid-way
  * through. Each header is a button that owns its panel via aria-controls, so
  * keyboard and screen-reader behaviour comes for free.
  */
-export default function TicketFaq({ items }: { items: TicketFaqItem[] }) {
+export default function FaqAccordion({
+  items,
+  title = 'Frequent Questions',
+  titleId = 'faq-title',
+  context = 'Get The Answers — Be Ready',
+  idPrefix = 'faq',
+}: {
+  items: FaqAccordionItem[];
+  title?: string;
+  titleId?: string;
+  context?: string;
+  idPrefix?: string;
+}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   const reduced = useReducedMotion();
@@ -33,15 +51,15 @@ export default function TicketFaq({ items }: { items: TicketFaqItem[] }) {
   };
 
   return (
-    <section ref={ref} aria-labelledby="faq-title" className="bg-rave-black py-16 md:py-24">
+    <section ref={ref} aria-labelledby={titleId} className="bg-rave-black py-16 md:py-24">
       <Container>
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h2
-              id="faq-title"
+              id={titleId}
               className="font-heading text-3xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl"
             >
-              Frequent Questions
+              {title}
             </h2>
             <span
               aria-hidden
@@ -49,9 +67,11 @@ export default function TicketFaq({ items }: { items: TicketFaqItem[] }) {
               style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
             />
           </div>
-          <p className="font-heading text-[11px] uppercase tracking-[0.28em] text-rave-muted sm:text-xs md:pb-2">
-            Get The Answers <span aria-hidden className="text-rave-red">&mdash;</span> Be Ready
-          </p>
+          {context && (
+            <p className="font-heading text-[11px] uppercase tracking-[0.28em] text-rave-muted sm:text-xs md:pb-2">
+              {context}
+            </p>
+          )}
         </div>
 
         <motion.ul
@@ -62,8 +82,8 @@ export default function TicketFaq({ items }: { items: TicketFaqItem[] }) {
         >
           {items.map((item) => {
             const isOpen = open.has(item.id);
-            const panelId = `faq-panel-${item.id}`;
-            const buttonId = `faq-button-${item.id}`;
+            const panelId = `${idPrefix}-panel-${item.id}`;
+            const buttonId = `${idPrefix}-button-${item.id}`;
 
             return (
               <motion.li

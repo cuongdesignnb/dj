@@ -6,8 +6,8 @@ import EventsFooter from '@/components/events/EventsFooter';
 import TicketsHero from '@/components/tickets/TicketsHero';
 import TicketsSelector from '@/components/tickets/TicketsSelector';
 import TicketInfoGrid from '@/components/tickets/TicketInfoGrid';
-import TicketFaq from '@/components/tickets/TicketFaq';
-import TicketsCTA from '@/components/tickets/TicketsCTA';
+import FaqAccordion from '@/components/shared/FaqAccordion';
+import FinalCtaSection from '@/components/shared/FinalCtaSection';
 
 import { getTicketsRepository } from '@/lib/tickets/repository';
 import type { TicketsPageData } from '@/lib/tickets/types';
@@ -70,8 +70,8 @@ export default async function TicketsPage() {
           trustItems={data.trustItems}
         />
         <TicketInfoGrid items={data.infoItems} />
-        <TicketFaq items={data.faq} />
-        <TicketsCTA cta={data.finalCta} />
+        <FaqAccordion items={data.faq} titleId="tickets-faq-title" idPrefix="tickets-faq" />
+        <FinalCtaSection cta={data.finalCta} titleId="tickets-cta-title" />
       </main>
       <EventsFooter footer={data.footer} />
     </EventsMotion>

@@ -7,9 +7,24 @@ import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'fr
 import { ArrowRight } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { ticketReveal, ticketStagger } from '@/lib/animations';
-import type { TicketsFinalCta } from '@/lib/tickets/types';
 
-export default function TicketsCTA({ cta }: { cta: TicketsFinalCta }) {
+
+export interface FinalCtaData {
+  title: string;
+  subtitle?: string;
+  primary: { label: string; href: string };
+  secondary?: { label: string; href: string };
+  background?: { src: string; alt: string };
+}
+
+/** Closing call-to-action shared by /tickets, /tables and /book-now. */
+export default function FinalCtaSection({
+  cta,
+  titleId = 'final-cta-title',
+}: {
+  cta: FinalCtaData;
+  titleId?: string;
+}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   const reduced = useReducedMotion();
@@ -20,7 +35,7 @@ export default function TicketsCTA({ cta }: { cta: TicketsFinalCta }) {
   return (
     <section
       ref={ref}
-      aria-labelledby="tickets-cta-title"
+      aria-labelledby={titleId}
       className="relative isolate overflow-hidden bg-rave-black py-20 md:py-28"
     >
       {cta.background?.src && (
@@ -57,7 +72,7 @@ export default function TicketsCTA({ cta }: { cta: TicketsFinalCta }) {
         >
           <div>
             <motion.h2
-              id="tickets-cta-title"
+              id={titleId}
               variants={ticketReveal}
               className="font-heading text-3xl font-black uppercase leading-[1.03] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-[52px]"
             >

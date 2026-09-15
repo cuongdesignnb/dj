@@ -339,3 +339,19 @@ export const ticketStagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
 };
+
+// ===== VIP-PAGE-SPECIFIC VARIANTS (/tables, /book-now) =====
+
+export const vipReveal: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: easeCubic },
+  },
+};
+
+export const vipStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+};
