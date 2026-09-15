@@ -11,34 +11,52 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion';
-import { ArrowRight, CalendarDays, Clock, MapPin } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock, Globe, MapPin, Users } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import Container from '@/components/ui/Container';
 import EventsBreadcrumb from '@/components/events/EventsBreadcrumb';
 import type { Crumb } from '@/components/events/EventsBreadcrumb';
 import { eventHeroLineReveal, vipReveal, vipStagger } from '@/lib/animations';
-import type { VipEventContext } from '@/lib/vip/types';
 
-export interface VipHeroAction {
+export interface PageHeroAction {
   label: string;
   href: string;
   icon?: ReactNode;
   tone?: 'primary' | 'secondary';
 }
 
+export type PageHeroMetaIcon = 'date' | 'time' | 'place' | 'people' | 'globe';
+
+export interface PageHeroMeta {
+  icon: PageHeroMetaIcon;
+  label: string;
+}
+
+const META_ICONS: Record<PageHeroMetaIcon, LucideIcon> = {
+  date: CalendarDays,
+  time: Clock,
+  place: MapPin,
+  people: Users,
+  globe: Globe,
+};
+
 /**
- * Hero shared by /tables and /book-now so both pages open identically — same
- * metadata chips, same editorial side copy, same motion.
+ * Hero shared by /tables, /book-now and /lineup so they open identically — same
+ * metadata chips, same editorial side copy, same motion. Callers supply their
+ * own chips rather than the component knowing about any one page's data model.
  */
-export default function VipHero({
+export default function PageHero({
   crumbs,
   eyebrow,
   titleLines,
   description,
-  event,
+  meta,
+  visual,
   actions,
   sideNotes,
   footNotes,
+  badge,
   titleId,
   children,
 }: {
@@ -46,10 +64,13 @@ export default function VipHero({
   eyebrow: string;
   titleLines: string[];
   description: string;
-  event: VipEventContext;
-  actions?: VipHeroAction[];
+  meta: PageHeroMeta[];
+  visual: { src: string; alt: string };
+  actions?: PageHeroAction[];
   sideNotes: string[];
   footNotes?: string[];
+  /** Small stacked label pinned to the bottom-right of the visual. */
+  badge?: string[];
   titleId: string;
   /** Extra controls between the description and the metadata chips. */
   children?: ReactNode;
@@ -63,21 +84,6 @@ export default function VipHero({
   const tiltY = useMotionValue(0);
   const rotX = useSpring(useTransform(tiltY, [-0.5, 0.5], [2, -2]), { stiffness: 90, damping: 16 });
   const rotY = useSpring(useTransform(tiltX, [-0.5, 0.5], [-3, 3]), { stiffness: 90, damping: 16 });
-
-  const meta = [
-    {
-      Icon: CalendarDays,
-      label: event.dateStatus === 'confirmed' && event.date ? event.date : 'Date to be announced',
-    },
-    {
-      Icon: Clock,
-      label:
-        event.scheduleStatus === 'confirmed' && event.schedule
-          ? event.schedule
-          : 'Schedule to be confirmed',
-    },
-    { Icon: MapPin, label: event.venue },
-  ];
 
   return (
     <>
@@ -144,7 +150,9 @@ export default function VipHero({
               )}
 
               <motion.ul variants={vipStagger} className="mt-7 flex flex-wrap gap-3">
-                {meta.map(({ Icon, label }) => (
+                {meta.map(({ icon, label }) => {
+                  const Icon = META_ICONS[icon];
+                  return (
                   <motion.li
                     key={label}
                     variants={vipReveal}
@@ -153,7 +161,8 @@ export default function VipHero({
                     <Icon aria-hidden className="h-4 w-4 shrink-0 text-rave-red" />
                     {label}
                   </motion.li>
-                ))}
+                  );
+                })}
               </motion.ul>
 
               {actions && actions.length > 0 && (
@@ -198,8 +207,8 @@ export default function VipHero({
                 className="relative aspect-[16/11] overflow-hidden rounded-[20px] border border-white/[0.08] shadow-[0_30px_80px_rgba(255,23,61,0.18)]"
               >
                 <Image
-                  src={event.image.src}
-                  alt={event.image.alt}
+                  src={visual.src}
+                  alt={visual.alt}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -232,6 +241,16 @@ export default function VipHero({
                   >
                     {footNotes.map((line) => (
                       <span key={line}>{line}</span>
+                    ))}
+                  </div>
+                )}
+
+                {badge && badge.length > 0 && (
+                  <div className="absolute bottom-4 right-4 rounded-[12px] border border-white/20 bg-black/65 px-4 py-2.5 text-right font-heading text-[10px] uppercase leading-tight tracking-[0.2em] text-white backdrop-blur-sm sm:text-xs">
+                    {badge.map((line) => (
+                      <span key={line} className="block">
+                        {line}
+                      </span>
                     ))}
                   </div>
                 )}

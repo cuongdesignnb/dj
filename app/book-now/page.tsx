@@ -6,7 +6,7 @@ import EventsMotion from '@/components/events/EventsMotion';
 import EventsFooter from '@/components/events/EventsFooter';
 import FaqAccordion from '@/components/shared/FaqAccordion';
 import FinalCtaSection from '@/components/shared/FinalCtaSection';
-import VipHero from '@/components/vip/VipHero';
+import PageHero from '@/components/shared/PageHero';
 import VipInfoGrid from '@/components/vip/VipInfoGrid';
 import BookingRequestForm from '@/components/vip/BookingRequestForm';
 
@@ -81,18 +81,35 @@ export default async function BookNowPage({
     <EventsMotion>
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
-        <VipHero
+        <PageHero
           crumbs={[{ label: 'Home', href: '/' }, { label: 'Booked Now' }]}
           eyebrow="Booking Request"
           titleLines={['BOOK YOUR', 'EXPERIENCE']}
           description={`Submit your details and preferred VIP setup for ${data.event.title}. Our team will review your request and confirm availability with you directly.`}
-          event={data.event}
+          meta={[
+            {
+              icon: 'date' as const,
+              label:
+                data.event.dateStatus === 'confirmed' && data.event.date
+                  ? data.event.date
+                  : 'Date to be announced',
+            },
+            {
+              icon: 'time' as const,
+              label:
+                data.event.scheduleStatus === 'confirmed' && data.event.schedule
+                  ? data.event.schedule
+                  : 'Schedule to be confirmed',
+            },
+            { icon: 'place' as const, label: data.event.venue },
+          ]}
+          visual={{ src: data.event.image.src, alt: data.event.image.alt }}
           titleId="book-now-hero-title"
           sideNotes={['PEOPLE', 'MUSIC', 'CULTURE', 'FOREVER']}
           footNotes={['A BRIGHTER', 'TOMORROW TOGETHER']}
         >
           <ExperienceTabs />
-        </VipHero>
+        </PageHero>
 
         <BookingRequestForm data={data} initialSelection={initialSelection} />
 

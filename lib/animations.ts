@@ -355,3 +355,29 @@ export const vipStagger: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.07 } },
 };
+
+// ===== LINEUP / ARTIST VARIANTS (/lineup, /lineup/[slug]) =====
+
+export const artistReveal: Variants = {
+  hidden: { opacity: 0, y: 26 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: easeCubic },
+  },
+};
+
+export const artistStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+};
+
+export const artistImageReveal: Variants = {
+  hidden: { opacity: 0, scale: 1.04, clipPath: 'inset(100% 0 0 0)' },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    clipPath: 'inset(0% 0 0 0)',
+    transition: { duration: 0.75, ease: easeCubic },
+  },
+};

@@ -5,7 +5,7 @@ import EventsMotion from '@/components/events/EventsMotion';
 import EventsFooter from '@/components/events/EventsFooter';
 import FaqAccordion from '@/components/shared/FaqAccordion';
 import FinalCtaSection from '@/components/shared/FinalCtaSection';
-import VipHero from '@/components/vip/VipHero';
+import PageHero from '@/components/shared/PageHero';
 import VipConfigurator from '@/components/vip/VipConfigurator';
 import VipInfoGrid from '@/components/vip/VipInfoGrid';
 
@@ -60,12 +60,29 @@ export default async function TablesPage({
     <EventsMotion>
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
-        <VipHero
+        <PageHero
           crumbs={[{ label: 'Home', href: '/' }, { label: 'Table' }]}
           eyebrow="VIP Tables"
           titleLines={['YOUR NIGHT.', 'YOUR BOOTH.']}
           description={`An elevated VIP experience for ${data.event.title}. Premium booths, bottle service and the best views in the house — at ${data.event.venue}.`}
-          event={data.event}
+          meta={[
+            {
+              icon: 'date' as const,
+              label:
+                data.event.dateStatus === 'confirmed' && data.event.date
+                  ? data.event.date
+                  : 'Date to be announced',
+            },
+            {
+              icon: 'time' as const,
+              label:
+                data.event.scheduleStatus === 'confirmed' && data.event.schedule
+                  ? data.event.schedule
+                  : 'Schedule to be confirmed',
+            },
+            { icon: 'place' as const, label: data.event.venue },
+          ]}
+          visual={{ src: data.event.image.src, alt: data.event.image.alt }}
           titleId="tables-hero-title"
           actions={[
             { label: 'Request a Booth', href: '#club-map', tone: 'primary' },

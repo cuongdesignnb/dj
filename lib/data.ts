@@ -1,3 +1,5 @@
+import { ARTISTS } from './artists/mock';
+
 export const navItems = [
   { label: "Home", href: "/" },
   { label: "Event", href: "/event" },
@@ -13,16 +15,16 @@ export const siteNav = {
   ctaHref: "/tickets",
 };
 
-export const artists = [
-  { name: "RYAL", country: "VIETNAM", year: "2026", href: "/lineup/ryal", image: "/assets/artist-ryal.jpg" },
-  { name: "NICOLE CHEN", country: "SINGAPORE", year: "2026", href: "/lineup/nicole-chen", image: "/assets/artist-nicole-chen.jpg" },
-  { name: "KICKCHEEZE", country: "AUSTRALIA", year: "2026", href: "/lineup/kickcheeze", image: "/assets/artist-kickcheeze.jpg" },
-  { name: "BI HI", country: "VIETNAM", year: "2026", href: "/lineup/bi-hi", image: "/assets/artist-bi-hi.jpg" },
-  { name: "RYSAL", country: "AUSTRALIA", year: "2026", href: "/lineup/rysal", image: "/assets/artist-rysal.jpg" },
-  { name: "MAYA", country: "SINGAPORE", year: "2026", href: "/lineup/maya", image: "/assets/artist-maya.jpg" },
-  { name: "MICO", country: "AUSTRALIA", year: "2026", href: "/lineup/mico", image: "/assets/artist-mico.jpg" },
-  { name: "EMS", country: "AUSTRALIA", year: "2026", href: "/lineup/ems", image: "/assets/artist-ems.jpg" },
-];
+// Projection of the canonical artist records in lib/artists/mock.ts, kept in
+// the shape the homepage preview already consumes. There is one artist list in
+// this codebase; this is a view of it, not a second copy.
+export const artists = ARTISTS.map((artist) => ({
+  name: artist.name,
+  country: artist.country,
+  year: artist.year ?? '',
+  href: `/lineup/${artist.slug}`,
+  image: artist.portrait.src,
+}));
 
 export const ticketTiers = [
   {
