@@ -3,7 +3,8 @@
 
 export function getApiBaseUrl(): string {
   const configured = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim().replace(/\/$/, '');
-  return configured || (process.env.APP_URL ?? '').trim().replace(/\/$/, '');
+  if (configured) return configured;
+  return (process.env.INTERNAL_API_BASE_URL ?? process.env.APP_URL ?? '').trim().replace(/\/$/, '');
 }
 
 export interface EnvironmentBadge {

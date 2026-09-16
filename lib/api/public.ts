@@ -1,12 +1,18 @@
 import { apiRequest } from './client';
 import type { ApiRequestOptions, ApiResult } from './client';
 
-/** Public API access is same-origin in the browser and uses APP_URL during SSR. */
+/**
+ * Public API access is same-origin in the browser. During SSR, prefer the
+ * container-local API origin so Docker does not try to reach the published
+ * host port from inside the app container.
+ */
 export function publicApiBaseUrl(): string {
   const configured = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim().replace(/\/$/, '');
   if (configured) return configured;
   if (typeof window !== 'undefined') return '';
-  return (process.env.APP_URL ?? 'http://localhost:3000').trim().replace(/\/$/, '');
+  return (process.env.INTERNAL_API_BASE_URL ?? process.env.APP_URL ?? 'http://localhost:3000')
+    .trim()
+    .replace(/\/$/, '');
 }
 
 export async function publicApi<T>(
