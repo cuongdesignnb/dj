@@ -217,7 +217,7 @@ export const PARTNERS_MOCK: PartnersPageData = {
         { id: 'tiktok', platform: 'tiktok', url: null },
       ],
     },
-    legalTermsHref: null,
-    legalPrivacyHref: null,
+    legalTermsHref: '/terms',
+    legalPrivacyHref: '/privacy',
   },
 };

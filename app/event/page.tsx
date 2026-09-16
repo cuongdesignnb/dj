@@ -23,8 +23,8 @@ const ROUTES: FrontendRoutes = {
   tables: null,
   lineup: null,
   booking: null,
-  legalTerms: null,
-  legalPrivacy: null,
+  legalTerms: '/terms',
+  legalPrivacy: '/privacy',
 };
 
 async function loadEventData(): Promise<{ data: EventPageData } | { error: { message: string } }> {

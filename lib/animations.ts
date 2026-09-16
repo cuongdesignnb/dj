@@ -467,3 +467,25 @@ export const productImageSwap: Variants = {
   center: { opacity: 1, scale: 1, transition: { duration: 0.35, ease: easeCubic } },
   exit: { opacity: 0, scale: 0.99, transition: { duration: 0.2, ease: easeCubic } },
 };
+
+// ===== SUPPORT + LEGAL VARIANTS (/faq, /terms, /privacy) =====
+
+export const faqReveal: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeCubic } },
+};
+
+export const faqStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+};
+
+/** Answer panel open/close. Height and opacity only — no bounce. */
+export const faqAccordionTransition = { duration: 0.28, ease: easeCubic };
+
+/** Legal pages stay calm: a short fade with a small offset. Body copy uses the CSS .legal-fade-up. */
+export const legalReveal: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: easeCubic } },
+};
+

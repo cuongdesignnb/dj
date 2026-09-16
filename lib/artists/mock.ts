@@ -129,7 +129,7 @@ export const LINEUP_MOCK: LineupPageData = {
       { id: 'youtube', platform: 'youtube', url: null },
       { id: 'tiktok', platform: 'tiktok', url: null },
     ],
-    legalTermsHref: null,
-    legalPrivacyHref: null,
+    legalTermsHref: '/terms',
+    legalPrivacyHref: '/privacy',
   },
 };

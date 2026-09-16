@@ -744,8 +744,32 @@ body {
   animation: text-pulse-ring 2s ease-out infinite;
 }
 
+/* Legal pages: a calm, CSS-only fade so the text is visible without JavaScript. */
+@keyframes legal-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.legal-fade-up {
+  animation: legal-fade-up 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .legal-fade-up {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

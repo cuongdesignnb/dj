@@ -207,7 +207,7 @@ export const GALLERY_MOCK: GalleryPageData = {
       { id: 'youtube', platform: 'youtube', url: null },
       { id: 'tiktok', platform: 'tiktok', url: null },
     ],
-    legalTermsHref: null,
-    legalPrivacyHref: null,
+    legalTermsHref: '/terms',
+    legalPrivacyHref: '/privacy',
   },
 };

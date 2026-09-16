@@ -187,7 +187,14 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
           <p className="text-xs text-rave-muted/60">
             &copy; {year} Connection. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/faq"
+              className="text-xs text-rave-muted/60 transition-colors hover:text-white"
+            >
+              FAQ
+            </Link>
+            <span aria-hidden className="text-rave-muted/30">|</span>
             {footer.legalTermsHref ? (
               <Link
                 href={footer.legalTermsHref}

@@ -230,7 +230,7 @@ export const VIP_MOCK: VipPageData = {
       { id: 'youtube', platform: 'youtube', url: null },
       { id: 'tiktok', platform: 'tiktok', url: null },
     ],
-    legalTermsHref: null,
-    legalPrivacyHref: null,
+    legalTermsHref: '/terms',
+    legalPrivacyHref: '/privacy',
   },
 };

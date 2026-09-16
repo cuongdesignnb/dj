@@ -21,9 +21,12 @@ export interface FinalCtaData {
 export default function FinalCtaSection({
   cta,
   titleId = 'final-cta-title',
+  compact = false,
 }: {
   cta: FinalCtaData;
   titleId?: string;
+  /** A short strip rather than a full-height banner. */
+  compact?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -36,7 +39,7 @@ export default function FinalCtaSection({
     <section
       ref={ref}
       aria-labelledby={titleId}
-      className="relative isolate overflow-hidden bg-rave-black py-20 md:py-28"
+      className={`relative isolate overflow-hidden bg-rave-black ${compact ? 'py-10 md:py-12' : 'py-20 md:py-28'}`}
     >
       {cta.background?.src && (
         <motion.div
@@ -74,7 +77,9 @@ export default function FinalCtaSection({
             <motion.h2
               id={titleId}
               variants={ticketReveal}
-              className="font-heading text-3xl font-black uppercase leading-[1.03] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-[52px]"
+              className={`font-heading font-black uppercase leading-[1.03] tracking-tight text-white ${
+                compact ? 'text-3xl sm:text-4xl' : 'text-3xl sm:text-4xl md:text-5xl lg:text-[52px]'
+              }`}
             >
               {cta.title}
             </motion.h2>

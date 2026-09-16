@@ -260,7 +260,7 @@ export const ABOUT_MOCK: AboutPageData = {
         { id: 'tiktok', platform: 'tiktok', url: null },
       ],
     },
-    legalTermsHref: null,
-    legalPrivacyHref: null,
+    legalTermsHref: '/terms',
+    legalPrivacyHref: '/privacy',
   },
 };
