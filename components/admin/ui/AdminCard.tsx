@@ -53,11 +53,3 @@ export default function AdminCard({
     </Tag>
   );
 }
-
-export function DemoTag({ label = 'Demo data' }: { label?: string }) {
-  return (
-    <span className="rounded-full border border-admin-warning/40 bg-admin-warning/10 px-2 py-0.5 font-body text-[10px] font-medium normal-case tracking-normal text-admin-warning">
-      {label}
-    </span>
-  );
-}

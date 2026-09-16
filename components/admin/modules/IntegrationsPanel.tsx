@@ -6,7 +6,6 @@ import { saveSingleton } from '@/app/admin/actions';
 import { inputClass } from '../form/FieldInput';
 import { ConfirmDialog, buttonClass } from '../ui/Dialog';
 import StatusBadge from '../ui/StatusBadge';
-import { useAdminSession } from '../ui/PermissionGate';
 import { useToast } from '../ui/Toast';
 
 interface Integration {
@@ -25,7 +24,6 @@ interface Integration {
  */
 export default function IntegrationsPanel({ initial, canEdit }: { initial: Record<string, unknown>; canEdit: boolean }) {
   const toast = useToast();
-  const mock = useAdminSession()?.mock ?? false;
   const [items, setItems] = useState<Integration[]>((initial.items as Integration[] | undefined) ?? []);
   const [drafts, setDrafts] = useState<Record<string, { key: string; endpoint: string }>>({});
   const [busy, setBusy] = useState<string | null>(null);
@@ -139,11 +137,7 @@ export default function IntegrationsPanel({ initial, canEdit }: { initial: Recor
         busy={!!busy}
         title={confirm?.keyConfigured ? 'Replace the stored key?' : 'Store this key?'}
         entity={confirm?.name}
-        consequence={
-          mock
-            ? 'Demo mode: there is no secure storage, so the key will be discarded and nothing changes.'
-            : 'The key is sent to the server and cannot be viewed again. Anything using the old key stops working once the backend switches over.'
-        }
+        consequence="The key is sent to the server and cannot be viewed again. Anything using the old key stops working once the backend switches over."
         confirmLabel="Store key"
         onCancel={() => setConfirm(null)}
         onConfirm={() => confirm && save(confirm)}

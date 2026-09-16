@@ -1,7 +1,4 @@
-import { FAQ_MOCK } from '@/lib/support/faq-mock';
-import { PRIVACY_DRAFT, TERMS_DRAFT } from '@/lib/legal/mock';
-import type { LegalDocument } from '@/lib/legal/types';
-import { DEMO_UPDATED, f, opts, section } from '@/lib/admin/common/fields';
+import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 import { LEGAL_STATUS_OPTIONS } from '@/lib/admin/common/schema';
 import type { AdminTask, AuditEntry, LegalStatus, LocalizedString, SeoFields } from '@/lib/admin/common/types';
@@ -22,7 +19,12 @@ export interface AdminFaq {
   [key: string]: unknown;
 }
 
-export const FAQ_CATEGORY_OPTIONS = FAQ_MOCK.categories.map((c) => ({ value: c.id, label: c.label }));
+export const FAQ_CATEGORY_OPTIONS = [
+  { value: 'tickets', label: 'Tickets' },
+  { value: 'entry', label: 'Entry' },
+  { value: 'vip-tables', label: 'VIP Tables' },
+  { value: 'venue', label: 'Venue' },
+];
 
 export const faqDefinition: ResourceDefinition<AdminFaq> = {
   key: 'faq',
@@ -35,17 +37,7 @@ export const faqDefinition: ResourceDefinition<AdminFaq> = {
   permission: 'content',
   titleKey: 'question',
   idPrefix: 'faq',
-  seed: () =>
-    FAQ_MOCK.items.map((item) => ({
-      id: `faq_${item.id.replace(/-/g, '_')}`,
-      category: item.category,
-      question: { en: item.question },
-      answer: { en: item.answer },
-      keywords: item.keywords ?? [],
-      published: item.published,
-      sortOrder: item.sortOrder,
-      updatedAt: DEMO_UPDATED,
-    })),
+  seed: () => [],
   searchFields: ['question', 'answer', 'keywords'],
   matchers: { published: (r, v) => String(r.published) === v },
   defaultSort: { key: 'sortOrder', direction: 'asc' },
@@ -97,26 +89,6 @@ export interface AdminLegalDocument {
   [key: string]: unknown;
 }
 
-const legal = (doc: LegalDocument): AdminLegalDocument => ({
-  id: doc.type,
-  title: doc.title,
-  status: doc.status,
-  intro: doc.intro,
-  version: doc.version ?? '',
-  effectiveDate: doc.effectiveDate ?? '',
-  updatedDate: doc.updatedAt ?? '',
-  sections: doc.sections.map((s) => ({
-    id: s.id,
-    navLabel: s.navLabel,
-    title: s.title,
-    // One paragraph per blank line.
-    body: s.paragraphs.join('\n\n'),
-    notice: s.notice ?? '',
-  })),
-  seo: { title: doc.seoTitle ?? '', description: doc.seoDescription ?? '', index: false, follow: true },
-  updatedAt: DEMO_UPDATED,
-});
-
 export const legalDefinition: ResourceDefinition<AdminLegalDocument> = {
   key: 'legal',
   label: 'Legal Documents',
@@ -128,7 +100,7 @@ export const legalDefinition: ResourceDefinition<AdminLegalDocument> = {
   permission: 'content',
   titleKey: 'title',
   idPrefix: 'legal',
-  seed: () => [legal(TERMS_DRAFT), legal(PRIVACY_DRAFT)],
+  seed: () => [],
   searchFields: ['title'],
   filters: [],
   columns: [
@@ -181,15 +153,7 @@ export const auditDefinition: ResourceDefinition<AuditEntry & { [key: string]: u
   permission: 'dashboard',
   titleKey: 'action',
   idPrefix: 'audit',
-  seed: () => [
-    { id: 'audit_1', actorName: 'Demo Admin', action: 'updated event', entityType: 'events', entityId: 'evt_destiny', entityLabel: 'DESTINY', createdAt: '2026-09-15T08:30:00.000Z' },
-    { id: 'audit_2', actorName: 'Demo Manager', action: 'added product', entityType: 'products', entityId: 'prod_connection_hoodie', entityLabel: 'Connection Hoodie', createdAt: '2026-09-14T16:05:00.000Z' },
-    { id: 'audit_3', actorName: 'Demo Editor One', action: 'saved draft article', entityType: 'news', entityId: 'news_artist_spotlights_coming_soon', entityLabel: 'Artist Spotlights Coming Soon', createdAt: '2026-09-14T10:20:00.000Z' },
-    { id: 'audit_4', actorName: 'Demo Editor One', action: 'updated homepage content', entityType: 'content', entityLabel: 'Homepage', createdAt: '2026-09-13T09:10:00.000Z' },
-    { id: 'audit_5', actorName: 'Demo Manager', action: 'updated gallery album', entityType: 'gallery', entityId: 'album_destiny', entityLabel: 'DESTINY', createdAt: '2026-09-12T15:40:00.000Z' },
-    { id: 'audit_6', actorName: 'Demo Admin', action: 'invited staff member', entityType: 'staff', entityId: 'staff_editor_2', entityLabel: 'Demo Editor Two', createdAt: '2026-09-11T12:00:00.000Z' },
-    { id: 'audit_7', actorName: 'Demo Admin', action: 'saved legal draft', entityType: 'content', entityLabel: 'Privacy Policy', createdAt: '2026-09-10T08:15:00.000Z' },
-  ],
+  seed: () => [],
   searchFields: ['actorName', 'action', 'entityLabel'],
   defaultSort: { key: 'createdAt', direction: 'desc' },
   filters: [],
@@ -210,14 +174,7 @@ export const tasksDefinition: ResourceDefinition<AdminTask & { [key: string]: un
   permission: 'dashboard',
   titleKey: 'title',
   idPrefix: 'task',
-  seed: () => [
-    { id: 'task_1', title: 'Confirm DESTINY date and schedule', module: 'events', dueAt: '2026-09-18T00:00:00.000Z', status: 'open' },
-    { id: 'task_2', title: 'Connect ticket provider', module: 'settings', dueAt: '2026-09-19T00:00:00.000Z', status: 'open' },
-    { id: 'task_3', title: 'Replace merch mock-ups with product photos', module: 'products', dueAt: '2026-09-22T00:00:00.000Z', status: 'open' },
-    { id: 'task_4', title: 'Legal review: Terms & Privacy drafts', module: 'content', dueAt: '2026-09-23T00:00:00.000Z', status: 'open' },
-    { id: 'task_5', title: 'Add confirmed contact details', module: 'settings', dueAt: '2026-09-24T00:00:00.000Z', status: 'open' },
-    { id: 'task_6', title: 'Vietnamese translations for FAQ', module: 'content', dueAt: '2026-09-26T00:00:00.000Z', status: 'open' },
-  ],
+  seed: () => [],
   searchFields: ['title'],
   defaultSort: { key: 'dueAt', direction: 'asc' },
   filters: [],

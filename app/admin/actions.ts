@@ -4,11 +4,10 @@
 // they are reachable by direct POST, so the UI hiding a button is not enough.
 // In api mode the backend enforces the same rules again.
 
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { DEMO_CREDENTIALS, SESSION_COOKIE, can, getAdminSession } from '@/lib/admin/auth/session';
+import { destroyAdminSessionFromCookies } from '@/server/auth/session';
+import { can, getAdminSession } from '@/lib/admin/auth/session';
 import type { Permission } from '@/lib/admin/auth/permissions';
-import { getAdminDataSource, isMockAuthEnabled } from '@/lib/admin/common/config';
 import { getPath, setPath, slugify } from '@/lib/admin/common/paths';
 import type { FormSchema } from '@/lib/admin/common/schema';
 import type { ResourceKey, SingletonKey } from '@/lib/admin/common/resource';
@@ -53,30 +52,11 @@ export async function signIn(_state: SignInState, formData: FormData): Promise<S
   const password = String(formData.get('password') ?? '');
   if (!email || !password) return { error: 'Enter your email and password.' };
 
-  if (!isMockAuthEnabled()) {
-    // Real sign-in belongs to the backend's auth endpoint, which sets its own
-    // session cookie. Nothing is checked in this app.
-    return { error: 'Sign-in is not available: no authentication service is configured.' };
-  }
-
-  if (email !== DEMO_CREDENTIALS.email || password !== DEMO_CREDENTIALS.password) {
-    return { error: 'Those credentials are not recognised.' };
-  }
-
-  const jar = await cookies();
-  jar.set(SESSION_COOKIE, `mock:${DEMO_CREDENTIALS.staffId}`, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: formData.get('remember') ? 60 * 60 * 24 * 7 : undefined,
-  });
-  redirect('/admin');
+  return { error: 'Sign-in is handled by the API login endpoint.' };
 }
 
 export async function signOut(): Promise<void> {
-  const jar = await cookies();
-  jar.delete(SESSION_COOKIE);
+  await destroyAdminSessionFromCookies();
   redirect('/admin/login');
 }
 
@@ -164,6 +144,153 @@ function titleText(value: unknown): string {
   return '';
 }
 
+function textValue(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function nullableText(value: unknown): string | null {
+  const text = textValue(value);
+  return text || null;
+}
+
+function enumValue(value: unknown): string | undefined {
+  const text = textValue(value);
+  return text ? text.toUpperCase() : undefined;
+}
+
+function mediaId(value: unknown): string | null {
+  if (typeof value === 'string') return value || null;
+  if (isRecord(value) && typeof value.mediaId === 'string') return value.mediaId || null;
+  return null;
+}
+
+function localizedValue(value: unknown, language: 'en' | 'vi'): string {
+  if (typeof value === 'string') return language === 'en' ? value.trim() : '';
+  if (!isRecord(value)) return '';
+  return typeof value[language] === 'string' ? String(value[language]).trim() : '';
+}
+
+function localizedTranslations(
+  input: Record<string, unknown>,
+  requiredKey: string,
+  build: (locale: 'en' | 'vi') => Record<string, unknown>,
+) {
+  const locales = (['en', 'vi'] as const).filter((locale) => localizedValue(input[requiredKey], locale));
+  return (locales.length ? locales : ['en' as const]).map(build);
+}
+
+function dateTime(date: unknown, time: unknown): string | null {
+  const dateText = textValue(date);
+  if (!dateText) return null;
+  const timeText = textValue(time) || '00:00';
+  const value = new Date(`${dateText}T${timeText}:00.000Z`);
+  return Number.isNaN(value.getTime()) ? null : value.toISOString();
+}
+
+/** Converts the admin form model into the public API write contract. */
+function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Record<string, unknown> {
+  if (resource === 'events') {
+    const venue = isRecord(input.venue) ? input.venue : {};
+    return {
+      slug: textValue(input.slug),
+      status: enumValue(input.status),
+      lifecycleStatus: enumValue(input.phase),
+      dateStatus: enumValue(input.dateStatus),
+      scheduleStatus: enumValue(input.scheduleStatus),
+      startAt: dateTime(input.startDate, input.startTime),
+      endAt: dateTime(input.endDate, input.endTime),
+      venueName: textValue(venue.name),
+      city: textValue(venue.city),
+      region: nullableText(venue.region),
+      country: textValue(venue.country),
+      address: nullableText(venue.address),
+      mapUrl: nullableText(venue.mapUrl),
+      featured: Boolean(input.featured),
+      translations: localizedTranslations(input, 'name', (locale) => ({
+        locale,
+        title: localizedValue(input.name, locale),
+        eyebrow: nullableText(localizedValue(input.eyebrow, locale)),
+        shortDescription: nullableText(localizedValue(input.shortDescription, locale)),
+        description: nullableText(localizedValue(input.longDescription, locale)),
+      })),
+    };
+  }
+
+  if (resource === 'artists') {
+    return {
+      slug: textValue(input.slug),
+      country: textValue(input.country),
+      yearLabel: nullableText(input.year),
+      status: enumValue(input.status),
+      featured: Boolean(input.featured),
+      portraitMediaId: mediaId(input.portrait),
+      heroMediaId: mediaId(input.heroImage),
+      translations: localizedTranslations(input, 'name', (locale) => ({
+        locale,
+        name: localizedValue(input.name, locale),
+        bio: nullableText(localizedValue(input.bio, locale)),
+        genres: Array.isArray(input.genres) ? input.genres.map(String) : [],
+      })),
+    };
+  }
+
+  if (resource === 'products') {
+    const price = isRecord(input.price) ? input.price : {};
+    const stockStatus = textValue(input.stockStatus);
+    return {
+      slug: textValue(input.slug),
+      categoryKey: textValue(input.category),
+      status: enumValue(input.status),
+      basePriceMinor: typeof price.amountMinor === 'number' ? price.amountMinor : 0,
+      currency: textValue(price.currency) || 'AUD',
+      badge: nullableText(input.badge),
+      featured: Boolean(input.featured),
+      stockTracking: stockStatus && stockStatus !== 'unknown' ? 'TRACKED' : 'NONE',
+      translations: localizedTranslations(input, 'title', (locale) => ({
+        locale,
+        title: localizedValue(input.title, locale),
+        excerpt: nullableText(localizedValue(input.excerpt, locale)),
+        description: nullableText(localizedValue(input.description, locale)),
+      })),
+    };
+  }
+
+  if (resource === 'news') {
+    return {
+      slug: textValue(input.slug),
+      category: textValue(input.category),
+      status: enumValue(input.status),
+      featured: Boolean(input.featured),
+      heroMediaId: mediaId(input.heroImage),
+      cardMediaId: mediaId(input.cardImage),
+      relatedEventId: nullableText(input.eventId),
+      translations: localizedTranslations(input, 'title', (locale) => ({
+        locale,
+        title: localizedValue(input.title, locale),
+        excerpt: nullableText(localizedValue(input.excerpt, locale)),
+        bodyBlocks: Array.isArray(input.body) ? input.body : [],
+        quickSummary: Array.isArray(input.quickSummary) ? input.quickSummary.map(String) : [],
+      })),
+    };
+  }
+
+  if (resource === 'partners') {
+    return {
+      slug: textValue(input.slug),
+      type: textValue(input.type),
+      status: enumValue(input.status),
+      logoMediaId: mediaId(input.logo),
+      imageMediaId: mediaId(input.collaborationImage),
+      websiteUrl: nullableText(input.website),
+      featured: Boolean(input.featured),
+      sortOrder: typeof input.sortOrder === 'number' ? input.sortOrder : 0,
+      translations: [{ locale: 'en', name: textValue(input.name), tagline: nullableText(input.tagline), description: nullableText(input.description) }],
+    };
+  }
+
+  return input;
+}
+
 // ---------------------------------------------------------------------------
 // Records
 // ---------------------------------------------------------------------------
@@ -217,19 +344,9 @@ export async function saveRecord(
     return { ok: false, error: { code: 'validation', message: 'Some fields need attention.', fieldErrors } };
   }
 
-  // News keeps a real publication time only once it is actually published.
-  if (resourceKey === 'news' && statusKey) {
-    if (input[statusKey] === 'published') {
-      const current = id ? await (await getRepository('news')).get(id) : null;
-      const existing = current && current.ok ? current.data?.publishedAt : null;
-      input.publishedAt = existing ?? new Date().toISOString();
-    } else {
-      input.publishedAt = null;
-    }
-  }
-
   const repo = await getRepository(resourceKey);
-  const result = id ? await repo.update(id, input) : await repo.create({ ...definition.newRecord?.(), ...input });
+  const payload = apiPayload(resourceKey, input);
+  const result = id ? await repo.update(id, payload) : await repo.create(payload);
   if (!result.ok) return result;
   return {
     ok: true,
@@ -326,21 +443,12 @@ export async function saveSingleton(key: string, values: unknown): Promise<Actio
   if (key === 'settings-integrations') {
     const current = await repo.get();
     if (!current.ok) return current;
-    const mock = getAdminDataSource() === 'mock';
     const incoming = isRecord(values) && Array.isArray(values.items) ? values.items : [];
-    let discarded = false;
     const items = (Array.isArray(current.data.items) ? current.data.items : []).map((item) => {
       const row = item as Record<string, unknown>;
       const update = incoming.find((i) => isRecord(i) && i.id === row.id) as Record<string, unknown> | undefined;
       const newKey = typeof update?.newKey === 'string' ? update.newKey.trim().slice(0, 500) : '';
       const endpoint = typeof update?.endpoint === 'string' && safeUrl(update.endpoint) ? update.endpoint : row.endpoint;
-      if (mock) {
-        // Demo mode has nowhere safe to keep a secret: the key is dropped and
-        // the integration's state does not change.
-        if (newKey) discarded = true;
-        return { ...row, endpoint, newKey: '' };
-      }
-      // api mode: the backend stores the key encrypted and decides the state.
       return { ...row, endpoint, newKey };
     });
     const saved = await repo.save({ ...current.data, items });
@@ -353,9 +461,7 @@ export async function saveSingleton(key: string, values: unknown): Promise<Actio
     return {
       ok: true,
       data: clean,
-      message: discarded
-        ? 'Demo mode: the key was not stored. Connect the backend to save credentials.'
-        : 'Integration settings saved. Connections are verified by the backend.',
+      message: 'Integration settings saved. Connections are verified by the backend.',
     };
   }
 
@@ -414,15 +520,6 @@ export async function updateOrder(
 export async function staffAction(id: string, action: 'invite' | 'resend' | 'disable' | 'enable'): Promise<ActionResult> {
   const auth = await authorize('staff.edit');
   if (!auth.ok) return auth.result;
-
-  if (action === 'invite' || action === 'resend') {
-    if (getAdminDataSource() === 'mock') {
-      return {
-        ok: false,
-        error: { code: 'unavailable', message: 'Invitations need the email service. Nothing was sent.' },
-      };
-    }
-  }
 
   const repo = await getRepository('staff');
   if (action === 'disable' || action === 'enable') {

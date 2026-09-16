@@ -1,15 +1,11 @@
 // Data access for /news and /news/[slug].
 //
-//   MockNewsRepository — canonical local content, the default
-//   HttpNewsRepository — GET {base}/api/v1/news
-//                        GET {base}/api/v1/news/{slug}
-//
 // Status filtering lives here, not in the pages: a draft is never public, so no
 // component has to remember to check.
 
 import type { NewsArticle, NewsPageData } from './types';
-import { NEWS_ARTICLES, NEWS_MOCK } from './mock';
 import { normalizeArticle, normalizeArticles } from './http';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export interface NewsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -30,33 +26,6 @@ export interface NewsRepository {
 /** Drafts never reach a reader, whatever the source says. */
 function isPublic(article: NewsArticle): boolean {
   return article.status !== 'draft';
-}
-
-export class MockNewsRepository implements NewsRepository {
-  async getNewsPage(): Promise<RepositoryResult<NewsPageData>> {
-    const articles = NEWS_MOCK.articles.filter(isPublic);
-    return {
-      ok: true,
-      data: {
-        ...NEWS_MOCK,
-        articles,
-        featuredArticle:
-          NEWS_MOCK.featuredArticle && isPublic(NEWS_MOCK.featuredArticle)
-            ? NEWS_MOCK.featuredArticle
-            : (articles.find((article) => article.featured) ?? null),
-      },
-    };
-  }
-
-  async getArticles(): Promise<RepositoryResult<NewsArticle[]>> {
-    return { ok: true, data: NEWS_ARTICLES.filter(isPublic) };
-  }
-
-  async getArticleBySlug(slug: string): Promise<RepositoryResult<NewsArticle | null>> {
-    const normalized = slug.trim().toLowerCase();
-    const found = NEWS_ARTICLES.find((article) => article.slug === normalized);
-    return { ok: true, data: found && isPublic(found) ? found : null };
-  }
 }
 
 export class HttpNewsRepository implements NewsRepository {
@@ -103,7 +72,7 @@ export class HttpNewsRepository implements NewsRepository {
     }
 
     try {
-      return { ok: true, raw: await response.json() };
+      return { ok: true, raw: unwrapApiData(await response.json()) };
     } catch {
       return {
         ok: false,
@@ -119,8 +88,7 @@ export class HttpNewsRepository implements NewsRepository {
   }
 
   /**
-   * Page copy is not something the news endpoint owns yet, so the hero and CTA
-   * keep their local wording while the articles come from the API.
+   * Page chrome is presentation; article records always come from the API.
    */
   async getNewsPage(): Promise<RepositoryResult<NewsPageData>> {
     const result = await this.getArticles();
@@ -132,15 +100,19 @@ export class HttpNewsRepository implements NewsRepository {
     return {
       ok: true,
       data: {
-        ...NEWS_MOCK,
-        articles,
-        featuredArticle: featured,
         hero: {
-          ...NEWS_MOCK.hero,
-          primaryCta: featured
-            ? { label: 'Read Latest Story', href: `/news/${featured.slug}` }
-            : NEWS_MOCK.hero.primaryCta,
+          eyebrow: 'NEWS & STORIES',
+          titleLines: ['THE LATEST', 'FROM CONNECTION'],
+          description: 'Published updates and stories from the Connection team.',
+          visual: featured?.heroImage ?? { src: '', alt: '' },
+          sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'],
+          primaryCta: featured ? { label: 'Read latest story', href: `/news/${featured.slug}` } : { label: 'Explore events', href: '/events' },
+          secondaryCta: { label: 'Explore gallery', href: '/gallery' },
         },
+        featuredArticle: featured,
+        articles,
+        finalCta: { title: 'STAY CLOSE TO THE STORY', description: 'Follow the latest published updates from Connection Rave.', primary: { label: 'Explore gallery', href: '/gallery' }, secondary: { label: 'View events', href: '/events' } },
+        footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
       },
     };
   }
@@ -155,47 +127,22 @@ export class HttpNewsRepository implements NewsRepository {
       return { ok: false, error: result.error };
     }
 
-    const raw =
-      typeof result.raw === 'object' && result.raw !== null && 'article' in result.raw
-        ? (result.raw as { article: unknown }).article
-        : result.raw;
-
-    const article = normalizeArticle(raw);
+    const article = normalizeArticle(result.raw);
     return { ok: true, data: article && isPublic(article) ? article : null };
   }
 }
 
 export interface NewsDataEnv {
-  source: 'mock' | 'api';
+  source: 'api';
   baseUrl: string;
 }
 
 export function readNewsEnv(): NewsDataEnv {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
-  return {
-    source: source === 'api' || source === 'http' ? 'api' : 'mock',
-    baseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim(),
-  };
+  return { source: 'api', baseUrl: publicApiBaseUrl() };
 }
 
 export function getNewsRepository():
   | { ok: true; repository: NewsRepository }
   | { ok: false; error: NewsRepositoryError } {
-  const env = readNewsEnv();
-
-  if (env.source === 'api') {
-    if (!env.baseUrl) {
-      return {
-        ok: false,
-        error: {
-          kind: 'config',
-          message:
-            'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.',
-        },
-      };
-    }
-    return { ok: true, repository: new HttpNewsRepository(env.baseUrl) };
-  }
-
-  return { ok: true, repository: new MockNewsRepository() };
+  return { ok: true, repository: new HttpNewsRepository(readNewsEnv().baseUrl) };
 }

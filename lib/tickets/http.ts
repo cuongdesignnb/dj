@@ -15,7 +15,7 @@ import type {
 // Normalizes an API payload into TicketsPageData.
 //
 // Never blends in local content: a response this page cannot read is an error
-// the page shows, not something papered over with mock prices. Prices in
+// the page shows, not something papered over with invented prices. Prices in
 // particular are only accepted as integer minor units — a float would quietly
 // become a wrong total.
 

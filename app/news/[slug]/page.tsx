@@ -12,7 +12,6 @@ import ArticleSidebar from '@/components/news/ArticleSidebar';
 import RelatedStories from '@/components/news/RelatedStories';
 
 import { getNewsRepository } from '@/lib/news/repository';
-import { NEWS_MOCK } from '@/lib/news/mock';
 import {
   categoryLabel,
   latestStories,
@@ -30,7 +29,7 @@ import NewsError from '../error';
  * status lies. Articles added to a future API become reachable on the next
  * build.
  */
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const selection = getNewsRepository();
@@ -116,6 +115,7 @@ export default async function ArticlePage({
   const articles = all?.ok ? all.data : [];
   const latest = latestStories(articles, article);
   const related = relatedStories(articles, article);
+  const page = selection.ok ? await selection.repository.getNewsPage() : null;
 
   return (
     <EventsMotion>
@@ -186,12 +186,12 @@ export default async function ArticlePage({
               'Get the latest news, behind the scenes and exclusive content from Connection Rave. Be part of what is next.',
             primary: { label: 'Explore Gallery', href: '/gallery' },
             secondary: { label: 'Get Tickets', href: '/tickets' },
-            background: NEWS_MOCK.finalCta.background,
+            background: page?.ok ? page.data.finalCta.background : undefined,
           }}
           titleId="article-cta-title"
         />
       </main>
-      <EventsFooter footer={NEWS_MOCK.footer} />
+      <EventsFooter footer={page?.ok ? page.data.footer : { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' }} />
     </EventsMotion>
   );
 }

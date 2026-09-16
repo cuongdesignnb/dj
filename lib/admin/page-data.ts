@@ -25,7 +25,6 @@ export function toClientSession(session: AdminSession): ClientSession {
     roleName: session.user.roleName,
     userId: session.user.id,
     permissions: session.permissions,
-    mock: session.mock,
   };
 }
 
@@ -140,10 +139,6 @@ export async function loadList(
 
 export function updatedLabel(record: AdminRecord): string {
   return formatDate(record.updatedAt, true);
-}
-
-export function isDemo(session: AdminSession): boolean {
-  return session.mock;
 }
 
 const PUBLIC_BASE: Partial<Record<ResourceKey, string>> = {

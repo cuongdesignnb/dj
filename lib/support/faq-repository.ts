@@ -1,22 +1,15 @@
 // Data access for /faq.
 //
-//   MockFaqRepository — local content, the default
-//   HttpFaqRepository — GET {base}/api/v1/faq
+// Published FAQ content is loaded through the API.
 
-import { FAQ_MOCK } from './faq-mock';
 import { normalizeFaqItems } from './faq-http';
 import type { FaqItem, FaqPageData, FaqRepository, RepositoryResult } from './faq-types';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 function published(items: FaqItem[]): FaqItem[] {
   return items
     .filter((item) => item.published)
     .sort((a, b) => a.sortOrder - b.sortOrder || a.question.localeCompare(b.question));
-}
-
-export class MockFaqRepository implements FaqRepository {
-  async getFaqPage(): Promise<RepositoryResult<FaqPageData>> {
-    return { ok: true, data: { ...FAQ_MOCK, items: published(FAQ_MOCK.items) } };
-  }
 }
 
 export class HttpFaqRepository implements FaqRepository {
@@ -36,10 +29,9 @@ export class HttpFaqRepository implements FaqRepository {
       return { ok: false, error: { kind: 'http', message: `The FAQ service returned ${response.status}.` } };
     }
     try {
-      // Page copy stays local; questions come from the service. An empty list
-      // stays empty — local questions are never mixed in.
-      const items = published(normalizeFaqItems(await response.json()));
-      return { ok: true, data: { ...FAQ_MOCK, items } };
+      const items = published(normalizeFaqItems(unwrapApiData(await response.json())));
+      const categories = [...new Map(items.map((item) => [item.category, item.category])).entries()].map(([id]) => ({ id, label: id.replace(/-/g, ' '), icon: id === 'vip-tables' ? 'crown' as const : id === 'tickets' ? 'ticket' as const : id === 'entry' ? 'entry' as const : 'pin' as const, sortOrder: 0 }));
+      return { ok: true, data: { hero: { eyebrow: 'SUPPORT', title: 'FREQUENTLY ASKED QUESTIONS', description: 'Answers from the published event and venue information.', visual: { src: '', alt: '' }, sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'] }, categories, items, finalCta: { title: 'STILL HAVE QUESTIONS?', description: 'Send a message to the team.', primary: { label: 'Contact us', href: '/contact' }, secondary: { label: 'View events', href: '/events' } } } };
     } catch {
       return { ok: false, error: { kind: 'invalid', message: 'The FAQ service returned an invalid response.' } };
     }
@@ -49,16 +41,5 @@ export class HttpFaqRepository implements FaqRepository {
 export function getFaqRepository():
   | { ok: true; repository: FaqRepository }
   | { ok: false; error: { kind: 'config'; message: string } } {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim();
-  if (source === 'api' || source === 'http') {
-    if (!baseUrl) {
-      return {
-        ok: false,
-        error: { kind: 'config', message: 'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.' },
-      };
-    }
-    return { ok: true, repository: new HttpFaqRepository(baseUrl) };
-  }
-  return { ok: true, repository: new MockFaqRepository() };
+  return { ok: true, repository: new HttpFaqRepository(publicApiBaseUrl()) };
 }

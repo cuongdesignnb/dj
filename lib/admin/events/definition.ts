@@ -1,7 +1,4 @@
-import { ARTISTS } from '@/lib/artists/mock';
-import { TICKETS_MOCK } from '@/lib/tickets/mock';
-import { VIP_MOCK } from '@/lib/vip/mock';
-import { DEMO_UPDATED, f, opts, section } from '@/lib/admin/common/fields';
+import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 import { PUBLISH_OPTIONS } from '@/lib/admin/common/schema';
 import type { LocalizedString, MediaRef, PublishStatus, SeoFields } from '@/lib/admin/common/types';
@@ -54,87 +51,6 @@ export interface AdminEvent {
   [key: string]: unknown;
 }
 
-const media = (src: string, alt: string): MediaRef => ({ src, alt, mediaId: null });
-
-function destiny(): AdminEvent {
-  return {
-    id: 'evt_destiny',
-    name: { en: 'DESTINY' },
-    slug: 'destiny',
-    eyebrow: { en: 'Music Meets Soul' },
-    shortDescription: {
-      en: 'A high-energy nightlife experience where music, culture and people come together.',
-    },
-    longDescription: {
-      en: 'DESTINY brings together international and local talent for a night of pure connection on the dancefloor.',
-    },
-    heroImage: media('/assets/hero-crowd.jpg', 'Crowd with raised hands under red lasers'),
-    posterImage: media('/assets/event-poster.jpg', 'DESTINY poster: Music Meets Soul'),
-    status: 'published',
-    featured: true,
-    phase: 'upcoming',
-    // As on the public site: nothing is scheduled yet.
-    dateStatus: 'tba',
-    startDate: '',
-    startTime: '',
-    endDate: '',
-    endTime: '',
-    scheduleStatus: 'tbc',
-    venue: { name: 'Metro City', city: 'Perth', region: 'WA', country: 'Australia', address: '', mapUrl: '', image: null },
-    tickets: {
-      providerMode: 'none',
-      providerUrl: '',
-      tiers: TICKETS_MOCK.tiers.map((tier, index) => ({
-        name: tier.name,
-        price: tier.price ?? null,
-        badge: tier.badge ?? '',
-        online: !!tier.purchasableOnline,
-        door: !!tier.purchasableAtDoor,
-        sortOrder: index + 1,
-      })),
-    },
-    vip: {
-      enabled: true,
-      packageName: VIP_MOCK.package.name,
-      price: VIP_MOCK.package.price,
-      capacity: VIP_MOCK.package.capacity,
-      includedBottles: VIP_MOCK.package.includedBottleCount,
-      availabilityMode: 'on-request',
-      booths: VIP_MOCK.booths.map((booth) => ({ code: booth.label, zone: booth.zone })),
-      bottles: VIP_MOCK.bottles.map((bottle) => ({ name: bottle.name, enabled: bottle.enabled })),
-    },
-    artistIds: ARTISTS.map((a) => `artist_${a.slug.replace(/-/g, '_')}`),
-    albumIds: ['album_destiny'],
-    faqs: [],
-    seo: { title: 'DESTINY | Connection Rave', description: '', canonical: '', index: true, follow: true },
-    updatedAt: DEMO_UPDATED,
-  };
-}
-
-function placeholder(id: string, name: string, slug: string): AdminEvent {
-  const base = destiny();
-  return {
-    ...base,
-    id,
-    name: { en: name },
-    slug,
-    eyebrow: { en: '' },
-    shortDescription: { en: '' },
-    longDescription: { en: '' },
-    heroImage: null,
-    posterImage: null,
-    status: 'draft',
-    featured: false,
-    venue: { name: '', city: '', region: '', country: '', address: '', mapUrl: '', image: null },
-    tickets: { providerMode: 'none', providerUrl: '', tiers: [] },
-    vip: { ...base.vip, enabled: false, booths: [], bottles: [] },
-    artistIds: [],
-    albumIds: [],
-    seo: {},
-    updatedAt: '2026-08-20T09:00:00.000Z',
-  };
-}
-
 const STATUS_FILTER = { key: 'status', label: 'Status', options: PUBLISH_OPTIONS };
 
 export const eventsDefinition: ResourceDefinition<AdminEvent> = {
@@ -148,7 +64,7 @@ export const eventsDefinition: ResourceDefinition<AdminEvent> = {
   permission: 'events',
   titleKey: 'name',
   idPrefix: 'evt',
-  seed: () => [destiny(), placeholder('evt_next_drop', 'Next Event (Placeholder)', 'next-event')],
+  seed: () => [],
   searchFields: ['name', 'slug', 'venue.name', 'venue.city'],
   matchers: {
     venue: (r, v) => r.venue.name === v,

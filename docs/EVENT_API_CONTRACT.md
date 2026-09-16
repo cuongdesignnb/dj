@@ -2,9 +2,7 @@
 
 This document is the source of truth for backend developers integrating with
 the `/event` page. The frontend is built around a single normalized payload
-that comes through one repository. Mock and HTTP adapters share the same
-validator, so the page is guaranteed to work the same way once the backend
-is connected.
+that comes through the PostgreSQL-backed API repository.
 
 ## Frontend surface
 
@@ -13,18 +11,17 @@ is connected.
   - `lib/events/types.ts` — TS types (source of truth)
   - `lib/events/validation.ts` — runtime validator
   - `lib/events/repository.server.ts` — `getEventRepository()` factory
-  - `lib/events/fixture.ts` — mock data used when `EVENT_DATA_SOURCE=mock`
+  - `app/api/v1/[...path]/route.ts` — API route handler
   - `lib/events/presentation.ts` — action resolver, date formatting, errors
 - Env: see `.env.example`
-- Switching modes:
-  1. Set `EVENT_DATA_SOURCE=http` in your deployment environment.
-  2. Set `EVENT_API_BASE_URL` to the public base URL of the event service.
-  3. Set `EVENT_SLUG` if the slug is not `destiny`.
-  4. Set `SITE_URL` (only) to your real production origin if you want
+- Runtime configuration:
+  1. Set `APP_URL` to the public application origin.
+  2. Set `EVENT_SLUG` if the slug is not `destiny`.
+  3. Set `SITE_URL` (only) to your real production origin if you want
      canonical link tags. Otherwise the page is generated without one.
 
-> HTTP mode does not silently fall back to mock data on error. A 500, a
-> timeout, a schema mismatch, or a missing base URL all surface to the user
+> A 500, a timeout, a schema mismatch, or a missing database/API response all
+> surface to the user
 > through `app/event/error.tsx`.
 
 ## Endpoint proposal
@@ -61,7 +58,7 @@ validator.
 | ------ | -------------------------------- | -------------------------------------------------------- |
 | 404    | Event not found                  | `not-found.tsx` is rendered.                            |
 | 4xx    | Other client errors              | `error.tsx` is rendered with a generic message.         |
-| 5xx    | Upstream errors                  | `error.tsx` is rendered; we do NOT fall back to mock.   |
+| 5xx    | Upstream errors                  | `error.tsx` is rendered; the page does not invent content. |
 | Network| Timeout (8s), abort, parse error | `error.tsx` is rendered with a network/invalid message. |
 
 ## Schema (`schemaVersion: 1`)
@@ -189,12 +186,9 @@ to a "Soon" placeholder link in the footer.
 
 ## Local development
 
-- `EVENT_DATA_SOURCE=mock` — runs entirely off the fixture, no backend
-  required.
-- `EVENT_DATA_SOURCE=http` with `EVENT_API_BASE_URL=http://localhost:8080`
-  — points at a local service. The HTTP adapter uses
-  `cache: 'no-store'` (per the installed Next.js fetch API) and a 8-second
-  timeout.
+- Local development uses the included PostgreSQL and Redis compose services.
+  The repository calls `GET /api/v1/events/{slug}` with `cache: 'no-store'`
+  and an 8-second timeout.
 
 ## Testing the contract locally
 
@@ -220,6 +214,5 @@ The validator throws on:
 ## Mapping to the homepage
 
 The homepage shares the same data source for artists (through `lib/data.ts`
-and the fixture). When the backend is live, the homepage's static artist
-list should be replaced with the same repository call so that artist
-metadata, lineup order, and country flags stay in sync across both pages.
+and the former local source). The homepage now uses the same API-backed repository call so
+artist metadata, lineup order, and country flags stay in sync across both pages.

@@ -1,4 +1,4 @@
-// Domain types for the Event Details page. Source of truth for both mock and HTTP adapters.
+// Domain types for the Event Details page and its HTTP adapter.
 // Keep this file dependency-free so it can be imported from server and client code without
 // pulling env or fetch.
 

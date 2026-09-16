@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/layout/AdminPageHeader';
-import AdminCard, { DemoTag } from '@/components/admin/ui/AdminCard';
+import AdminCard from '@/components/admin/ui/AdminCard';
 import { PageReveal, StaggerGrid, StaggerItem } from '@/components/admin/ui/Reveal';
 import { AccessDenied, EmptyState } from '@/components/admin/ui/States';
 import StatusBadge from '@/components/admin/ui/StatusBadge';
@@ -55,7 +55,6 @@ interface Kpi {
   href: string;
   icon: LucideIcon;
   permission: Permission;
-  demo?: boolean;
 }
 
 const QUICK: { label: string; href: string; icon: LucideIcon; permission: Permission }[] = [
@@ -110,7 +109,6 @@ function kpis(session: AdminSession, data: Record<string, AdminRecord[] | null>)
       href: '/admin/orders',
       icon: ShoppingBag,
       permission: 'orders.view',
-      demo: session.mock,
     },
     { label: 'News', ...summary('news'), href: '/admin/news', icon: FileText, permission: 'news.view' },
     {
@@ -150,12 +148,6 @@ export default async function AdminDashboardPage() {
         tagline="Music meets soul"
       />
 
-      {session.mock && (
-        <p className="mb-5 rounded-[10px] border border-admin-warning/30 bg-admin-warning/[0.06] px-4 py-2.5 text-sm text-admin-warning">
-          Demo data. Counts come from the demo store; orders, activity and tasks are examples. No backend is connected.
-        </p>
-      )}
-
       <StaggerGrid className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         {kpis(session, data).map((k) => (
           <StaggerItem key={k.label}>
@@ -169,7 +161,6 @@ export default async function AdminDashboardPage() {
               <span className="min-w-0">
                 <span className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-admin-muted">
                   {k.label}
-                  {k.demo && <DemoTag label="Demo" />}
                 </span>
                 <span className="mt-1 block font-heading text-3xl font-bold leading-none text-white">{k.value}</span>
                 <span className="mt-1.5 block truncate text-xs text-admin-muted">{k.detail}</span>
@@ -231,7 +222,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <AdminCard title="Recent Activity" titleId="activity" badge={session.mock ? <DemoTag /> : undefined}>
+        <AdminCard title="Recent Activity" titleId="activity">
           {!audit || audit.length === 0 ? (
             <EmptyState title="No recent activity." />
           ) : (
@@ -254,7 +245,7 @@ export default async function AdminDashboardPage() {
           )}
         </AdminCard>
 
-        <AdminCard title="Content Queue" titleId="queue" badge={session.mock ? <DemoTag /> : undefined}>
+        <AdminCard title="Content Queue" titleId="queue">
           {!tasks || tasks.length === 0 ? (
             <EmptyState title="Nothing queued." />
           ) : (
@@ -281,7 +272,6 @@ export default async function AdminDashboardPage() {
             title="Latest Orders"
             titleId="orders"
             action={{ label: 'View all', href: '/admin/orders' }}
-            badge={session.mock ? <DemoTag /> : undefined}
             className="xl:col-span-2"
           >
             {latestOrders.length === 0 ? (

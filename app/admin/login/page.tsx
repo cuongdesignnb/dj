@@ -4,14 +4,13 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ShieldCheck } from 'lucide-react';
 import LoginForm from '@/components/admin/auth/LoginForm';
-import { DEMO_CREDENTIALS, getAdminSession } from '@/lib/admin/auth/session';
-import { getEnvironmentBadge, isMockAuthEnabled } from '@/lib/admin/common/config';
+import { getAdminSession } from '@/lib/admin/auth/session';
+import { getEnvironmentBadge } from '@/lib/admin/common/config';
 
 export const metadata: Metadata = { title: 'Sign in' };
 
 export default async function AdminLoginPage() {
   if (await getAdminSession()) redirect('/admin');
-  const mock = isMockAuthEnabled();
   const env = getEnvironmentBadge();
 
   return (
@@ -37,12 +36,7 @@ export default async function AdminLoginPage() {
             </div>
             <span className="shrink-0 rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] text-admin-muted">{env.label}</span>
           </div>
-          <LoginForm demo={mock ? { email: DEMO_CREDENTIALS.email, password: DEMO_CREDENTIALS.password } : null} />
-          {!mock && (
-            <p className="mt-4 text-xs text-admin-muted">
-              No authentication service is connected to this deployment yet, so sign-in is unavailable.
-            </p>
-          )}
+          <LoginForm />
         </section>
         <p className="mt-6 text-center text-xs text-admin-muted">
           <Link href="/" className="hover:text-white focus:outline-none focus-visible:underline">

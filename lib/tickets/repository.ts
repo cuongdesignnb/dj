@@ -1,14 +1,10 @@
 // Data access for /tickets.
 //
-//   MockTicketsRepository  — local content, the default
-//   HttpTicketsRepository  — GET {base}/api/v1/pages/tickets
-//
-// Selected by NEXT_PUBLIC_DATA_SOURCE / NEXT_PUBLIC_API_BASE_URL, the same
-// switches the events listings use.
+// Published ticket tiers are loaded through the API.
 
 import type { TicketsPageData } from './types';
-import { TICKETS_MOCK } from './mock';
 import { normalizeTicketsPage } from './http';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export interface TicketsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -23,27 +19,30 @@ export interface TicketsRepository {
   getTicketsPage(): Promise<TicketsRepositoryResult>;
 }
 
-export class MockTicketsRepository implements TicketsRepository {
-  async getTicketsPage(): Promise<TicketsRepositoryResult> {
-    return { ok: true, data: TICKETS_MOCK };
-  }
-}
-
 export class HttpTicketsRepository implements TicketsRepository {
   constructor(
     private readonly baseUrl: string,
+    private readonly eventSlug = 'destiny',
     private readonly revalidateSeconds = 120,
   ) {}
 
   async getTicketsPage(): Promise<TicketsRepositoryResult> {
-    const url = `${this.baseUrl.replace(/\/$/, '')}/api/v1/pages/tickets`;
+    const eventUrl = `${this.baseUrl.replace(/\/$/, '')}/api/v1/events/${encodeURIComponent(this.eventSlug)}`;
+    const ticketsUrl = `${eventUrl}/tickets`;
 
-    let response: Response;
+    let eventResponse: Response;
+    let ticketsResponse: Response;
     try {
-      response = await fetch(url, {
-        headers: { accept: 'application/json' },
-        next: { revalidate: this.revalidateSeconds },
-      });
+      [eventResponse, ticketsResponse] = await Promise.all([
+        fetch(eventUrl, {
+          headers: { accept: 'application/json' },
+          next: { revalidate: this.revalidateSeconds },
+        }),
+        fetch(ticketsUrl, {
+          headers: { accept: 'application/json' },
+          next: { revalidate: this.revalidateSeconds },
+        }),
+      ]);
     } catch {
       return {
         ok: false,
@@ -54,19 +53,20 @@ export class HttpTicketsRepository implements TicketsRepository {
       };
     }
 
-    if (!response.ok) {
+    if (!eventResponse.ok || !ticketsResponse.ok) {
       return {
         ok: false,
         error: {
           kind: 'http',
-          message: `The ticketing service returned ${response.status}. Please try again shortly.`,
+          message: `The ticketing service returned ${!eventResponse.ok ? eventResponse.status : ticketsResponse.status}. Please try again shortly.`,
         },
       };
     }
 
-    let raw: unknown;
+    let eventRaw: unknown;
+    let ticketsRaw: unknown;
     try {
-      raw = await response.json();
+      [eventRaw, ticketsRaw] = await Promise.all([eventResponse.json(), ticketsResponse.json()]);
     } catch {
       return {
         ok: false,
@@ -74,6 +74,35 @@ export class HttpTicketsRepository implements TicketsRepository {
       };
     }
 
+    const event = unwrapApiData<Record<string, any>>(eventRaw);
+    const ticketRows = unwrapApiData<any[]>(ticketsRaw);
+    const raw = {
+      event: {
+        id: event.id,
+        slug: event.slug,
+        title: event.title,
+        subtitle: event.eyebrow,
+        venue: [event.venue?.name, event.venue?.city].filter(Boolean).join(', '),
+        date: event.startAt,
+        dateStatus: event.dateStatus?.toLowerCase(),
+        schedule: event.startAt,
+        scheduleStatus: event.scheduleStatus?.toLowerCase(),
+        image: event.poster ?? event.hero,
+      },
+      tiers: ticketRows.map((row) => ({
+        ...row,
+        description: row.description ?? '',
+        price: { amountMinor: row.priceMinor, currency: row.currency },
+        icon: 'Ticket',
+        features: [],
+        minQuantity: 0,
+        availability: { status: row.availabilityStatus?.toLowerCase() === 'available' ? 'available' : 'unknown' },
+      })),
+      provider: { mode: 'unavailable', unavailableNote: 'Ticket provider link will be published when confirmed.' },
+      trustItems: [], infoItems: [], faq: [],
+      finalCta: { title: 'STAY CONNECTED', subtitle: 'Ticket release details will be published here.', primary: { label: 'View event', href: '/event' }, secondary: { label: 'Contact us', href: '/contact' }, background: event.hero },
+      footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
+    };
     const data = normalizeTicketsPage(raw);
     if (!data) {
       return {
@@ -90,15 +119,14 @@ export class HttpTicketsRepository implements TicketsRepository {
 }
 
 export interface TicketsDataEnv {
-  source: 'mock' | 'api';
+  source: 'api';
   baseUrl: string;
 }
 
 export function readTicketsEnv(): TicketsDataEnv {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
   return {
-    source: source === 'api' || source === 'http' ? 'api' : 'mock',
-    baseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim(),
+    source: 'api',
+    baseUrl: publicApiBaseUrl(),
   };
 }
 
@@ -111,20 +139,5 @@ export function getTicketsRepository():
   | { ok: true; repository: TicketsRepository }
   | { ok: false; error: TicketsRepositoryError } {
   const env = readTicketsEnv();
-
-  if (env.source === 'api') {
-    if (!env.baseUrl) {
-      return {
-        ok: false,
-        error: {
-          kind: 'config',
-          message:
-            'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.',
-        },
-      };
-    }
-    return { ok: true, repository: new HttpTicketsRepository(env.baseUrl) };
-  }
-
-  return { ok: true, repository: new MockTicketsRepository() };
+  return { ok: true, repository: new HttpTicketsRepository(env.baseUrl, 'destiny') };
 }

@@ -50,9 +50,8 @@ const INPUT_CLASS =
  * The booking request form and its live summary.
  *
  * This sends a request — it never reserves anything. Submission goes through
- * the same repository the page reads from, and when no backend is connected the
- * mock adapter reports the flow as unavailable rather than showing a success
- * the request never had.
+ * the same repository the page reads from, and reports an unavailable state
+ * when the backend cannot accept the request.
  *
  * Contact details stay in component state and the submit payload. Nothing
  * personal is written to the URL or to storage.

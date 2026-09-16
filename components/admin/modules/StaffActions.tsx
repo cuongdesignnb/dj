@@ -10,7 +10,7 @@ import { useToast } from '../ui/Toast';
 type Action = 'invite' | 'resend' | 'disable' | 'enable';
 
 /** Access controls for one staff member. Email is only ever sent by the backend. */
-export default function StaffActions({ id, status, self, mock }: { id: string; status: string; self: boolean; mock: boolean }) {
+export default function StaffActions({ id, status, self }: { id: string; status: string; self: boolean }) {
   const router = useRouter();
   const toast = useToast();
   const [busy, setBusy] = useState<Action | null>(null);
@@ -53,7 +53,6 @@ export default function StaffActions({ id, status, self, mock }: { id: string; s
           )
         )}
         {self && <p className="text-xs text-admin-muted">You cannot disable your own account.</p>}
-        {mock && <p className="text-xs text-admin-muted">Demo mode: no invitation emails are sent.</p>}
       </div>
       <ConfirmDialog
         open={!!confirm}

@@ -10,7 +10,6 @@ import CollectionView from '@/components/gallery/CollectionView';
 import RelatedCollections from '@/components/gallery/RelatedCollections';
 
 import { getGalleryRepository } from '@/lib/gallery/repository';
-import { GALLERY_MOCK } from '@/lib/gallery/mock';
 import { countPhotos, countVideos, statusLabel } from '@/lib/gallery/helpers';
 import type { GalleryCollection } from '@/lib/gallery/types';
 import GalleryError from '../error';
@@ -21,7 +20,7 @@ import GalleryError from '../error';
  * unknown slug renders the not-found UI but Next caches that prerender and
  * answers 200 — the page looks right while the status lies.
  */
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const selection = getGalleryRepository();
@@ -114,6 +113,7 @@ export default async function GalleryCollectionPage({
   const related = all?.ok
     ? all.data.filter((candidate) => candidate.slug !== collection.slug)
     : [];
+  const page = selection.ok ? await selection.repository.getGalleryPage() : null;
 
   return (
     <EventsMotion>
@@ -153,12 +153,12 @@ export default async function GalleryCollectionPage({
             subtitle: 'Same people. A brighter tomorrow.',
             primary: { label: 'View Event', href: collection.eventHref ?? '/event' },
             secondary: { label: 'Get Tickets', href: '/tickets' },
-            background: GALLERY_MOCK.finalCta.background,
+            background: page?.ok ? page.data.finalCta.background : undefined,
           }}
           titleId="collection-cta-title"
         />
       </main>
-      <EventsFooter footer={GALLERY_MOCK.footer} />
+      <EventsFooter footer={page?.ok ? page.data.footer : { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' }} />
     </EventsMotion>
   );
 }

@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * Loads the page through the repository so the content source (mock today,
- * HTTP later) is a configuration detail rather than a code change here.
+ * Loads the page through the API-backed repository so the content source stays
+ * behind a stable contract rather than leaking into the page component.
  */
 async function loadEventsPage(): Promise<
   { data: EventsPageData } | { error: { message: string } }

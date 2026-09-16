@@ -1,35 +1,18 @@
-// Admin runtime configuration. Server-side only.
-//
-//   NEXT_PUBLIC_ADMIN_DATA_SOURCE = mock | api   (default mock)
-//   NEXT_PUBLIC_API_BASE_URL      = backend origin for api mode
-//   NEXT_PUBLIC_ADMIN_MOCK_AUTH   = true enables the demo sign-in
-//   NEXT_PUBLIC_ADMIN_ENV_LABEL   = label for the environment badge in api mode
-//
-// No secret is read here; the backend owns credentials and authorization.
-
-export type AdminDataSource = 'mock' | 'api';
-
-export function getAdminDataSource(): AdminDataSource {
-  const raw = (process.env.NEXT_PUBLIC_ADMIN_DATA_SOURCE ?? 'mock').trim().toLowerCase();
-  return raw === 'api' || raw === 'http' ? 'api' : 'mock';
-}
-
-export function isMockAuthEnabled(): boolean {
-  return process.env.NEXT_PUBLIC_ADMIN_MOCK_AUTH === 'true' && getAdminDataSource() === 'mock';
-}
+// Admin runtime configuration. The backend owns credentials and
+// authorization; this module only resolves the API origin and environment UI.
 
 export function getApiBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim().replace(/\/$/, '');
+  const configured = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim().replace(/\/$/, '');
+  return configured || (process.env.APP_URL ?? '').trim().replace(/\/$/, '');
 }
 
 export interface EnvironmentBadge {
   label: string;
-  tone: 'demo' | 'production' | 'preview' | 'local';
+  tone: 'production' | 'preview' | 'local';
 }
 
-/** Says what the data actually is: demo data is never labelled Production. */
+/** Describes the deployment environment shown in the admin shell. */
 export function getEnvironmentBadge(): EnvironmentBadge {
-  if (getAdminDataSource() === 'mock') return { label: 'Demo Data', tone: 'demo' };
   const label = (process.env.NEXT_PUBLIC_ADMIN_ENV_LABEL ?? '').trim();
   const vercel = process.env.VERCEL_ENV;
   if (label) {

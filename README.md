@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Destiny / Connection Rave
 
-## Getting Started
+Next.js 16 website and admin backend for the Destiny / Connection Rave event.
+Runtime data comes from PostgreSQL through Prisma; public pages and the admin
+panel communicate through the versioned `/api/v1` contract.
 
-First, run the development server:
+## Stack
 
-```bash
+- Next.js 16, React, TypeScript and Tailwind CSS
+- PostgreSQL 16 with Prisma migrations and seed data
+- Redis 7 for rate limiting (with a development-only in-memory fallback)
+- Opaque database sessions, CSRF protection, Argon2id passwords, RBAC and audit logs
+- Stripe hosted checkout and idempotent webhook processing
+- Local media storage by default, with S3-compatible configuration available
+
+## Local development
+
+```powershell
+Copy-Item .env.example .env.local
+npm install
+npm run db:generate
+npm run db:migrate:deploy
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The development server runs at [http://localhost:3000](http://localhost:3000).
+Set `DATABASE_URL`, `REDIS_URL`, `SESSION_SECRET` and `CSRF_SECRET` before
+starting the app. The seed administrator is controlled by `ADMIN_SEED_EMAIL`
+and `ADMIN_SEED_PASSWORD`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docker deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.docker.example` to `.env.docker`, set production secrets, then run:
 
-## Learn More
+```powershell
+docker compose up -d --build
+```
 
-To learn more about Next.js, take a look at the following resources:
+The app is exposed on `127.0.0.1:43171` by default. PostgreSQL and Redis are
+internal-only services. The development override exposes them locally on
+`45473` and `46337` when inspection is needed:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The container applies `prisma migrate deploy` before starting Next.js when
+`RUN_DB_MIGRATIONS=true`.
 
-## Deploy on Vercel
+## Quality checks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```powershell
+npm run lint
+npm test
+npm run build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+API documentation is in [docs/api/openapi.yaml](docs/api/openapi.yaml), and the
+database map is in [docs/database/ERD.md](docs/database/ERD.md).

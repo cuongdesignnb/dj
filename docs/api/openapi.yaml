@@ -1,0 +1,107 @@
+openapi: 3.1.0
+info:
+  title: Destiny / Connection Rave API
+  version: 1.0.0
+  description: Public and admin API served by the Next.js route handler.
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /auth/login:
+    post:
+      summary: Create an opaque admin session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: Authenticated }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/logout:
+    post:
+      security: [{ adminSession: [] }, { csrf: [] }]
+      responses: { '200': { description: Logged out } }
+  /events:
+    get: { summary: List published events, responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /events/{slug}:
+    get: { summary: Read a published event, parameters: [{ $ref: '#/components/parameters/Slug' }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /events/{slug}/tickets:
+    get: { summary: Read ticket tiers, parameters: [{ $ref: '#/components/parameters/Slug' }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /events/{slug}/vip:
+    get: { summary: Read VIP packages, booths and bottle options, parameters: [{ $ref: '#/components/parameters/Slug' }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /artists:
+    get: { summary: List published artists, responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /artists/{slug}:
+    get: { summary: Read an artist, parameters: [{ $ref: '#/components/parameters/Slug' }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /products:
+    get: { summary: List published products, responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /products/{slug}:
+    get: { summary: Read a published product, parameters: [{ $ref: '#/components/parameters/Slug' }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /news:
+    get: { summary: List published news, responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /gallery:
+    get: { summary: List published gallery albums, responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /faq:
+    get: { summary: List published FAQ items, responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /legal/{type}:
+    get: { summary: Read published legal content, parameters: [{ name: type, in: path, required: true, schema: { type: string, enum: [terms, privacy] } }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /partners:
+    get: { summary: List published partners, responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /media/{id}:
+    get: { summary: Serve a stored media asset, parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }], responses: { '200': { description: Media bytes } } }
+  /booking-requests:
+    post:
+      summary: Submit a VIP booking request
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [eventId, fullName, email, groupSize], properties: { eventId: { type: string }, fullName: { type: string }, email: { type: string, format: email }, groupSize: { type: integer, minimum: 1 } } } } } }
+      responses: { '202': { description: Accepted } }
+  /contact:
+    post: { summary: Submit a contact message, responses: { '202': { description: Accepted } } }
+  /newsletter/subscribe:
+    post: { summary: Subscribe an email address, responses: { '202': { description: Accepted } } }
+  /checkout/session:
+    post:
+      summary: Re-price cart lines and create a hosted Stripe Checkout session
+      responses: { '201': { $ref: '#/components/responses/Json' }, '503': { description: Stripe is not configured } }
+  /checkout/result:
+    get: { summary: Read verified order status, parameters: [{ name: session_id, in: query, required: true, schema: { type: string } }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /webhooks/stripe:
+    post: { summary: Verify and process a Stripe webhook idempotently, responses: { '200': { description: Received }, '400': { description: Invalid signature } } }
+  /admin/{resource}:
+    get: { summary: Paginated admin resource list, security: [{ adminSession: [] }], parameters: [{ $ref: '#/components/parameters/AdminResource' }], responses: { '200': { $ref: '#/components/responses/Paginated' } } }
+    post: { summary: Create an admin resource, security: [{ adminSession: [] }, { csrf: [] }], parameters: [{ $ref: '#/components/parameters/AdminResource' }], responses: { '201': { $ref: '#/components/responses/Json' } } }
+  /admin/{resource}/{id}:
+    get: { summary: Read an admin resource, security: [{ adminSession: [] }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+    patch: { summary: Update an admin resource, security: [{ adminSession: [] }, { csrf: [] }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+    delete: { summary: Archive or disable an admin resource, security: [{ adminSession: [] }, { csrf: [] }], responses: { '200': { description: Deleted } } }
+  /admin/media/upload:
+    post:
+      summary: Upload a media asset to local storage or S3
+      security: [{ adminSession: [] }, { csrf: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                altText: { type: string, maxLength: 200 }
+      responses: { '201': { $ref: '#/components/responses/Json' } }
+components:
+  securitySchemes:
+    adminSession: { type: apiKey, in: cookie, name: destiny_admin_session }
+    csrf: { type: apiKey, in: header, name: x-csrf-token }
+  parameters:
+    Slug: { name: slug, in: path, required: true, schema: { type: string } }
+    AdminResource: { name: resource, in: path, required: true, schema: { type: string } }
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties: { email: { type: string, format: email }, password: { type: string }, remember: { type: boolean } }
+    Envelope: { type: object, properties: { data: {} } }
+  responses:
+    Json: { description: JSON envelope, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+    Paginated: { description: Paginated JSON envelope, content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+    Unauthorized: { description: Authentication required }

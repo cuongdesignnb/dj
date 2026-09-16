@@ -1,7 +1,6 @@
 // About page domain types — single source of truth.
 // Designed for the Connection Land website.
-// Adapter-ready: mock + HTTP implementations can populate these without
-// changes to the UI layer.
+// The API adapter populates these types without coupling the UI to persistence.
 
 export interface MediaAsset {
   src: string;

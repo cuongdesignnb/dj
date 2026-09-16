@@ -79,7 +79,7 @@ export default async function ResourceEditPage({ params }: Props) {
         updatedLabel={updatedLabel(record)}
         aside={
           definition.key === 'staff' && canEdit ? (
-            <StaffActions id={record.id} status={String(record.status)} self={record.id === session.user.id} mock={session.mock} />
+            <StaffActions id={record.id} status={String(record.status)} self={record.id === session.user.id} />
           ) : undefined
         }
       />

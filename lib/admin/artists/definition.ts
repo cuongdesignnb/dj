@@ -1,5 +1,4 @@
-import { ARTISTS } from '@/lib/artists/mock';
-import { DEMO_UPDATED, f, opts, section } from '@/lib/admin/common/fields';
+import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 import { PUBLISH_OPTIONS } from '@/lib/admin/common/schema';
 import type { LocalizedString, MediaRef, PublishStatus, SeoFields } from '@/lib/admin/common/types';
@@ -42,27 +41,7 @@ export const artistsDefinition: ResourceDefinition<AdminArtist> = {
   permission: 'artists',
   titleKey: 'name',
   idPrefix: 'artist',
-  seed: () =>
-    ARTISTS.map((artist) => ({
-      id: `artist_${artist.slug.replace(/-/g, '_')}`,
-      name: artist.name,
-      slug: artist.slug,
-      country: artist.country,
-      year: artist.year ?? '',
-      portrait: { src: artist.portrait.src, alt: artist.portrait.alt, mediaId: null },
-      heroImage: null,
-      bio: {},
-      genres: [],
-      setTimeStatus: 'tba',
-      setTime: '',
-      featured: !!artist.featured,
-      status: 'published',
-      links: { ...EMPTY_LINKS },
-      media: [],
-      eventIds: ['evt_destiny'],
-      seo: {},
-      updatedAt: DEMO_UPDATED,
-    })),
+  seed: () => [],
   searchFields: ['name', 'slug', 'country'],
   matchers: { featured: (r, v) => String(r.featured) === v },
   defaultSort: { key: 'name', direction: 'asc' },

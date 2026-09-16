@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 /**
  * Doubles as the route's error boundary and as the error state the page
  * renders when the repository cannot supply content. No fallback to local
- * content: a failed load is shown as a failure, not as mock copy.
+ * content: a failed load is shown as a failure, not as invented copy.
  */
 export default function EventsError({
   error,

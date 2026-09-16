@@ -1,6 +1,5 @@
 // Partners page domain types.
-// Adapter-ready: mock + HTTP implementations populate these without
-// changes to the UI layer.
+// The API adapter populates these types without coupling the UI to persistence.
 
 export interface MediaAsset {
   src: string;

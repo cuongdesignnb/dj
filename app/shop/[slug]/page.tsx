@@ -25,7 +25,7 @@ import ShopError from '../error';
  * Next caches that prerender and answers 200. Products added to a future API
  * become reachable on the next build.
  */
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const selection = getShopRepository();

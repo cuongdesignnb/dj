@@ -8,7 +8,6 @@ import ArtistProfile from '@/components/artists/ArtistProfile';
 
 import { getArtistRepository } from '@/lib/artists/repository';
 import { relatedArtists } from '@/lib/artists/helpers';
-import { LINEUP_MOCK } from '@/lib/artists/mock';
 import type { Artist } from '@/lib/artists/types';
 import LineupError from '../error';
 
@@ -21,7 +20,7 @@ import LineupError from '../error';
  * cost is that artists added to a future API only become reachable on the next
  * build; revisit this if the lineup starts changing between deploys.
  */
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 /**
  * One dynamic route serves every artist — there are no per-artist page files.
@@ -103,6 +102,7 @@ export default async function ArtistPage({
   const selection = getArtistRepository();
   const all = selection.ok ? await selection.repository.getArtists() : null;
   const related = all?.ok ? relatedArtists(all.data, artist) : [];
+  const page = selection.ok ? await selection.repository.getLineupPage() : null;
 
   return (
     <EventsMotion>
@@ -110,7 +110,7 @@ export default async function ArtistPage({
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <ArtistProfile artist={artist} related={related} />
       </main>
-      <EventsFooter footer={LINEUP_MOCK.footer} />
+      <EventsFooter footer={page?.ok ? page.data.footer : { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' }} />
     </EventsMotion>
   );
 }

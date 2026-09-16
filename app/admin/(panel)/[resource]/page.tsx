@@ -28,7 +28,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const NOTICES: Partial<Record<ResourceKey, string>> = {
-  orders: 'Demo orders. Checkout is not connected, so there are no real orders or payments here.',
   staff: 'Invitations need the email service. Until it is connected, nobody receives an email from this screen.',
   roles: 'Permissions here control what the dashboard shows. The backend must enforce the same rules.',
 };
@@ -45,7 +44,7 @@ export default async function ResourceListPage({ params, searchParams }: Props) 
     delete: definition.actions.includes('delete') && can(session, `${definition.permission}.delete` as Permission),
   };
   const addLabel = definition.key === 'staff' ? 'Invite Staff' : `Add ${definition.singular}`;
-  const notice = definition.key === 'orders' && !session.mock ? undefined : NOTICES[definition.key];
+  const notice = NOTICES[definition.key];
 
   return (
     <PageReveal>

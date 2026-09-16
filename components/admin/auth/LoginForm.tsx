@@ -1,21 +1,42 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
-import { signIn } from '@/app/admin/actions';
-import type { SignInState } from '@/app/admin/actions';
 import { inputClass } from '../form/FieldInput';
 import { buttonClass } from '../ui/Dialog';
 
-export default function LoginForm({ demo }: { demo: { email: string; password: string } | null }) {
-  const [state, action, pending] = useActionState<SignInState, FormData>(signIn, {});
+export default function LoginForm() {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const [show, setShow] = useState(false);
 
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) return;
+    setPending(true);
+    setError(null);
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch('/api/v1/auth/login', { method: 'POST', headers: { accept: 'application/json' }, body: JSON.stringify({ email: String(form.get('email') ?? ''), password: String(form.get('password') ?? ''), remember: form.get('remember') === 'on' }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message = payload?.error?.message ?? payload?.message ?? 'Sign-in failed.';
+        setError(String(message));
+        return;
+      }
+      window.location.assign('/admin');
+    } catch {
+      setError('The authentication service could not be reached.');
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
-    <form action={action} className="space-y-4" noValidate>
-      {state.error && (
+    <form onSubmit={submit} className="space-y-4" noValidate>
+      {error && (
         <p role="alert" id="login-error" className="rounded-[8px] border border-rave-red/40 bg-rave-red/[0.08] px-3 py-2 text-sm text-[#FF8A9C]">
-          {state.error}
+          {error}
         </p>
       )}
       <div>
@@ -28,8 +49,8 @@ export default function LoginForm({ demo }: { demo: { email: string; password: s
           type="email"
           autoComplete="username"
           required
-          aria-invalid={state.error ? true : undefined}
-          aria-describedby={state.error ? 'login-error' : undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? 'login-error' : undefined}
           className={inputClass}
         />
       </div>
@@ -44,8 +65,8 @@ export default function LoginForm({ demo }: { demo: { email: string; password: s
             type={show ? 'text' : 'password'}
             autoComplete="current-password"
             required
-            aria-invalid={state.error ? true : undefined}
-            aria-describedby={state.error ? 'login-error' : undefined}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'login-error' : undefined}
             className={`${inputClass} pr-11`}
           />
           <button
@@ -67,15 +88,6 @@ export default function LoginForm({ demo }: { demo: { email: string; password: s
         {pending ? 'Signing in…' : 'Sign In'}
       </button>
       <p className="text-center text-xs text-admin-muted">Forgot your password? Ask an administrator to reset it.</p>
-      {demo && (
-        <div className="rounded-[8px] border border-admin-warning/35 bg-admin-warning/[0.06] px-3 py-2.5 text-xs text-admin-warning">
-          <p className="font-semibold">Demo mode</p>
-          <p className="mt-1 text-white/75">
-            Sign in with <span className="font-mono text-white">{demo.email}</span> / <span className="font-mono text-white">{demo.password}</span>.
-            Demo data only; nothing here changes the public site.
-          </p>
-        </div>
-      )}
     </form>
   );
 }

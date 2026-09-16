@@ -1,6 +1,6 @@
 // Repository contract for /partners. Mirrors the about-page pattern.
 import type { PartnersPageData } from './types';
-import { PARTNERS_MOCK } from './mock';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export type PartnersRepositoryResult =
   | { ok: true; data: PartnersPageData }
@@ -10,14 +10,7 @@ export interface PartnersRepository {
   getPartnersPage(): Promise<PartnersRepositoryResult>;
 }
 
-export class MockPartnersRepository implements PartnersRepository {
-  async getPartnersPage(): Promise<PartnersRepositoryResult> {
-    return { ok: true, data: PARTNERS_MOCK };
-  }
-}
-
 // ----- HTTP adapter -----
-// Toggle via NEXT_PUBLIC_DATA_SOURCE=api + NEXT_PUBLIC_API_BASE_URL.
 
 import type {
   PartnersHeroData,
@@ -54,7 +47,7 @@ export class HttpPartnersRepository implements PartnersRepository {
   constructor(private readonly baseUrl: string) {}
 
   async getPartnersPage(): Promise<PartnersRepositoryResult> {
-    const url = `${this.baseUrl.replace(/\/$/, '')}/api/v1/pages/partners`;
+    const url = `${this.baseUrl.replace(/\/$/, '')}/api/v1/partners`;
     let response: Response;
     try {
       response = await fetch(url, { next: { revalidate: 300 } });
@@ -84,53 +77,13 @@ export class HttpPartnersRepository implements PartnersRepository {
       };
     }
 
-    return { ok: true, data: mergePartners(raw) };
+    const rows = unwrapApiData<Array<Record<string, unknown>>>(raw);
+    const partners = rows.map((row) => ({ id: String(row.id ?? ''), name: String(row.name ?? row.slug ?? ''), logo: (row.logo as PartnersPageData['featuredPartners'][number]['logo']) ?? { src: '', alt: '' }, image: (row.image as PartnersPageData['featuredPartners'][number]['image']) ?? undefined, description: String(row.description ?? ''), href: typeof row.websiteUrl === 'string' ? row.websiteUrl : null, featured: row.featured === true })).filter((partner) => partner.id && partner.name);
+    const visual = partners[0]?.image ?? partners[0]?.logo ?? { src: '', alt: '' };
+    return { ok: true, data: { hero: { eyebrow: 'PARTNERS', titleLines: ['BUILDING', 'TOGETHER'], description: 'Meet the published partners connected to our events.', primaryCta: { label: 'Start a conversation', href: '/contact' }, secondaryCta: { label: 'Explore events', href: '/events' }, attributes: [], visual, visualAnnotations: { side: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'] } }, featuredPartners: partners, partnershipTypes: [], benefits: [], activationLead: { title: 'PARTNER WITH CONNECTION', description: 'Talk to the team about a future collaboration.', image: visual }, activationOpportunities: [], trustedPartners: partners, collaborationSteps: [], finalCta: { title: 'LET\'S BUILD WHAT\'S NEXT', description: 'Contact the team to discuss a partnership.', primary: { label: 'Contact us', href: '/contact' }, secondary: { label: 'View events', href: '/events' } }, site: { brandName: 'CONNECTION', tagline: 'Sound Meets Soul' }, footer: { contact: { email: null, phone: null, address: null, socials: [] }, legalTermsHref: '/terms', legalPrivacyHref: '/privacy' } } };
   }
-}
-
-// Merge API shape onto mock defaults so partial payloads don't lose sections.
-function mergePartners(raw: RawApiShape): PartnersPageDataType {
-  const m = PARTNERS_MOCK;
-  return {
-    ...m,
-    hero: { ...m.hero, ...(raw.hero ?? {}) },
-    featuredPartners:
-      raw.featuredPartners && raw.featuredPartners.length > 0
-        ? (raw.featuredPartners as PartnerProfile[])
-        : m.featuredPartners,
-    partnershipTypes:
-      raw.partnershipTypes && raw.partnershipTypes.length > 0
-        ? (raw.partnershipTypes as PartnershipType[])
-        : m.partnershipTypes,
-    benefits: raw.benefits && raw.benefits.length > 0 ? (raw.benefits as PartnerBenefit[]) : m.benefits,
-    activationLead: { ...m.activationLead, ...(raw.activationLead ?? {}) },
-    activationOpportunities:
-      raw.activationOpportunities && raw.activationOpportunities.length > 0
-        ? (raw.activationOpportunities as ActivationOpportunity[])
-        : m.activationOpportunities,
-    trustedPartners:
-      raw.trustedPartners && raw.trustedPartners.length > 0
-        ? (raw.trustedPartners as PartnerProfile[])
-        : m.trustedPartners,
-    collaborationSteps:
-      raw.collaborationSteps && raw.collaborationSteps.length > 0
-        ? (raw.collaborationSteps as CollaborationStep[])
-        : m.collaborationSteps,
-    finalCta: { ...m.finalCta, ...(raw.finalCta ?? {}) },
-    site: { ...m.site, ...(raw.site ?? {}) },
-    footer: {
-      contact: { ...m.footer.contact, ...(raw.footer?.contact ?? {}) },
-      legalTermsHref: raw.footer?.legalTermsHref ?? m.footer.legalTermsHref,
-      legalPrivacyHref: raw.footer?.legalPrivacyHref ?? m.footer.legalPrivacyHref,
-    },
-  };
 }
 
 export function getPartnersRepository(): PartnersRepository {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').toLowerCase();
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
-  if (source === 'api' && baseUrl) {
-    return new HttpPartnersRepository(baseUrl);
-  }
-  return new MockPartnersRepository();
+  return new HttpPartnersRepository(publicApiBaseUrl());
 }

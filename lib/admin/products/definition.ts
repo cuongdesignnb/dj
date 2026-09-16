@@ -1,6 +1,5 @@
-import { SHOP_PRODUCTS } from '@/lib/shop/mock';
 import { CATEGORY_LABELS } from '@/lib/shop/helpers';
-import { DEMO_UPDATED, f, opts, section } from '@/lib/admin/common/fields';
+import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 import { PUBLISH_OPTIONS } from '@/lib/admin/common/schema';
 import type { LocalizedString, MediaRef, PublishStatus, SeoFields } from '@/lib/admin/common/types';
@@ -43,36 +42,7 @@ export const productsDefinition: ResourceDefinition<AdminProduct> = {
   permission: 'products',
   titleKey: 'title',
   idPrefix: 'prod',
-  seed: () =>
-    SHOP_PRODUCTS.map((p) => ({
-      id: p.id.replace(/^prod-/, 'prod_').replace(/-/g, '_'),
-      title: { en: p.title },
-      slug: p.slug,
-      category: p.category,
-      // The shop's "preview" status maps straight across.
-      status: p.status === 'active' ? 'published' : p.status === 'sold-out' ? 'published' : (p.status as PublishStatus),
-      badge: p.badge ?? '',
-      price: p.price,
-      excerpt: { en: p.excerpt },
-      description: { en: p.description ?? '' },
-      featured: p.featured,
-      images: p.images.map((img) => ({ label: img.label ?? '', image: { src: img.image.src, alt: img.image.alt, mediaId: null }, sortOrder: img.sortOrder })),
-      sizes: p.sizes.map((s) => s.label),
-      colors: p.colors.map((c) => c.name),
-      variants: p.variants.map((v) => ({
-        sku: '',
-        size: p.sizes.find((s) => s.id === v.sizeId)?.label ?? '',
-        color: p.colors.find((c) => c.id === v.colorId)?.name ?? '',
-        priceOverride: v.price ?? null,
-        stockStatus: v.stockStatus,
-        stockQuantity: v.stockQuantity ?? null,
-      })),
-      stockStatus: 'unknown',
-      details: p.detailSections.map((d) => ({ title: d.title, body: d.body })),
-      highlights: p.collectionHighlights.map((h) => ({ title: h.title, description: h.description })),
-      seo: {},
-      updatedAt: DEMO_UPDATED,
-    })),
+  seed: () => [],
   searchFields: ['title', 'slug', 'category'],
   matchers: { featured: (r, v) => String(r.featured) === v },
   defaultSort: { key: 'title', direction: 'asc' },

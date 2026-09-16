@@ -1,16 +1,12 @@
 // Data access for /shop and /shop/[slug].
 //
-//   MockShopRepository — the local preview catalogue, the default
-//   HttpShopRepository — GET {base}/api/v1/products
-//                        GET {base}/api/v1/products/{slug}
-//
 // Listing and detail read the same product records, and archived products are
 // filtered here so no page has to remember to.
 
 import type { Product, ShopPageData } from './types';
-import { SHOP_MOCK, SHOP_PRODUCTS } from './mock';
 import { normalizeProduct, normalizeProducts } from './http';
 import { sortProducts } from './helpers';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export interface ShopRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -33,28 +29,18 @@ function isListed(product: Product): boolean {
 }
 
 function pageFor(products: Product[]): ShopPageData {
+  const visual = products[0]?.images[0]?.image ?? { src: '', alt: '' };
+  const featured = products.find((product) => product.featured) ?? products[0] ?? null;
   return {
-    ...SHOP_MOCK,
+    hero: { eyebrow: 'MERCHANDISE', titleLines: ['WEAR THE', 'CONNECTION'], description: 'Published merchandise from the Connection collection.', primaryCta: { label: 'Shop the collection', href: '#catalogue' }, secondaryCta: featured ? { label: 'View featured product', href: `/shop/${featured.slug}` } : { label: 'Explore events', href: '/events' }, visual, composition: products.flatMap((product) => product.images.slice(0, 1).map((item) => item.image)), sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'] },
+    featuredProduct: featured,
+    featuredHighlights: featured?.featureLabels.map((label) => ({ label, icon: 'star' as const })) ?? [],
     products,
-    featuredProduct: products.find((product) => product.featured) ?? null,
+    benefits: [],
+    productBenefits: [],
+    finalCta: { title: 'STAY CONNECTED', description: 'Explore the next published event.', primary: { label: 'View events', href: '/events' }, secondary: { label: 'View lineup', href: '/lineup' }, background: visual },
+    footer: { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
   };
-}
-
-export class MockShopRepository implements ShopRepository {
-  async getShopPage(): Promise<RepositoryResult<ShopPageData>> {
-    const products = await this.getProducts();
-    return products.ok ? { ok: true, data: pageFor(products.data) } : products;
-  }
-
-  async getProducts(): Promise<RepositoryResult<Product[]>> {
-    return { ok: true, data: sortProducts(SHOP_PRODUCTS.filter(isListed)) };
-  }
-
-  async getProductBySlug(slug: string): Promise<RepositoryResult<Product | null>> {
-    const normalized = slug.trim().toLowerCase();
-    const found = SHOP_PRODUCTS.find((product) => product.slug === normalized);
-    return { ok: true, data: found && isListed(found) ? found : null };
-  }
 }
 
 export class HttpShopRepository implements ShopRepository {
@@ -101,7 +87,7 @@ export class HttpShopRepository implements ShopRepository {
     }
 
     try {
-      return { ok: true, raw: await response.json() };
+      return { ok: true, raw: unwrapApiData(await response.json()) };
     } catch {
       return {
         ok: false,
@@ -153,12 +139,7 @@ export class HttpShopRepository implements ShopRepository {
       return { ok: false, error: result.error };
     }
 
-    const raw =
-      typeof result.raw === 'object' && result.raw !== null && 'product' in result.raw
-        ? (result.raw as { product: unknown }).product
-        : result.raw;
-
-    const product = normalizeProduct(raw);
+    const product = normalizeProduct(result.raw);
     return { ok: true, data: product && isListed(product) ? product : null };
   }
 }
@@ -166,22 +147,5 @@ export class HttpShopRepository implements ShopRepository {
 export function getShopRepository():
   | { ok: true; repository: ShopRepository }
   | { ok: false; error: ShopRepositoryError } {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim();
-
-  if (source === 'api' || source === 'http') {
-    if (!baseUrl) {
-      return {
-        ok: false,
-        error: {
-          kind: 'config',
-          message:
-            'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.',
-        },
-      };
-    }
-    return { ok: true, repository: new HttpShopRepository(baseUrl) };
-  }
-
-  return { ok: true, repository: new MockShopRepository() };
+  return { ok: true, repository: new HttpShopRepository(publicApiBaseUrl()) };
 }

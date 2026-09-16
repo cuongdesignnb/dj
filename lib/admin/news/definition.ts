@@ -1,7 +1,6 @@
-import { NEWS_ARTICLES } from '@/lib/news/mock';
 import { CATEGORY_LABELS } from '@/lib/news/helpers';
 import type { ArticleContentBlock } from '@/lib/news/types';
-import { DEMO_UPDATED, f, opts, section } from '@/lib/admin/common/fields';
+import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 import { PUBLISH_OPTIONS } from '@/lib/admin/common/schema';
 import type { LocalizedString, MediaRef, PublishStatus, SeoFields } from '@/lib/admin/common/types';
@@ -41,25 +40,7 @@ export const newsDefinition: ResourceDefinition<AdminArticle> = {
   permission: 'news',
   titleKey: 'title',
   idPrefix: 'news',
-  seed: () =>
-    NEWS_ARTICLES.map((a) => ({
-      id: `news_${a.slug.replace(/-/g, '_')}`,
-      title: { en: a.title },
-      slug: a.slug,
-      excerpt: { en: a.excerpt },
-      category: a.category,
-      status: a.status as PublishStatus,
-      featured: a.featured,
-      heroImage: { src: a.heroImage.src, alt: a.heroImage.alt, mediaId: null },
-      cardImage: a.cardImage ? { src: a.cardImage.src, alt: a.cardImage.alt, mediaId: null } : null,
-      body: a.body,
-      quickSummary: a.quickSummary,
-      tags: a.tags,
-      eventId: a.eventId ? 'evt_destiny' : '',
-      publishedAt: a.publishedAt ?? null,
-      seo: { title: a.seoTitle ?? '', description: a.seoDescription ?? '' },
-      updatedAt: DEMO_UPDATED,
-    })),
+  seed: () => [],
   searchFields: ['title', 'slug', 'excerpt', 'tags'],
   matchers: {
     featured: (r, v) => String(r.featured) === v,

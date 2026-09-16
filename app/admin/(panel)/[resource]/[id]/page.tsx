@@ -6,7 +6,7 @@ import { notFound, redirect } from 'next/navigation';
 import { ExternalLink, Pencil } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/layout/AdminPageHeader';
 import OrderActions from '@/components/admin/modules/OrderActions';
-import AdminCard, { DemoTag } from '@/components/admin/ui/AdminCard';
+import AdminCard from '@/components/admin/ui/AdminCard';
 import { buttonClass } from '@/components/admin/ui/buttonClass';
 import { PageReveal } from '@/components/admin/ui/Reveal';
 import { AccessDenied, ErrorState } from '@/components/admin/ui/States';
@@ -273,7 +273,7 @@ function OrderDetail({ record, canEdit }: { record: AdminRecord; canEdit: boolea
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-5">
-        <AdminCard title="Items" titleId="d-items" badge={record.demo ? <DemoTag /> : undefined}>
+        <AdminCard title="Items" titleId="d-items">
           <div className="relative overflow-x-auto">
             <table className="w-full min-w-[460px] text-sm">
               <caption className="sr-only">Order items</caption>

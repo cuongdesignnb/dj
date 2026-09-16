@@ -17,7 +17,6 @@ export interface TopbarNotification {
 }
 
 const BADGE_TONE: Record<EnvironmentBadge['tone'], string> = {
-  demo: 'border-admin-warning/40 text-admin-warning',
   production: 'border-admin-success/40 text-admin-success',
   preview: 'border-rave-blue/40 text-[#7FA6FF]',
   local: 'border-white/20 text-admin-muted',
@@ -129,7 +128,7 @@ function GlobalSearch() {
   );
 }
 
-function Notifications({ items, demo }: { items: TopbarNotification[]; demo: boolean }) {
+function Notifications({ items }: { items: TopbarNotification[] }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const panelId = useId();
@@ -155,7 +154,6 @@ function Notifications({ items, demo }: { items: TopbarNotification[]; demo: boo
         <div id={panelId} className="absolute right-0 top-[calc(100%+6px)] z-50 w-[min(90vw,340px)] rounded-[10px] border border-admin-border bg-admin-panel2 p-2 shadow-2xl">
           <p className="flex items-center justify-between px-3 py-2 text-xs uppercase tracking-[0.2em] text-admin-muted">
             Notifications
-            {demo && <span className="normal-case tracking-normal text-admin-warning">Demo</span>}
           </p>
           {items.length === 0 ? (
             <p className="px-3 py-3 text-sm text-admin-muted">Nothing needs your attention.</p>
@@ -252,7 +250,6 @@ export default function AdminTopbar({
       <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
         <span
           className={`hidden items-center gap-2 rounded-[8px] border px-3 py-2 text-xs font-medium lg:inline-flex ${BADGE_TONE[environment.tone]}`}
-          title={environment.tone === 'demo' ? 'Showing demo data. Changes are not persisted.' : undefined}
         >
           <span aria-hidden className="h-2 w-2 rounded-full bg-current" />
           <span className="sr-only">Environment: </span>
@@ -261,7 +258,7 @@ export default function AdminTopbar({
         <div className="hidden flex-1 justify-end sm:flex">
           <GlobalSearch />
         </div>
-        <Notifications items={notifications} demo={environment.tone === 'demo'} />
+        <Notifications items={notifications} />
         <UserMenu />
       </div>
     </header>

@@ -1,8 +1,9 @@
-// Repository contract for the /about page. Two adapters (Mock, Http) share
-// this surface. Components only see the returned AboutPageData.
+// Repository contract for the /about page. The page is backed by the public
+// bootstrap endpoint; missing CMS sections remain empty until editorial data
+// is published.
 
 import type { AboutPageData } from './types';
-import { ABOUT_MOCK } from './mock';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export type AboutRepositoryResult =
   | { ok: true; data: AboutPageData }
@@ -12,18 +13,7 @@ export interface AboutRepository {
   getAboutPage(): Promise<AboutRepositoryResult>;
 }
 
-// ----- Mock adapter -----
-
-export class MockAboutRepository implements AboutRepository {
-  async getAboutPage(): Promise<AboutRepositoryResult> {
-    return { ok: true, data: ABOUT_MOCK };
-  }
-}
-
 // ----- HTTP adapter -----
-// Backend integration is forward-looking. When DATA_SOURCE=api and
-// NEXT_PUBLIC_API_BASE_URL is set, the adapter fetches from
-// `{baseUrl}/api/v1/pages/about`.
 
 import type {
   AboutHeroData,
@@ -60,7 +50,7 @@ export class HttpAboutRepository implements AboutRepository {
   constructor(private readonly baseUrl: string) {}
 
   async getAboutPage(): Promise<AboutRepositoryResult> {
-    const url = `${this.baseUrl.replace(/\/$/, '')}/api/v1/pages/about`;
+    const url = `${this.baseUrl.replace(/\/$/, '')}/api/v1/site/bootstrap`;
     let response: Response;
     try {
       // Next.js exposes the standard fetch on the server with same defaults
@@ -95,47 +85,13 @@ export class HttpAboutRepository implements AboutRepository {
       };
     }
 
-    return { ok: true, data: mergeAboutPage(raw) };
+    const bootstrap = unwrapApiData<{ partners?: Array<Record<string, unknown>>; settings?: Record<string, unknown> }>(raw);
+    const partners = (bootstrap.partners ?? []).map((partner) => ({ id: String(partner.id ?? ''), name: String(partner.name ?? partner.slug ?? ''), logo: (partner.logo as AboutPageData['partners'][number]['logo']) ?? { src: '', alt: '' }, description: String(partner.description ?? ''), href: typeof partner.websiteUrl === 'string' ? partner.websiteUrl : undefined })).filter((partner) => partner.id && partner.name);
+    const visual = partners[0]?.logo ?? { src: '', alt: '' };
+    return { ok: true, data: { hero: { eyebrow: 'ABOUT CONNECTION', titleLines: ['MUSIC, PEOPLE,', 'CONNECTION'], description: 'A platform for published events, artists and community stories.', primaryCta: { label: 'Explore events', href: '/events' }, secondaryCta: { label: 'Meet the partners', href: '/partners' }, attributes: [], visual, visualAnnotations: { side: ['MUSIC', 'PEOPLE'], bottom: ['CONNECTION'] }, badge: null }, story: { eyebrow: 'OUR STORY', title: 'Built around connection', paragraphs: [], image: visual, quote: { text: '' } }, values: [], ecosystem: [], connectionReasons: [], partners, finalCta: { title: 'FIND YOUR CONNECTION', primary: { label: 'View events', href: '/events' }, secondary: { label: 'Contact us', href: '/contact' } }, site: { brandName: 'CONNECTION', tagline: 'Sound Meets Soul' }, footer: { contact: { email: null, phone: null, address: null, socials: [] }, legalTermsHref: '/terms', legalPrivacyHref: '/privacy' } } };
   }
 }
-
-// The page that the UI consumes is built by merging the API shape onto the
-// mock defaults. This means backend teams can ship partial payloads — e.g.
-// update only `hero` — without missing sections dropping to "Soon" copy.
-function mergeAboutPage(raw: RawApiShape): AboutPageDataType {
-  const m = ABOUT_MOCK;
-  return {
-    ...m,
-    hero: { ...m.hero, ...(raw.hero ?? {}) },
-    story: { ...m.story, ...(raw.story ?? {}) },
-    values: raw.values && raw.values.length > 0 ? (raw.values as AboutValueItem[]) : m.values,
-    ecosystem:
-      raw.ecosystem && raw.ecosystem.length > 0
-        ? (raw.ecosystem as AboutEcosystemItem[])
-        : m.ecosystem,
-    connectionReasons:
-      raw.connectionReasons && raw.connectionReasons.length > 0
-        ? (raw.connectionReasons as AboutConnectionItem[])
-        : m.connectionReasons,
-    partners:
-      raw.partners && raw.partners.length > 0 ? (raw.partners as PartnerItem[]) : m.partners,
-    finalCta: { ...m.finalCta, ...(raw.finalCta ?? {}) },
-    site: { ...m.site, ...(raw.site ?? {}) },
-    footer: {
-      contact: { ...m.footer.contact, ...(raw.footer?.contact ?? {}) },
-      legalTermsHref: raw.footer?.legalTermsHref ?? m.footer.legalTermsHref,
-      legalPrivacyHref: raw.footer?.legalPrivacyHref ?? m.footer.legalPrivacyHref,
-    },
-  };
-}
-
-// ----- Selector -----
 
 export function getAboutRepository(): AboutRepository {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').toLowerCase();
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
-  if (source === 'api' && baseUrl) {
-    return new HttpAboutRepository(baseUrl);
-  }
-  return new MockAboutRepository();
+  return new HttpAboutRepository(publicApiBaseUrl());
 }

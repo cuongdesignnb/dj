@@ -1,15 +1,11 @@
 // Data access for /gallery and /gallery/[slug].
 //
-//   MockGalleryRepository — canonical local content, the default
-//   HttpGalleryRepository — GET {base}/api/v1/gallery
-//                           GET {base}/api/v1/gallery/{slug}
-//
-// Both pages read through this, so the listing and the detail never hold
+// Both pages read through the API, so the listing and detail never hold
 // separate copies of the same media.
 
 import type { GalleryCollection, GalleryPageData } from './types';
-import { GALLERY_COLLECTIONS, GALLERY_MOCK } from './mock';
 import { normalizeCollection, normalizeCollections } from './http';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export interface GalleryRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -25,24 +21,6 @@ export interface GalleryRepository {
   getCollections(): Promise<RepositoryResult<GalleryCollection[]>>;
   /** Resolves to null for a slug that does not exist, so callers can 404. */
   getCollectionBySlug(slug: string): Promise<RepositoryResult<GalleryCollection | null>>;
-}
-
-export class MockGalleryRepository implements GalleryRepository {
-  async getGalleryPage(): Promise<RepositoryResult<GalleryPageData>> {
-    return { ok: true, data: GALLERY_MOCK };
-  }
-
-  async getCollections(): Promise<RepositoryResult<GalleryCollection[]>> {
-    return { ok: true, data: GALLERY_COLLECTIONS };
-  }
-
-  async getCollectionBySlug(slug: string): Promise<RepositoryResult<GalleryCollection | null>> {
-    const normalized = slug.trim().toLowerCase();
-    return {
-      ok: true,
-      data: GALLERY_COLLECTIONS.find((collection) => collection.slug === normalized) ?? null,
-    };
-  }
 }
 
 export class HttpGalleryRepository implements GalleryRepository {
@@ -90,7 +68,7 @@ export class HttpGalleryRepository implements GalleryRepository {
     }
 
     try {
-      return { ok: true, raw: await response.json() };
+      return { ok: true, raw: unwrapApiData(await response.json()) };
     } catch {
       return {
         ok: false,
@@ -106,8 +84,7 @@ export class HttpGalleryRepository implements GalleryRepository {
   }
 
   /**
-   * Page copy is not something the gallery endpoint owns yet, so the hero and
-   * CTA keep their local wording while the collections come from the API.
+   * Page chrome is presentation; collections and media always come from the API.
    */
   async getGalleryPage(): Promise<RepositoryResult<GalleryPageData>> {
     const result = await this.getCollections();
@@ -116,13 +93,16 @@ export class HttpGalleryRepository implements GalleryRepository {
     const collections = result.data;
     const featured = collections.find((c) => c.featured) ?? collections[0] ?? null;
 
+    const visual = featured?.hero ?? featured?.cover ?? { src: '', alt: '' };
     return {
       ok: true,
       data: {
-        ...GALLERY_MOCK,
-        collections,
-        featuredCollection: featured,
+        hero: { eyebrow: 'GALLERY', titleLines: ['MUSIC IN', 'MOTION'], description: 'Published visual collections from Connection Rave.', visual, sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'], primaryCta: { label: 'Explore collections', href: '#collections' }, secondaryCta: { label: 'View events', href: '/events' } },
         previewMedia: featured?.media ?? [],
+        featuredCollection: featured,
+        collections,
+        finalCta: { title: 'KEEP THE CONNECTION GOING', subtitle: 'Explore the next published event.', primary: { label: 'View events', href: '/events' }, secondary: { label: 'View lineup', href: '/lineup' }, background: visual },
+        footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
       },
     };
   }
@@ -137,46 +117,21 @@ export class HttpGalleryRepository implements GalleryRepository {
       return { ok: false, error: result.error };
     }
 
-    const raw =
-      typeof result.raw === 'object' && result.raw !== null && 'collection' in result.raw
-        ? (result.raw as { collection: unknown }).collection
-        : result.raw;
-
-    return { ok: true, data: normalizeCollection(raw) };
+    return { ok: true, data: normalizeCollection(result.raw) };
   }
 }
 
 export interface GalleryDataEnv {
-  source: 'mock' | 'api';
+  source: 'api';
   baseUrl: string;
 }
 
 export function readGalleryEnv(): GalleryDataEnv {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
-  return {
-    source: source === 'api' || source === 'http' ? 'api' : 'mock',
-    baseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim(),
-  };
+  return { source: 'api', baseUrl: publicApiBaseUrl() };
 }
 
 export function getGalleryRepository():
   | { ok: true; repository: GalleryRepository }
   | { ok: false; error: GalleryRepositoryError } {
-  const env = readGalleryEnv();
-
-  if (env.source === 'api') {
-    if (!env.baseUrl) {
-      return {
-        ok: false,
-        error: {
-          kind: 'config',
-          message:
-            'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.',
-        },
-      };
-    }
-    return { ok: true, repository: new HttpGalleryRepository(env.baseUrl) };
-  }
-
-  return { ok: true, repository: new MockGalleryRepository() };
+  return { ok: true, repository: new HttpGalleryRepository(readGalleryEnv().baseUrl) };
 }

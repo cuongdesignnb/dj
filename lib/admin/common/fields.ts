@@ -34,6 +34,3 @@ export const opts = (...pairs: [string, string][]): Option[] => pairs.map(([valu
 export const YES_NO = opts(['true', 'Yes'], ['false', 'No']);
 
 export const aud = (dollars: number) => ({ amountMinor: Math.round(dollars * 100), currency: 'AUD' });
-
-/** Fixed demo timestamps, so server and client render the same values. */
-export const DEMO_UPDATED = '2026-09-01T09:00:00.000Z';

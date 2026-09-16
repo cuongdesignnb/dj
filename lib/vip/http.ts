@@ -13,7 +13,6 @@ import type {
   VipPageData,
   VipProcessStep,
 } from './types';
-import { VIP_MOCK } from './mock';
 
 // Normalizes an API payload into VipPageData.
 //
@@ -275,14 +274,14 @@ export function normalizeVipPage(raw: unknown): VipPageData | null {
     package: pkg,
     booths,
     bottles,
-    mapDisclaimer: str(raw.mapDisclaimer, VIP_MOCK.mapDisclaimer),
+    mapDisclaimer: str(raw.mapDisclaimer, 'Booth positions are indicative. A request is not a reservation.'),
     infoItems: infoItems(raw.infoItems),
     faq: faqItems(raw.faq),
     processSteps: processSteps(raw.processSteps),
     bookingNotes: bookingNotes(raw.bookingNotes),
     bookingFaq: faqItems(raw.bookingFaq),
-    tablesCta: finalCta(raw.tablesCta, VIP_MOCK.tablesCta),
-    bookingCta: finalCta(raw.bookingCta, VIP_MOCK.bookingCta),
+    tablesCta: finalCta(raw.tablesCta, { title: 'REQUEST A VIP EXPERIENCE', primary: { label: 'Send a request', href: '/book-now' } }),
+    bookingCta: finalCta(raw.bookingCta, { title: 'STAY CONNECTED', primary: { label: 'View events', href: '/events' } }),
     footer: footer(raw.footer),
   };
 }

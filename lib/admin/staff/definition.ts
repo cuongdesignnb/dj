@@ -1,9 +1,6 @@
 import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 
-// DEMO STAFF. Obvious placeholder people at example.com; no invitation email
-// is ever sent from this screen without a backend.
-
 export interface AdminStaff {
   id: string;
   name: string;
@@ -18,23 +15,6 @@ export interface AdminStaff {
 
 export const STAFF_STATUS = opts(['active', 'Active'], ['invited', 'Invited'], ['disabled', 'Disabled']);
 
-const person = (
-  id: string,
-  name: string,
-  roleId: string,
-  status: AdminStaff['status'],
-  lastActiveAt: string | null,
-): AdminStaff => ({
-  id,
-  name,
-  email: `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}@example.com`,
-  roleId,
-  status,
-  language: 'en',
-  lastActiveAt,
-  updatedAt: '2026-09-01T09:00:00.000Z',
-});
-
 export const staffDefinition: ResourceDefinition<AdminStaff> = {
   key: 'staff',
   label: 'Staff Management',
@@ -46,14 +26,7 @@ export const staffDefinition: ResourceDefinition<AdminStaff> = {
   permission: 'staff',
   titleKey: 'name',
   idPrefix: 'staff',
-  seed: () => [
-    { ...person('staff_admin_1', 'Demo Admin', 'role_super_admin', 'active', '2026-09-16T08:00:00.000Z'), email: 'admin@demo.local' },
-    person('staff_admin_2', 'Demo Admin Two', 'role_admin', 'active', '2026-09-14T11:30:00.000Z'),
-    person('staff_manager_1', 'Demo Manager', 'role_manager', 'active', '2026-09-13T16:10:00.000Z'),
-    person('staff_editor_1', 'Demo Editor One', 'role_editor', 'active', '2026-09-15T09:45:00.000Z'),
-    person('staff_editor_2', 'Demo Editor Two', 'role_editor', 'invited', null),
-    person('staff_viewer_1', 'Demo Viewer', 'role_viewer', 'disabled', '2026-08-28T13:00:00.000Z'),
-  ],
+  seed: () => [],
   searchFields: ['name', 'email'],
   defaultSort: { key: 'name', direction: 'asc' },
   filters: [

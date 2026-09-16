@@ -1,19 +1,13 @@
 // Which checkout backend is in use. Read on the server only.
-//
-//   live     — NEXT_PUBLIC_CHECKOUT_ENABLED=true and NEXT_PUBLIC_API_BASE_URL set.
-//              The backend creates the Stripe Checkout Session and verifies it.
-//   mock     — CHECKOUT_MOCK=true (server-only, never set in production).
-//              Simulated sessions for local development and testing.
-//   disabled — anything else. Checkout is shown as not yet available.
+// The browser is always sent to the backend for pricing and the hosted
+// payment session; there is no local checkout simulation.
 //
 // No Stripe secret is read here or anywhere in this app: session creation
 // and verification belong to the backend.
 
-export type CheckoutMode = 'live' | 'mock' | 'disabled';
+export type CheckoutMode = 'live' | 'disabled';
 
 export function getCheckoutMode(): CheckoutMode {
-  if (process.env.CHECKOUT_MOCK === 'true') return 'mock';
-
   const enabled = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === 'true';
   const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim();
   return enabled && baseUrl ? 'live' : 'disabled';

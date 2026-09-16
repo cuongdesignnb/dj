@@ -1,14 +1,10 @@
 // Data access for /tables and /book-now.
 //
-//   MockVipRepository  — local canonical content, the default
-//   HttpVipRepository  — GET  {base}/api/v1/events/{slug}/vip
-//                        POST {base}/api/v1/booking-requests
-//
-// Selected by NEXT_PUBLIC_DATA_SOURCE / NEXT_PUBLIC_API_BASE_URL.
+// Published content and booking requests are loaded through the API.
 
 import type { BookingRequestInput, BookingRequestResult, VipPageData } from './types';
-import { VIP_MOCK } from './mock';
 import { normalizeVipPage } from './http';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export interface VipRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -24,26 +20,6 @@ export interface VipRepository {
   submitBookingRequest(input: BookingRequestInput): Promise<BookingRequestResult>;
 }
 
-export class MockVipRepository implements VipRepository {
-  async getVipPage(): Promise<VipRepositoryResult> {
-    return { ok: true, data: VIP_MOCK };
-  }
-
-  /**
-   * There is no booking backend yet, so this reports the flow as unavailable
-   * rather than returning a success the request never actually had. A form that
-   * says "request received" when nothing received it is worse than one that
-   * says it cannot send.
-   */
-  async submitBookingRequest(): Promise<BookingRequestResult> {
-    return {
-      status: 'unavailable',
-      message:
-        'Booking requests are not connected yet. Please contact the organiser to arrange a VIP table.',
-    };
-  }
-}
-
 export class HttpVipRepository implements VipRepository {
   constructor(
     private readonly baseUrl: string,
@@ -57,11 +33,12 @@ export class HttpVipRepository implements VipRepository {
 
   async getVipPage(): Promise<VipRepositoryResult> {
     let response: Response;
+    let eventResponse: Response;
     try {
-      response = await fetch(this.url(`/api/v1/events/${this.eventSlug}/vip`), {
-        headers: { accept: 'application/json' },
-        next: { revalidate: this.revalidateSeconds },
-      });
+      [eventResponse, response] = await Promise.all([
+        fetch(this.url(`/api/v1/events/${this.eventSlug}`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds } }),
+        fetch(this.url(`/api/v1/events/${this.eventSlug}/vip`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds } }),
+      ]);
     } catch {
       return {
         ok: false,
@@ -72,19 +49,20 @@ export class HttpVipRepository implements VipRepository {
       };
     }
 
-    if (!response.ok) {
+    if (!response.ok || !eventResponse.ok) {
       return {
         ok: false,
         error: {
           kind: 'http',
-          message: `The VIP service returned ${response.status}. Please try again shortly.`,
+          message: `The VIP service returned ${!eventResponse.ok ? eventResponse.status : response.status}. Please try again shortly.`,
         },
       };
     }
 
-    let raw: unknown;
+    let eventRaw: unknown;
+    let vipRaw: unknown;
     try {
-      raw = await response.json();
+      [eventRaw, vipRaw] = await Promise.all([eventResponse.json(), response.json()]);
     } catch {
       return {
         ok: false,
@@ -92,6 +70,21 @@ export class HttpVipRepository implements VipRepository {
       };
     }
 
+    const event = unwrapApiData<Record<string, any>>(eventRaw);
+    const vip = unwrapApiData<{ packages: any[]; booths: any[] }>(vipRaw);
+    const pkg = vip.packages[0];
+    const bottles = pkg?.bottles ?? [];
+    const raw = {
+      event: { id: event.id, slug: event.slug, title: event.title, subtitle: event.eyebrow, venue: [event.venue?.name, event.venue?.city].filter(Boolean).join(', '), date: event.startAt, dateStatus: event.dateStatus?.toLowerCase(), schedule: event.startAt, scheduleStatus: event.scheduleStatus?.toLowerCase(), image: event.poster ?? event.hero },
+      package: pkg ? { ...pkg, price: { amountMinor: pkg.priceMinor, currency: pkg.currency }, maxBottleSelections: bottles.length || 1, minBottleSelections: 0, description: '' } : null,
+      booths: vip.booths,
+      bottles: bottles.map((bottle: Record<string, any>, index: number) => ({ ...bottle, tint: ['#A6A6B2', '#F3B35A', '#E46A6A', '#8AC3FF', '#B78CFF', '#7BE0B2'][index % 6] })),
+      mapDisclaimer: 'Booth positions are indicative. A request is not a reservation.',
+      infoItems: [], faq: [], processSteps: [], bookingNotes: [], bookingFaq: [],
+      tablesCta: { title: 'REQUEST A VIP EXPERIENCE', primary: { label: 'Send a request', href: '/book-now' } },
+      bookingCta: { title: 'STAY CONNECTED', primary: { label: 'View events', href: '/events' } },
+      footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
+    };
     const data = normalizeVipPage(raw);
     if (!data) {
       return {
@@ -170,16 +163,15 @@ export class HttpVipRepository implements VipRepository {
 }
 
 export interface VipDataEnv {
-  source: 'mock' | 'api';
+  source: 'api';
   baseUrl: string;
   eventSlug: string;
 }
 
 export function readVipEnv(): VipDataEnv {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
   return {
-    source: source === 'api' || source === 'http' ? 'api' : 'mock',
-    baseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim(),
+    source: 'api',
+    baseUrl: publicApiBaseUrl(),
     eventSlug: (process.env.NEXT_PUBLIC_VIP_EVENT_SLUG ?? 'destiny').trim(),
   };
 }
@@ -188,26 +180,11 @@ export function getVipRepository():
   | { ok: true; repository: VipRepository }
   | { ok: false; error: VipRepositoryError } {
   const env = readVipEnv();
-
-  if (env.source === 'api') {
-    if (!env.baseUrl) {
-      return {
-        ok: false,
-        error: {
-          kind: 'config',
-          message:
-            'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.',
-        },
-      };
-    }
-    return { ok: true, repository: new HttpVipRepository(env.baseUrl, env.eventSlug) };
-  }
-
-  return { ok: true, repository: new MockVipRepository() };
+  return { ok: true, repository: new HttpVipRepository(env.baseUrl, env.eventSlug) };
 }
 
 /** True when no backend can accept a booking request, so the UI says so up front. */
 export function isBookingSubmissionConnected(): boolean {
   const env = readVipEnv();
-  return env.source === 'api' && env.baseUrl.length > 0;
+  return true;
 }

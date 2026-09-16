@@ -1,4 +1,3 @@
-import { ABOUT_MOCK } from '@/lib/about/mock';
 import { f, section } from '@/lib/admin/common/fields';
 import type { SingletonDefinition } from '@/lib/admin/common/resource';
 import type { FieldConfig, FormSection } from '@/lib/admin/common/schema';
@@ -77,24 +76,13 @@ export const aboutContentDefinition: SingletonDefinition = {
   apiPath: 'content/about',
   permission: 'content',
   seed: () => ({
-    hero: {
-      eyebrow: { en: ABOUT_MOCK.hero.eyebrow },
-      titleLines: ABOUT_MOCK.hero.titleLines,
-      description: { en: ABOUT_MOCK.hero.description },
-      image: { src: ABOUT_MOCK.hero.visual.src, alt: ABOUT_MOCK.hero.visual.alt, mediaId: null },
-    },
-    story: {
-      eyebrow: { en: ABOUT_MOCK.story.eyebrow },
-      title: { en: ABOUT_MOCK.story.title },
-      body: { en: ABOUT_MOCK.story.paragraphs.join('\n\n') },
-      quote: { en: ABOUT_MOCK.story.quote?.text ?? '' },
-      image: { src: ABOUT_MOCK.story.image.src, alt: ABOUT_MOCK.story.image.alt, mediaId: null },
-    },
-    values: ABOUT_MOCK.values.map((v) => ({ title: v.title, description: v.description })),
-    ecosystem: { title: { en: 'Our Ecosystem' }, description: { en: '' } },
-    why: { title: { en: 'Why People Connect' }, description: { en: '' } },
-    partners: { enabled: true, title: { en: 'Our Partners' } },
-    finalCta: { title: { en: ABOUT_MOCK.finalCta?.title ?? '' }, ctaLabel: '', ctaHref: '' },
+    hero: { eyebrow: { en: '' }, titleLines: [], description: { en: '' }, image: null },
+    story: { eyebrow: { en: '' }, title: { en: '' }, body: { en: '' }, quote: { en: '' }, image: null },
+    values: [],
+    ecosystem: { title: { en: '' }, description: { en: '' } },
+    why: { title: { en: '' }, description: { en: '' } },
+    partners: { enabled: false, title: { en: '' } },
+    finalCta: { title: { en: '' }, ctaLabel: '', ctaHref: '' },
   }),
   form: {
     titleKey: 'story.title',

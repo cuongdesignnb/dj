@@ -31,13 +31,12 @@ async function loadEventData(): Promise<{ data: EventPageData } | { error: { mes
   const env = readEventEnv();
   const slug = env.defaultSlug;
 
-  // For sites configured for HTTP, missing base URL is a config error, not
-  // a silent fallback to mock.
+  // A missing server-side API origin is a configuration error.
   if (env.source === 'http' && !env.baseUrl) {
     return {
       error: {
         message:
-          'EVENT_DATA_SOURCE=http requires EVENT_API_BASE_URL to be configured.',
+          'APP_URL or NEXT_PUBLIC_API_BASE_URL must be configured for event data.',
       },
     };
   }

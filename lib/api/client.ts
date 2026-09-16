@@ -9,6 +9,8 @@ export interface ApiRequestOptions {
   body?: unknown;
   /** Cookie header to forward, so the backend sees the admin session. */
   cookie?: string;
+  /** CSRF header for same-origin state-changing requests. */
+  csrfToken?: string;
   timeoutMs?: number;
   signal?: AbortSignal;
 }
@@ -21,16 +23,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 /** Turns any error body into the admin error shape. Never exposes stack traces. */
 export function normalizeApiError(status: number, body: unknown): AdminApiError {
-  if (isRecord(body)) {
-    const message = typeof body.message === 'string' && body.message.length <= 300 ? body.message : null;
+  const envelope = isRecord(body) && isRecord(body.error) ? body.error : body;
+  if (isRecord(envelope)) {
+    const message = typeof envelope.message === 'string' && envelope.message.length <= 300 ? envelope.message : null;
     const fieldErrors: Record<string, string> = {};
-    if (isRecord(body.fieldErrors)) {
-      for (const [key, value] of Object.entries(body.fieldErrors)) {
+    if (isRecord(envelope.fieldErrors)) {
+      for (const [key, value] of Object.entries(envelope.fieldErrors)) {
         if (typeof value === 'string') fieldErrors[key] = value.slice(0, 200);
       }
     }
     return {
-      code: typeof body.code === 'string' ? body.code : `http_${status}`,
+      code: typeof envelope.code === 'string' ? envelope.code : `http_${status}`,
       message: message ?? defaultMessage(status),
       fieldErrors: Object.keys(fieldErrors).length ? fieldErrors : undefined,
     };
@@ -53,15 +56,8 @@ export async function apiRequest<T>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<ApiResult<T>> {
-  if (!baseUrl) {
-    return {
-      ok: false,
-      status: 0,
-      error: { code: 'config', message: 'NEXT_PUBLIC_API_BASE_URL is not configured.' },
-    };
-  }
-
-  const url = new URL(`${baseUrl}${path}`);
+  const rawUrl = `${baseUrl}${path}`;
+  const url = new URL(rawUrl, typeof window === 'undefined' ? (process.env.APP_URL ?? 'http://localhost:3000') : window.location.origin);
   for (const [key, value] of Object.entries(options.query ?? {})) {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
   }
@@ -77,7 +73,9 @@ export async function apiRequest<T>(
         accept: 'application/json',
         ...(options.body !== undefined ? { 'content-type': 'application/json' } : {}),
         ...(options.cookie ? { cookie: options.cookie } : {}),
+        ...(options.csrfToken ? { 'x-csrf-token': options.csrfToken } : {}),
       },
+      credentials: 'include',
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
       cache: 'no-store',
       signal: controller.signal,
@@ -86,7 +84,8 @@ export async function apiRequest<T>(
     if (!response.ok) {
       return { ok: false, status: response.status, error: normalizeApiError(response.status, body) };
     }
-    return { ok: true, status: response.status, data: body as T };
+    const data = isRecord(body) && 'data' in body ? body.data : body;
+    return { ok: true, status: response.status, data: data as T };
   } catch {
     return { ok: false, status: 0, error: normalizeApiError(0, null) };
   } finally {

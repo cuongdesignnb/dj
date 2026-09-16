@@ -7,32 +7,15 @@ import { ArrowRight, Info, ShoppingBag } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import RelatedProducts from '@/components/shop/RelatedProducts';
 import ShopBenefits from '@/components/shop/ShopBenefits';
-import { sessionCartAdapter, useCart, useHydrated } from '@/lib/cart/adapter';
-import { cartInputFor } from '@/lib/cart/input';
+import { useCart, useHydrated } from '@/lib/cart/adapter';
 import { itemCount, subtotal as cartSubtotal } from '@/lib/cart/pricing';
 import { hasBlockingIssue, reviewCart } from '@/lib/cart/validation';
 import type { CheckoutMode } from '@/lib/checkout/config';
 import { shopReveal } from '@/lib/animations';
-import { recommendProducts, resolveVariant } from '@/lib/shop/helpers';
+import { recommendProducts } from '@/lib/shop/helpers';
 import type { Product, ShopBenefit } from '@/lib/shop/types';
 import CartItem from './CartItem';
 import OrderSummary from './OrderSummary';
-
-/** The two lines from the approved cart design, for development only. */
-function loadSampleCart(products: Product[]) {
-  const picks: [string, string][] = [
-    ['destiny-oversized-tee', 'l'],
-    ['connection-hoodie', 'xl'],
-  ];
-  sessionCartAdapter.clear();
-  for (const [slug, sizeId] of picks) {
-    const product = products.find((p) => p.slug === slug);
-    if (!product) continue;
-    const selection = { sizeId, colorId: product.colors[0]?.id ?? null };
-    const variant = resolveVariant(product, selection.sizeId, selection.colorId);
-    sessionCartAdapter.addItem(cartInputFor(product, selection, variant, 1));
-  }
-}
 
 function CartSkeleton() {
   return (
@@ -132,15 +115,6 @@ export default function CartClient({
                   Browse Merchandise
                   <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />
                 </Link>
-                {mode === 'mock' && (
-                  <button
-                    type="button"
-                    onClick={() => loadSampleCart(products)}
-                    className="inline-flex min-h-[52px] items-center rounded-[12px] border border-white/25 px-6 font-heading text-sm font-semibold uppercase tracking-wider text-white/85 hover:border-rave-red/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
-                  >
-                    Load Sample Cart (Dev)
-                  </button>
-                )}
               </div>
             </motion.div>
           ) : (

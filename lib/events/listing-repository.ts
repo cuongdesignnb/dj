@@ -1,13 +1,7 @@
 // Data access for the /events listing.
 //
-// Pages talk to an EventsRepository, never to fetch() directly, so the UI is
-// unchanged when the backend arrives. Two adapters ship today:
-//
-//   MockEventsRepository  — local content, the default
-//   HttpEventsRepository  — GET {base}/api/v1/pages/events
-//                           GET {base}/api/v1/pages/events/past
-//
-// Selected by NEXT_PUBLIC_DATA_SOURCE / NEXT_PUBLIC_API_BASE_URL.
+// Pages talk to an EventsRepository, never to fetch() directly. Published
+// event records are loaded through the API.
 
 import type {
   ArchiveContentType,
@@ -24,8 +18,7 @@ import type {
   PastEventsHeroData,
   PastEventsPageData,
 } from './listing-types';
-import { EVENTS_MOCK } from './mock';
-import { buildPastEventsMock } from './past-mock';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export interface EventsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -42,16 +35,6 @@ export type PastEventsRepositoryResult = RepositoryResult<PastEventsPageData>;
 export interface EventsRepository {
   getEventsPage(): Promise<EventsRepositoryResult>;
   getPastEventsPage(): Promise<PastEventsRepositoryResult>;
-}
-
-export class MockEventsRepository implements EventsRepository {
-  async getEventsPage(): Promise<EventsRepositoryResult> {
-    return { ok: true, data: EVENTS_MOCK };
-  }
-
-  async getPastEventsPage(): Promise<PastEventsRepositoryResult> {
-    return { ok: true, data: buildPastEventsMock() };
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -217,9 +200,8 @@ function footer(value: unknown): EventsFooterData {
 /**
  * Normalizes an API payload into EventsPageData.
  *
- * Deliberately does NOT fall back to mock content: a backend that answers with
- * an unusable body is an error the page should surface, not paper over with
- * local copy that would read as real.
+ * An unusable backend body is an error the page should surface, not paper over
+ * with local copy that would read as real.
  */
 export function normalizeEventsPage(raw: unknown): EventsPageData | null {
   if (!isRecord(raw)) return null;
@@ -371,7 +353,7 @@ export class HttpEventsRepository implements EventsRepository {
 
     let raw: unknown;
     try {
-      raw = await response.json();
+      raw = unwrapApiData(await response.json());
     } catch {
       return {
         ok: false,
@@ -394,11 +376,49 @@ export class HttpEventsRepository implements EventsRepository {
   }
 
   getEventsPage(): Promise<EventsRepositoryResult> {
-    return this.getPage('/api/v1/pages/events', normalizeEventsPage);
+    return this.getPage('/api/v1/events', (raw) => {
+      const rows = Array.isArray(raw) ? raw : [];
+      const events = rows.flatMap((row) => {
+        if (!isRecord(row)) return [];
+        const parsed = eventSummary({
+          id: row.id,
+          slug: row.slug,
+          title: row.title,
+          subtitle: row.eyebrow,
+          location: [isRecord(row.venue) ? row.venue.name : '', isRecord(row.venue) ? row.venue.city : ''].filter(Boolean).join(', '),
+          image: row.poster ?? row.hero,
+          status: row.lifecycleStatus === 'COMPLETED' ? 'completed' : row.featured ? 'announced' : 'coming-soon',
+          featured: row.featured,
+          date: row.startAt,
+          dateStatus: String(row.dateStatus ?? '').toLowerCase(),
+          schedule: row.startAt,
+          scheduleStatus: String(row.scheduleStatus ?? '').toLowerCase(),
+          genres: Array.isArray(row.genres) ? row.genres : [],
+          description: row.shortDescription,
+          detailHref: row.slug === 'destiny' ? '/event' : `/events/${row.slug}`,
+          ticketHref: null,
+          notificationAction: null,
+        });
+        return parsed ? [parsed] : [];
+      });
+      const featured = events.find((event) => event.featured) ?? events[0] ?? null;
+      const visual = featured?.image ?? { src: '', alt: '' };
+      return { hero: { eyebrow: 'UPCOMING EVENTS', titleLines: ['THE NIGHTS', 'WE ARE BUILDING'], description: 'Explore published Connection Rave events.', primaryCta: { label: featured ? 'Explore event' : 'Explore lineup', href: featured?.detailHref ?? '/lineup' }, secondaryCta: { label: 'Join the community', href: '/about' }, visual, visualAnnotations: { side: ['MUSIC', 'PEOPLE', 'ENERGY', 'CONNECTION'] } }, featuredEvent: featured, events, benefits: [], finalCta: { title: 'READY FOR THE NEXT NIGHT?', description: 'Follow the published event programme.', primary: { label: 'Explore events', href: '/events' }, secondary: { label: 'Contact us', href: '/contact' }, background: visual }, footer: { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' } };
+    });
   }
 
   getPastEventsPage(): Promise<PastEventsRepositoryResult> {
-    return this.getPage('/api/v1/pages/events/past', normalizePastEventsPage);
+    return this.getPage('/api/v1/events/past', (raw) => {
+      const rows = Array.isArray(raw) ? raw : [];
+      const events = rows.flatMap((row) => {
+        if (!isRecord(row)) return [];
+        const parsed = pastEventSummary({ id: row.id, slug: row.slug, title: row.title, subtitle: row.eyebrow, image: row.poster ?? row.hero, location: [isRecord(row.venue) ? row.venue.name : '', isRecord(row.venue) ? row.venue.city : ''].filter(Boolean).join(', '), startDate: row.startAt, genres: row.genres, excerpt: row.shortDescription, featured: row.featured, isPlaceholder: false, contentTypes: [], recapHref: null, galleryHref: null, highlightsHref: null });
+        return parsed ? [parsed] : [];
+      });
+      const featured = events.find((event) => event.featured) ?? events[0] ?? null;
+      const visual = featured?.image ?? { src: '', alt: '' };
+      return { hero: { eyebrow: 'PAST EVENTS', titleLines: ['THE NIGHTS', 'WE REMEMBER'], description: 'Published event archive records.', primaryCta: { label: 'View events', href: '/events' }, secondaryCta: { label: 'View gallery', href: '/gallery' }, visual, visualAnnotations: { side: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'] } }, featuredRecap: featured, events, benefits: [], finalCta: { title: 'FIND THE NEXT NIGHT', primary: { label: 'Explore events', href: '/events' }, secondary: { label: 'View lineup', href: '/lineup' }, background: visual }, footer: { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' } };
+    });
   }
 }
 
@@ -407,41 +427,24 @@ export class HttpEventsRepository implements EventsRepository {
 // ---------------------------------------------------------------------------
 
 export interface EventsDataEnv {
-  source: 'mock' | 'api';
+  source: 'api';
   baseUrl: string;
 }
 
 export function readEventsEnv(): EventsDataEnv {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
   return {
-    source: source === 'api' || source === 'http' ? 'api' : 'mock',
-    baseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim(),
+    source: 'api',
+    baseUrl: publicApiBaseUrl(),
   };
 }
 
 /**
  * Returns the configured repository, or a config error when the site asks for
  * the API without giving it an address — better a visible misconfiguration
- * than a production page quietly serving mock content.
+ * than a production page quietly serving invented content.
  */
 export function getEventsRepository():
   | { ok: true; repository: EventsRepository }
   | { ok: false; error: EventsRepositoryError } {
-  const env = readEventsEnv();
-
-  if (env.source === 'api') {
-    if (!env.baseUrl) {
-      return {
-        ok: false,
-        error: {
-          kind: 'config',
-          message:
-            'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.',
-        },
-      };
-    }
-    return { ok: true, repository: new HttpEventsRepository(env.baseUrl) };
-  }
-
-  return { ok: true, repository: new MockEventsRepository() };
+  return { ok: true, repository: new HttpEventsRepository(readEventsEnv().baseUrl) };
 }

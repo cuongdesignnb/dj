@@ -5,7 +5,6 @@
 // sends is trusted as a price.
 
 import { getApiBaseUrl, getCheckoutMode } from '@/lib/checkout/config';
-import { createMockCheckoutSession } from '@/lib/checkout/mock';
 import { normalizeMoney } from '@/lib/shop/http';
 import type {
   CheckoutLineRequest,
@@ -62,16 +61,7 @@ export async function createCheckoutSession(raw: unknown): Promise<CheckoutSessi
     return { status: 'unavailable', message: 'Merchandise checkout is not available yet.' };
   }
 
-  if (mode === 'mock') {
-    const session = createMockCheckoutSession(request);
-    if (!session.ok) return { status: 'error', message: session.message };
-    return {
-      status: 'ready',
-      checkoutUrl: `/checkout/result?session_id=${session.sessionId}`,
-    };
-  }
-
-  // Live: the backend re-prices every line, creates the Stripe Checkout
+  // The backend re-prices every line, creates the Stripe Checkout
   // Session and returns the hosted checkout URL.
   try {
     const response = await fetch(`${getApiBaseUrl()}/api/v1/checkout/session`, {
@@ -90,7 +80,8 @@ export async function createCheckoutSession(raw: unknown): Promise<CheckoutSessi
       return { status: 'error', message };
     }
 
-    const url = isRecord(body) && typeof body.checkoutUrl === 'string' ? body.checkoutUrl : '';
+    const payload = isRecord(body) && isRecord(body.data) ? body.data : body;
+    const url = isRecord(payload) && typeof payload.checkoutUrl === 'string' ? payload.checkoutUrl : '';
     // Only ever redirect to an https URL the backend returned.
     if (!/^https:\/\//.test(url)) {
       return { status: 'error', message: 'Checkout could not be started. Please try again.' };

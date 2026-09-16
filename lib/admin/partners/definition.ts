@@ -1,5 +1,4 @@
-import { PARTNERS_MOCK } from '@/lib/partners/mock';
-import { DEMO_UPDATED, f, opts, section } from '@/lib/admin/common/fields';
+import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 import { PUBLISH_OPTIONS } from '@/lib/admin/common/schema';
 import type { MediaRef, PublishStatus } from '@/lib/admin/common/types';
@@ -42,24 +41,7 @@ export const partnersDefinition: ResourceDefinition<AdminPartner> = {
   permission: 'partners',
   titleKey: 'name',
   idPrefix: 'partner',
-  // Only the two partners the public site already names.
-  seed: () =>
-    PARTNERS_MOCK.featuredPartners.map((p, index) => ({
-      id: `partner_${p.id}`,
-      name: p.name,
-      slug: p.id,
-      type: 'event-partner',
-      logo: { src: p.logo.src, alt: p.logo.alt, mediaId: null },
-      description: p.description,
-      tagline: p.tagline ?? '',
-      website: p.href ?? '',
-      featured: !!p.featured,
-      status: 'published',
-      sortOrder: index + 1,
-      collaborationImage: p.image ? { src: p.image.src, alt: p.image.alt, mediaId: null } : null,
-      ctaUrl: '',
-      updatedAt: DEMO_UPDATED,
-    })),
+  seed: () => [],
   searchFields: ['name', 'slug', 'tagline'],
   matchers: { featured: (r, v) => String(r.featured) === v },
   defaultSort: { key: 'sortOrder', direction: 'asc' },

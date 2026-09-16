@@ -1,13 +1,10 @@
-// Resource registry: resolves each module's repository for the configured
-// data source. Swapping mock for the backend is a configuration change.
+// Resource registry: every module resolves to the backend-backed repository.
 
 import { cookies } from 'next/headers';
-import { getAdminDataSource, getApiBaseUrl } from './common/config';
+import { getApiBaseUrl } from './common/config';
 import {
   HttpAdminRepository,
   HttpSingletonRepository,
-  MockAdminRepository,
-  MockSingletonRepository,
 } from './common/repository';
 import type { AdminRepository, SingletonRepository } from './common/repository';
 import type { ResourceDefinition, ResourceKey, SingletonDefinition, SingletonKey } from './common/resource';
@@ -88,21 +85,10 @@ async function cookieHeader(): Promise<string> {
 
 export async function getRepository(key: ResourceKey): Promise<AdminRepository<AdminRecord>> {
   const definition = RESOURCES[key];
-  if (getAdminDataSource() === 'api') {
-    return new HttpAdminRepository(getApiBaseUrl(), definition.apiPath, await cookieHeader());
-  }
-  return new MockAdminRepository(key, definition.seed, {
-    searchFields: definition.searchFields,
-    matchers: definition.matchers,
-    idPrefix: definition.idPrefix,
-    defaultSort: definition.defaultSort,
-  });
+  return new HttpAdminRepository(getApiBaseUrl(), definition.apiPath, await cookieHeader());
 }
 
 export async function getSingletonRepository(key: SingletonKey): Promise<SingletonRepository<Record<string, unknown>>> {
   const definition = SINGLETONS[key];
-  if (getAdminDataSource() === 'api') {
-    return new HttpSingletonRepository(getApiBaseUrl(), definition.apiPath, await cookieHeader());
-  }
-  return new MockSingletonRepository(key, definition.seed as () => Record<string, unknown>);
+  return new HttpSingletonRepository(getApiBaseUrl(), definition.apiPath, await cookieHeader());
 }

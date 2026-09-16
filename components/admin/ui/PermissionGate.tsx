@@ -11,7 +11,6 @@ export interface ClientSession {
   roleName: string;
   userId: string;
   permissions: string[];
-  mock: boolean;
 }
 
 const SessionContext = createContext<ClientSession | null>(null);

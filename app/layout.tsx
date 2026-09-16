@@ -21,6 +21,7 @@ const oswald = Oswald({
 export const metadata: Metadata = {
   title: "Destiny — Connection Rave",
   description: "Perth's next high-energy rave experience.",
+  metadataBase: new URL(process.env.SITE_URL ?? process.env.APP_URL ?? "http://localhost:3000"),
 };
 
 export default function RootLayout({

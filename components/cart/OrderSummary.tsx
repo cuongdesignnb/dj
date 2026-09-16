@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Info, LoaderCircle } from 'lucide-react';
+import { ArrowRight, LoaderCircle } from 'lucide-react';
 import { createCheckoutSession } from '@/app/cart/actions';
 import type { CheckoutMode } from '@/lib/checkout/config';
 import { writeCheckoutRef } from '@/lib/cart/storage';
@@ -189,13 +189,6 @@ export default function OrderSummary({
                 ? 'Merchandise checkout is not available yet. Your cart stays saved in this browser tab.'
                 : '')}
         </p>
-
-        {mode === 'mock' && (
-          <p className="flex items-start gap-2 rounded-[10px] border border-white/15 px-3 py-2 text-xs text-rave-muted">
-            <Info aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
-            Development checkout simulation. No payment is taken.
-          </p>
-        )}
 
         <Link
           href="/shop"

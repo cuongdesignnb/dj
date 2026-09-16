@@ -1,14 +1,10 @@
 // Data access for /lineup and /lineup/[slug].
 //
-//   MockArtistRepository  — canonical local content, the default
-//   HttpArtistRepository  — GET {base}/api/v1/artists
-//                           GET {base}/api/v1/artists/{slug}
-//
-// Selected by NEXT_PUBLIC_DATA_SOURCE / NEXT_PUBLIC_API_BASE_URL.
+// Published artist records are loaded through the API.
 
 import type { Artist, LineupPageData } from './types';
-import { ARTISTS, LINEUP_MOCK } from './mock';
 import { normalizeArtist, normalizeArtists } from './http';
+import { publicApiBaseUrl } from '@/lib/api/public';
 
 export interface ArtistRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -24,21 +20,6 @@ export interface ArtistRepository {
   getArtists(): Promise<RepositoryResult<Artist[]>>;
   /** Resolves to null for a slug that does not exist, so callers can 404. */
   getArtistBySlug(slug: string): Promise<RepositoryResult<Artist | null>>;
-}
-
-export class MockArtistRepository implements ArtistRepository {
-  async getLineupPage(): Promise<RepositoryResult<LineupPageData>> {
-    return { ok: true, data: LINEUP_MOCK };
-  }
-
-  async getArtists(): Promise<RepositoryResult<Artist[]>> {
-    return { ok: true, data: ARTISTS };
-  }
-
-  async getArtistBySlug(slug: string): Promise<RepositoryResult<Artist | null>> {
-    const normalized = slug.trim().toLowerCase();
-    return { ok: true, data: ARTISTS.find((a) => a.slug === normalized) ?? null };
-  }
 }
 
 export class HttpArtistRepository implements ArtistRepository {
@@ -121,7 +102,26 @@ export class HttpArtistRepository implements ArtistRepository {
   async getLineupPage(): Promise<RepositoryResult<LineupPageData>> {
     const result = await this.getArtists();
     if (!result.ok) return result;
-    return { ok: true, data: { ...LINEUP_MOCK, artists: result.data } };
+    return {
+      ok: true,
+      data: {
+        hero: {
+          eyebrow: 'ARTIST LINEUP',
+          titleLines: ['THE SOUND', 'OF CONNECTION'],
+          description: 'Meet the published artists connected to this event.',
+          primaryCta: { label: 'Explore the event', href: '/event' },
+          secondaryCta: { label: 'View tickets', href: '/tickets' },
+          visual: result.data[0]?.heroImage ?? result.data[0]?.portrait ?? { src: '', alt: '' },
+          sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'],
+          badge: [],
+          location: 'Perth',
+        },
+        artists: result.data,
+        story: { eyebrow: 'THE LINEUP', title: 'Artists in focus', description: 'Published artist profiles for the current programme.', image: result.data[0]?.heroImage ?? { src: '', alt: '' } },
+        finalCta: { title: 'STAY CONNECTED', primary: { label: 'Explore events', href: '/events' }, secondary: { label: 'Contact us', href: '/contact' } },
+        footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
+      },
+    };
   }
 
   async getArtistBySlug(slug: string): Promise<RepositoryResult<Artist | null>> {
@@ -139,36 +139,16 @@ export class HttpArtistRepository implements ArtistRepository {
 }
 
 export interface ArtistDataEnv {
-  source: 'mock' | 'api';
+  source: 'api';
   baseUrl: string;
 }
 
 export function readArtistEnv(): ArtistDataEnv {
-  const source = (process.env.NEXT_PUBLIC_DATA_SOURCE ?? 'mock').trim().toLowerCase();
-  return {
-    source: source === 'api' || source === 'http' ? 'api' : 'mock',
-    baseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').trim(),
-  };
+  return { source: 'api', baseUrl: publicApiBaseUrl() };
 }
 
 export function getArtistRepository():
   | { ok: true; repository: ArtistRepository }
   | { ok: false; error: ArtistRepositoryError } {
-  const env = readArtistEnv();
-
-  if (env.source === 'api') {
-    if (!env.baseUrl) {
-      return {
-        ok: false,
-        error: {
-          kind: 'config',
-          message:
-            'NEXT_PUBLIC_DATA_SOURCE=api requires NEXT_PUBLIC_API_BASE_URL to be configured.',
-        },
-      };
-    }
-    return { ok: true, repository: new HttpArtistRepository(env.baseUrl) };
-  }
-
-  return { ok: true, repository: new MockArtistRepository() };
+  return { ok: true, repository: new HttpArtistRepository(readArtistEnv().baseUrl) };
 }

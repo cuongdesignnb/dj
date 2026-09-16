@@ -1,5 +1,4 @@
-import { GALLERY_COLLECTIONS } from '@/lib/gallery/mock';
-import { DEMO_UPDATED, f, opts, section } from '@/lib/admin/common/fields';
+import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 import { PUBLISH_OPTIONS } from '@/lib/admin/common/schema';
 import type { MediaRef, PublishStatus, SeoFields } from '@/lib/admin/common/types';
@@ -46,32 +45,7 @@ export const galleryDefinition: ResourceDefinition<AdminAlbum> = {
   permission: 'gallery',
   titleKey: 'title',
   idPrefix: 'album',
-  seed: () =>
-    GALLERY_COLLECTIONS.map((c) => ({
-      id: `album_${c.slug}`,
-      title: c.title,
-      slug: c.slug,
-      subtitle: c.subtitle ?? '',
-      description: c.description ?? '',
-      // "preview" on the public site: visuals that evoke the event.
-      status: c.status as PublishStatus,
-      cover: { src: c.cover.src, alt: c.cover.alt, mediaId: null },
-      hero: c.hero ? { src: c.hero.src, alt: c.hero.alt, mediaId: null } : null,
-      venue: c.venue ?? '',
-      eventId: c.eventId ? 'evt_destiny' : '',
-      featured: !!c.featured,
-      items: c.media.map((m) => ({
-        type: m.type,
-        category: m.category,
-        image: { src: m.thumbnail.src, alt: m.thumbnail.alt, mediaId: null },
-        videoUrl: m.video?.url ?? '',
-        caption: m.caption ?? m.title ?? '',
-        featured: !!m.featured,
-        sortOrder: m.sortOrder,
-      })),
-      seo: {},
-      updatedAt: DEMO_UPDATED,
-    })),
+  seed: () => [],
   searchFields: ['title', 'slug', 'subtitle'],
   matchers: {
     featured: (r, v) => String(r.featured) === v,
