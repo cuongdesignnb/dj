@@ -489,3 +489,38 @@ export const legalReveal: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: easeCubic } },
 };
 
+
+// ===== ADMIN VARIANTS (/admin) =====
+// Restrained on purpose: short, small movements that never delay work.
+
+const adminEase = [0.25, 0.46, 0.45, 0.94] as [number, number, number, number];
+
+export const adminPageReveal: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: adminEase } },
+};
+
+export const adminStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.04 } },
+};
+
+export const adminCardReveal: Variants = {
+  hidden: { opacity: 0, y: 12, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.25, ease: adminEase } },
+};
+
+export const adminDrawer: Variants = {
+  hidden: { x: '100%' },
+  visible: { x: 0, transition: { duration: 0.22, ease: adminEase } },
+};
+
+export const adminModal: Variants = {
+  hidden: { opacity: 0, scale: 0.98 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.18, ease: adminEase } },
+};
+
+export const adminSidebarGroup: Variants = {
+  closed: { height: 0, opacity: 0, transition: { duration: 0.18, ease: adminEase } },
+  open: { height: 'auto', opacity: 1, transition: { duration: 0.2, ease: adminEase } },
+};

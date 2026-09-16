@@ -16,6 +16,16 @@
   --color-rave-white: #FFFFFF;
   --color-rave-muted: #A6A6B2;
 
+  /* Admin panel: same brand, calmer surfaces. */
+  --color-admin-bg: #05060A;
+  --color-admin-deep: #080A10;
+  --color-admin-panel: #0D1018;
+  --color-admin-panel2: #111522;
+  --color-admin-border: rgba(255, 255, 255, 0.08);
+  --color-admin-muted: #9CA3B5;
+  --color-admin-success: #24D68A;
+  --color-admin-warning: #F5B642;
+
   --font-heading: var(--font-oswald), 'Oswald', sans-serif;
   --font-body: var(--font-inter), 'Inter', sans-serif;
 }

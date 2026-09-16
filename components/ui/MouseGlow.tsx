@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 interface Sparkle {
@@ -24,6 +25,7 @@ export default function MouseGlow() {
   const glow2X = useSpring(mouseX, { ...springConfig, damping: 25, stiffness: 200 });
   const glow2Y = useSpring(mouseY, { ...springConfig, damping: 25, stiffness: 200 });
 
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const sparkleIdRef = useRef(0);
@@ -67,7 +69,8 @@ export default function MouseGlow() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [handleMouseMove]);
 
-  if (!mounted) return null;
+  // The admin panel is a working tool, not part of the event site's atmosphere.
+  if (!mounted || pathname?.startsWith('/admin')) return null;
 
   return (
     <>
