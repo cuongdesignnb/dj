@@ -35,6 +35,8 @@ const ICONS: ShopIcon[] = [
   'file',
   'droplet',
   'sparkles',
+  'card',
+  'timer',
 ];
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -3,15 +3,12 @@
 import { useEffect, useId, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Check, ShoppingCart } from 'lucide-react';
-import { sessionCartAdapter } from '@/lib/shop/cart';
-import type { CartAdapter } from '@/lib/shop/cart';
-import {
-  primaryImage,
-  selectionLabel,
-  validateAddToCart,
-} from '@/lib/shop/helpers';
+import Link from 'next/link';
+import { sessionCartAdapter } from '@/lib/cart/adapter';
+import { cartInputFor } from '@/lib/cart/input';
+import type { CartAdapter } from '@/lib/cart/types';
+import { selectionLabel, validateAddToCart } from '@/lib/shop/helpers';
 import type { ProductSelection } from '@/lib/shop/helpers';
-import { unitPrice } from '@/lib/shop/pricing';
 import type { Product } from '@/lib/shop/types';
 
 type Status = { kind: 'idle' } | { kind: 'added' | 'error'; message: string };
@@ -61,16 +58,7 @@ export default function AddToCartButton({
 
     const options = selectionLabel(product, selection);
     try {
-      adapter.addItem(
-        { productId: product.id, variantId: check.variant?.id ?? null, quantity },
-        {
-          title: product.title,
-          href: `/shop/${product.slug}`,
-          unitPrice: unitPrice(product, check.variant),
-          image: primaryImage(product)?.image ?? null,
-          optionLabel: options || null,
-        },
-      );
+      adapter.addItem(cartInputFor(product, selection, check.variant, quantity));
       setStatus({
         kind: 'added',
         message: `Added to cart: ${quantity} × ${product.title}${options ? ` (${options})` : ''}.`,
@@ -120,6 +108,17 @@ export default function AddToCartButton({
         }`}
       >
         {status.kind === 'idle' ? '' : status.message}
+        {status.kind === 'added' && (
+          <>
+            {' '}
+            <Link
+              href="/cart"
+              className="font-semibold text-white underline underline-offset-2 hover:text-rave-red focus:outline-none focus-visible:text-rave-red"
+            >
+              View cart
+            </Link>
+          </>
+        )}
       </p>
     </div>
   );

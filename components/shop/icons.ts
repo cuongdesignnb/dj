@@ -1,5 +1,6 @@
 import {
   Box,
+  CreditCard,
   Droplet,
   FileText,
   Gem,
@@ -9,6 +10,7 @@ import {
   Shirt,
   Sparkles,
   Star,
+  Timer,
   Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -27,6 +29,8 @@ export const SHOP_ICONS: Record<ShopIcon, LucideIcon> = {
   file: FileText,
   droplet: Droplet,
   sparkles: Sparkles,
+  card: CreditCard,
+  timer: Timer,
 };
 
 export function shopIcon(name: ShopIcon | null | undefined, fallback: ShopIcon = 'sparkles') {

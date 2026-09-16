@@ -45,7 +45,9 @@ export default function ShopBenefits({
           variants={shopStagger}
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
-          className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 ${title ? 'mt-6' : ''}`}
+          className={`grid grid-cols-1 gap-4 ${
+            benefits.length === 3 ? 'md:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4'
+          } ${title ? 'mt-6' : ''}`}
         >
           {benefits.map((benefit) => {
             const Icon = SHOP_ICONS[benefit.icon];

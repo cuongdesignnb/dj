@@ -5,23 +5,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ShoppingBag, Trash2, X } from 'lucide-react';
-import { cartItemCount, sessionCartAdapter, useCartLines } from '@/lib/shop/cart';
-import { formatMoney, multiply, sum } from '@/lib/shop/pricing';
+import { sessionCartAdapter, useCartLines } from '@/lib/cart/adapter';
+import { optionLabel } from '@/lib/cart/input';
+import { itemCount, lineTotal, subtotal as cartSubtotal } from '@/lib/cart/pricing';
+import { formatMoney } from '@/lib/shop/pricing';
 import QuantityControl from './QuantityControl';
 
 /**
  * Floating cart pill and the preview cart panel. It only appears once
  * something is in the cart, so it never covers the page for nothing.
  *
- * There is deliberately no checkout button: the panel says plainly that the
- * checkout flow is still to be confirmed.
+ * Checkout starts from /cart, where lines are checked against the catalogue;
+ * the drawer only links there.
  */
 export default function CartButton() {
   const reduced = useReducedMotion();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const lines = useCartLines();
-  const count = cartItemCount(lines);
-  const subtotal = sum(lines.map((line) => multiply(line.unitPrice, line.quantity)));
+  const count = itemCount(lines);
+  const subtotal = cartSubtotal(lines);
 
   const close = () => dialogRef.current?.close();
 
@@ -76,32 +78,29 @@ export default function CartButton() {
           ) : (
             <ul className="flex-1 divide-y divide-white/[0.08] overflow-y-auto px-5">
               {lines.map((line) => {
-                const quantityLabelId = `cart-qty-${line.id}`;
+                const quantityLabelId = `drawer-qty-${line.id}`;
+                const options = optionLabel(line);
                 return (
                   <li key={line.id} className="flex gap-4 py-4">
-                    {line.image && (
-                      <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[10px] border border-white/10">
-                        <Image src={line.image.src} alt="" fill sizes="80px" className="object-cover" />
-                      </span>
-                    )}
+                    <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[10px] border border-white/10">
+                      <Image src={line.image.src} alt="" fill sizes="80px" className="object-cover" />
+                    </span>
                     <div className="min-w-0 flex-1">
                       <Link
-                        href={line.href}
+                        href={`/shop/${line.productSlug}`}
                         onClick={close}
                         className="font-heading text-base font-bold uppercase leading-tight hover:text-rave-red focus:outline-none focus-visible:underline"
                       >
                         {line.title}
                       </Link>
-                      {line.optionLabel && (
-                        <p className="mt-0.5 text-xs text-rave-muted">{line.optionLabel}</p>
-                      )}
+                      {options && <p className="mt-0.5 text-xs text-rave-muted">{options}</p>}
                       <p className="mt-1 text-sm text-white/90">
-                        {formatMoney(multiply(line.unitPrice, line.quantity))}
+                        {formatMoney(lineTotal(line))}
                       </p>
                       <div className="mt-2 flex items-center gap-2">
                         <span id={quantityLabelId} className="sr-only">
                           Quantity of {line.title}
-                          {line.optionLabel ? ` (${line.optionLabel})` : ''}
+                          {options ? ` (${options})` : ''}
                         </span>
                         <QuantityControl
                           value={line.quantity}
@@ -111,7 +110,7 @@ export default function CartButton() {
                         <button
                           type="button"
                           onClick={() => sessionCartAdapter.removeItem(line.id)}
-                          aria-label={`Remove ${line.title}${line.optionLabel ? ` (${line.optionLabel})` : ''} from cart`}
+                          aria-label={`Remove ${line.title}${options ? ` (${options})` : ''} from cart`}
                           className="grid h-11 w-11 place-items-center rounded-[10px] text-rave-muted transition-colors hover:text-rave-red focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
                         >
                           <Trash2 aria-hidden className="h-4 w-4" />
@@ -132,13 +131,22 @@ export default function CartButton() {
               </p>
             )}
             <p className="mt-3 text-xs leading-relaxed text-rave-muted">
-              Merchandise preview — checkout flow to be confirmed. Nothing has been ordered or
-              charged.
+              Shipping and final charges are confirmed during checkout. Nothing has been ordered
+              or charged.
             </p>
+            {lines.length > 0 && (
+              <Link
+                href="/cart"
+                onClick={close}
+                className="mt-4 inline-flex min-h-[48px] w-full items-center justify-center rounded-[12px] bg-gradient-to-r from-rave-red to-rave-red2 font-heading text-sm font-semibold uppercase tracking-wider text-white transition-all hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-deep"
+              >
+                View Cart
+              </Link>
+            )}
             <button
               type="button"
               onClick={close}
-              className="mt-4 inline-flex min-h-[48px] w-full items-center justify-center rounded-[12px] border border-white/25 font-heading text-sm font-semibold uppercase tracking-wider transition-colors hover:border-rave-red/60 hover:bg-rave-red/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
+              className="mt-3 inline-flex min-h-[48px] w-full items-center justify-center rounded-[12px] border border-white/25 font-heading text-sm font-semibold uppercase tracking-wider transition-colors hover:border-rave-red/60 hover:bg-rave-red/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
             >
               Continue Shopping
             </button>

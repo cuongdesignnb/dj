@@ -8,8 +8,14 @@ import type { Product } from '@/lib/shop/types';
 import ProductCard from './ProductCard';
 import SectionHeading from './SectionHeading';
 
-/** "You May Also Like" — the list is chosen on the server, deterministically. */
-export default function RelatedProducts({ products }: { products: Product[] }) {
+/** "You May Also Like" — the caller picks the list, deterministically. */
+export default function RelatedProducts({
+  products,
+  columns = 4,
+}: {
+  products: Product[];
+  columns?: 3 | 4;
+}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
@@ -27,7 +33,7 @@ export default function RelatedProducts({ products }: { products: Product[] }) {
           variants={shopStagger}
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
-          className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+          className={`mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 ${columns === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}
         >
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />

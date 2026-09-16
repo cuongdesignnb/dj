@@ -67,7 +67,9 @@ export type ShopIcon =
   | 'users'
   | 'file'
   | 'droplet'
-  | 'sparkles';
+  | 'sparkles'
+  | 'card'
+  | 'timer';
 
 export interface ProductDetailSection {
   title: string;

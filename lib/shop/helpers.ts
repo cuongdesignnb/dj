@@ -184,23 +184,40 @@ const RELATED_CATEGORIES: Record<ProductCategory, ProductCategory[]> = {
 };
 
 /**
- * Same category first, then the nearest related categories, then catalogue
- * order. Fully deterministic — the same product always gets the same list.
+ * Recommendations for a set of anchor products (the product being viewed, the
+ * cart, an order). Anchors are excluded; candidates rank by how close their
+ * category sits to any anchor's, then by catalogue order. Fully deterministic.
+ * With no anchors, featured products lead, then catalogue order.
  */
+export function recommendProducts(
+  anchors: Pick<Product, 'id' | 'category'>[],
+  allProducts: Product[],
+  limit = 4,
+): Product[] {
+  const excluded = new Set(anchors.map((a) => a.id));
+  const rank = (candidate: Product) => {
+    if (anchors.length === 0) return candidate.featured ? 0 : 1;
+    return Math.min(
+      ...anchors.map((anchor) => {
+        const order = [anchor.category, ...RELATED_CATEGORIES[anchor.category]];
+        const index = order.indexOf(candidate.category);
+        return index === -1 ? order.length : index;
+      }),
+    );
+  };
+
+  return sortProducts(allProducts.filter((candidate) => !excluded.has(candidate.id)))
+    .map((candidate, position) => ({ candidate, position }))
+    .sort((a, b) => rank(a.candidate) - rank(b.candidate) || a.position - b.position)
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
+
+/** Same category first, then the nearest related categories, then catalogue order. */
 export function getRelatedProducts(
   product: Product,
   allProducts: Product[],
   limit = 4,
 ): Product[] {
-  const order = [product.category, ...RELATED_CATEGORIES[product.category]];
-  const rank = (candidate: Product) => {
-    const index = order.indexOf(candidate.category);
-    return index === -1 ? order.length : index;
-  };
-
-  return sortProducts(allProducts.filter((candidate) => candidate.id !== product.id))
-    .map((candidate, position) => ({ candidate, position }))
-    .sort((a, b) => rank(a.candidate) - rank(b.candidate) || a.position - b.position)
-    .slice(0, limit)
-    .map(({ candidate }) => candidate);
+  return recommendProducts([product], allProducts, limit);
 }
