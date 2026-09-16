@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+<defs>
+<radialGradient id="tote-bg" cx="50%" cy="38%" r="75%">
+<stop offset="0" stop-color="#4a0714"/>
+<stop offset="0.42" stop-color="#15040b"/>
+<stop offset="1" stop-color="#030305"/>
+</radialGradient>
+<linearGradient id="tote-fab" x1="0" y1="0" x2="0.3" y2="1">
+<stop offset="0" stop-color="#1f1f27"/>
+<stop offset="0.55" stop-color="#121218"/>
+<stop offset="1" stop-color="#08080c"/>
+</linearGradient>
+<linearGradient id="tote-beam" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</linearGradient>
+<radialGradient id="tote-halo" cx="50%" cy="50%" r="50%">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</radialGradient>
+<filter id="tote-glow" x="-30%" y="-30%" width="160%" height="160%">
+<feGaussianBlur stdDeviation="5" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="tote-soft" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur stdDeviation="18"/>
+</filter>
+</defs><rect width="800" height="800" fill="url(#tote-bg)"/>
+<polygon points="394,-20 406,-20 14,620 -54,620" fill="url(#tote-beam)" opacity="0.475"/><polygon points="394,-20 406,-20 154,620 86,620" fill="url(#tote-beam)" opacity="0.43333333333333335"/><polygon points="394,-20 406,-20 294,620 226,620" fill="url(#tote-beam)" opacity="0.39166666666666666"/><polygon points="394,-20 406,-20 434,620 366,620" fill="url(#tote-beam)" opacity="0.35"/><polygon points="394,-20 406,-20 574,620 506,620" fill="url(#tote-beam)" opacity="0.3916666666666666"/><polygon points="394,-20 406,-20 714,620 646,620" fill="url(#tote-beam)" opacity="0.43333333333333335"/><polygon points="394,-20 406,-20 854,620 786,620" fill="url(#tote-beam)" opacity="0.475"/>
+<ellipse cx="400" cy="330" rx="300" ry="190" fill="url(#tote-halo)" opacity="0.6"/>
+<g opacity="0.95"><path d="M -20 801 L -20.0 724.0 Q -18.0 667.6 -9.0 656.8 A 12.2 13.5 0 1 1 9.9 656.8 Q 19.0 667.6 21.0 724.0 L 21.0 724.0 Q 23.0 689.2 38.5 678.4 A 12.2 13.5 0 1 1 57.4 678.4 Q 72.9 689.2 74.9 724.0 L 74.9 724.0 Q 76.9 674.2 83.6 663.4 A 12.2 13.5 0 1 1 102.5 663.4 Q 109.2 674.2 111.2 724.0 L 111.2 724.0 Q 113.2 687.4 122.2 676.6 A 12.2 13.5 0 1 1 141.1 676.6 Q 150.1 687.4 152.1 724.0 L 152.1 724.0 Q 154.1 678.1 168.1 667.3 A 12.2 13.5 0 1 1 187.0 667.3 Q 200.9 678.1 202.9 724.0 L 202.9 724.0 Q 204.9 669.2 211.7 658.4 A 12.2 13.5 0 1 1 230.6 658.4 Q 237.4 669.2 239.4 724.0 L 239.4 724.0 Q 241.4 695.9 250.5 685.1 A 12.2 13.5 0 1 1 269.4 685.1 Q 278.4 695.9 280.4 724.0 L 280.4 724.0 Q 282.4 656.5 296.5 645.7 A 12.2 13.5 0 1 1 315.4 645.7 Q 329.6 656.5 331.6 724.0 L 331.6 724.0 Q 333.6 675.6 341.6 664.8 A 12.2 13.5 0 1 1 360.5 664.8 Q 368.5 675.6 370.5 724.0 L 370.5 724.0 Q 372.5 662.9 380.6 652.1 A 12.2 13.5 0 1 1 399.5 652.1 Q 407.5 662.9 409.5 724.0 L 409.5 724.0 Q 411.5 676.0 424.7 665.2 A 12.2 13.5 0 1 1 443.6 665.2 Q 456.8 676.0 458.8 724.0 L 458.8 724.0 Q 460.8 683.0 468.4 672.2 A 12.2 13.5 0 1 1 487.3 672.2 Q 494.9 683.0 496.9 724.0 L 496.9 724.0 Q 498.9 685.8 515.8 675.0 A 12.2 13.5 0 1 1 534.7 675.0 Q 551.6 685.8 553.6 724.0 L 553.6 724.0 Q 555.6 660.5 568.7 649.7 A 12.2 13.5 0 1 1 587.6 649.7 Q 600.7 660.5 602.7 724.0 L 602.7 724.0 Q 604.7 700.6 615.7 689.8 A 12.2 13.5 0 1 1 634.6 689.8 Q 645.7 700.6 647.7 724.0 L 647.7 724.0 Q 649.7 678.0 664.9 667.2 A 12.2 13.5 0 1 1 683.8 667.2 Q 698.9 678.0 700.9 724.0 L 700.9 724.0 Q 702.9 697.5 718.6 686.7 A 12.2 13.5 0 1 1 737.5 686.7 Q 753.1 697.5 755.1 724.0 L 755.1 724.0 Q 757.1 683.2 767.4 672.4 A 12.2 13.5 0 1 1 786.3 672.4 Q 796.7 683.2 798.7 724.0 L 798.7 724.0 Q 800.7 686.2 810.6 675.4 A 12.2 13.5 0 1 1 829.5 675.4 Q 839.4 686.2 841.4 724.0 L 820 801 Z" fill="#050507"/><path d="M 7.0 693.0 L 1.5 605.7" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 170.5 693.0 L 179.1 583.4" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 364.5 693.0 L 373.1 604.6" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 484.3 693.0 L 473.5 552.3" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 638.1 693.0 L 649.4 618.9" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 764.0 693.0 L 753.1 606.5" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/></g>
+<rect x="0" y="0" width="800" height="800" fill="url(#tote-bg)" opacity="0.18"/><g>
+<ellipse cx="400" cy="730" rx="220" ry="16" fill="#000" opacity="0.6" filter="url(#tote-soft)"/>
+<path d="M 300 330 Q 300 90 400 90 Q 500 90 500 330" fill="none" stroke="#18181f" stroke-width="22"/>
+<path d="M 340 330 Q 340 140 400 140 Q 460 140 460 330" fill="none" stroke="#131319" stroke-width="18"/>
+<path d="M 210 320 L 590 320 L 612 720 L 188 720 Z" fill="url(#tote-fab)" stroke="#2a2a33" stroke-width="2"/>
+<path d="M 210 320 L 590 320" stroke="#2e2e38" stroke-width="10"/>
+<g filter="url(#tote-glow)">
+<circle cx="400" cy="480" r="62" fill="none" stroke="#FF173D" stroke-width="7.4"/>
+</g>
+<circle cx="400" cy="480" r="49.6" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="2.2"/>
+<text x="400" y="501.1" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="700" font-size="58.9" fill="#ffffff" text-anchor="middle">C</text>
+<text x="400" y="600" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="600" font-size="30" letter-spacing="10" fill="#e8e8ee" text-anchor="middle">CONNECTION</text>
+</g></svg>

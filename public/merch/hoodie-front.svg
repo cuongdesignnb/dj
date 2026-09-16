@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+<defs>
+<radialGradient id="hoodiefront-bg" cx="50%" cy="38%" r="75%">
+<stop offset="0" stop-color="#4a0714"/>
+<stop offset="0.42" stop-color="#15040b"/>
+<stop offset="1" stop-color="#030305"/>
+</radialGradient>
+<linearGradient id="hoodiefront-fab" x1="0" y1="0" x2="0.3" y2="1">
+<stop offset="0" stop-color="#1f1f27"/>
+<stop offset="0.55" stop-color="#121218"/>
+<stop offset="1" stop-color="#08080c"/>
+</linearGradient>
+<linearGradient id="hoodiefront-beam" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</linearGradient>
+<radialGradient id="hoodiefront-halo" cx="50%" cy="50%" r="50%">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</radialGradient>
+<filter id="hoodiefront-glow" x="-30%" y="-30%" width="160%" height="160%">
+<feGaussianBlur stdDeviation="5" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="hoodiefront-soft" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur stdDeviation="18"/>
+</filter>
+</defs><rect width="800" height="800" fill="url(#hoodiefront-bg)"/>
+<polygon points="394,-20 406,-20 14,620 -54,620" fill="url(#hoodiefront-beam)" opacity="0.475"/><polygon points="394,-20 406,-20 154,620 86,620" fill="url(#hoodiefront-beam)" opacity="0.43333333333333335"/><polygon points="394,-20 406,-20 294,620 226,620" fill="url(#hoodiefront-beam)" opacity="0.39166666666666666"/><polygon points="394,-20 406,-20 434,620 366,620" fill="url(#hoodiefront-beam)" opacity="0.35"/><polygon points="394,-20 406,-20 574,620 506,620" fill="url(#hoodiefront-beam)" opacity="0.3916666666666666"/><polygon points="394,-20 406,-20 714,620 646,620" fill="url(#hoodiefront-beam)" opacity="0.43333333333333335"/><polygon points="394,-20 406,-20 854,620 786,620" fill="url(#hoodiefront-beam)" opacity="0.475"/>
+<ellipse cx="400" cy="330" rx="300" ry="190" fill="url(#hoodiefront-halo)" opacity="0.6"/>
+<g opacity="0.95"><path d="M -20 801 L -20.0 724.0 Q -18.0 680.1 -9.0 669.3 A 12.2 13.5 0 1 1 9.9 669.3 Q 19.0 680.1 21.0 724.0 L 21.0 724.0 Q 23.0 694.3 37.8 683.5 A 12.2 13.5 0 1 1 56.7 683.5 Q 71.6 694.3 73.6 724.0 L 73.6 724.0 Q 75.6 685.4 82.3 674.6 A 12.2 13.5 0 1 1 101.2 674.6 Q 107.8 685.4 109.8 724.0 L 109.8 724.0 Q 111.8 675.9 129.5 665.1 A 12.2 13.5 0 1 1 148.4 665.1 Q 166.0 675.9 168.0 724.0 L 168.0 724.0 Q 170.0 686.0 177.5 675.2 A 12.2 13.5 0 1 1 196.4 675.2 Q 204.0 686.0 206.0 724.0 L 206.0 724.0 Q 208.0 671.7 222.5 660.9 A 12.2 13.5 0 1 1 241.4 660.9 Q 256.0 671.7 258.0 724.0 L 258.0 724.0 Q 260.0 689.2 269.9 678.4 A 12.2 13.5 0 1 1 288.8 678.4 Q 298.7 689.2 300.7 724.0 L 300.7 724.0 Q 302.7 674.8 320.6 664.0 A 12.2 13.5 0 1 1 339.5 664.0 Q 357.5 674.8 359.5 724.0 L 359.5 724.0 Q 361.5 677.7 376.1 666.9 A 12.2 13.5 0 1 1 395.0 666.9 Q 409.6 677.7 411.6 724.0 L 411.6 724.0 Q 413.6 693.2 422.9 682.4 A 12.2 13.5 0 1 1 441.8 682.4 Q 451.1 693.2 453.1 724.0 L 453.1 724.0 Q 455.1 661.7 467.4 650.9 A 12.2 13.5 0 1 1 486.3 650.9 Q 498.6 661.7 500.6 724.0 L 500.6 724.0 Q 502.6 692.9 510.1 682.1 A 12.2 13.5 0 1 1 529.0 682.1 Q 536.4 692.9 538.4 724.0 L 538.4 724.0 Q 540.4 700.7 553.1 689.9 A 12.2 13.5 0 1 1 572.0 689.9 Q 584.6 700.7 586.6 724.0 L 586.6 724.0 Q 588.6 674.3 604.2 663.5 A 12.2 13.5 0 1 1 623.1 663.5 Q 638.6 674.3 640.6 724.0 L 640.6 724.0 Q 642.6 693.8 660.6 683.0 A 12.2 13.5 0 1 1 679.5 683.0 Q 697.5 693.8 699.5 724.0 L 699.5 724.0 Q 701.5 699.3 719.5 688.5 A 12.2 13.5 0 1 1 738.4 688.5 Q 756.5 699.3 758.5 724.0 L 758.5 724.0 Q 760.5 689.2 777.4 678.4 A 12.2 13.5 0 1 1 796.3 678.4 Q 813.3 689.2 815.3 724.0 L 815.3 724.0 Q 817.3 672.6 825.3 661.8 A 12.2 13.5 0 1 1 844.2 661.8 Q 852.2 672.6 854.2 724.0 L 820 801 Z" fill="#050507"/><path d="M 7.0 693.0 L -9.5 605.8" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 163.9 693.0 L 172.6 592.4" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 328.4 693.0 L 347.2 547.4" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 505.8 693.0 L 520.8 566.3" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/><path d="M 653.0 693.0 L 670.1 613.3" stroke="#050507" stroke-width="9.5" stroke-linecap="round"/></g>
+<rect x="0" y="0" width="800" height="800" fill="url(#hoodiefront-bg)" opacity="0.18"/><g>
+<ellipse cx="400" cy="722" rx="240" ry="18" fill="#000" opacity="0.6" filter="url(#hoodiefront-soft)"/>
+<path d="M 300 176 Q 400 40 500 176 L 610 226 L 700 520 L 628 548 L 566 360 L 572 700 Q 400 722 228 700 L 234 360 L 172 548 L 100 520 L 190 226 Z" fill="url(#hoodiefront-fab)" stroke="#2a2a33" stroke-width="2"/>
+<path d="M 318 190 Q 400 70 482 190 Q 400 250 318 190 Z" fill="#050507" stroke="#2a2a33" stroke-width="3"/>
+<path d="M 372 232 L 366 330 M 428 232 L 434 330" stroke="#cfcfd6" stroke-width="3" stroke-linecap="round"/>
+<path d="M 300 560 L 500 560 L 530 670 L 270 670 Z" fill="#000" fill-opacity="0.22" stroke="#2c2c36" stroke-width="2"/>
+<g filter="url(#hoodiefront-glow)">
+<circle cx="400" cy="400" r="58" fill="none" stroke="#FF173D" stroke-width="7.0"/>
+</g>
+<circle cx="400" cy="400" r="46.4" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="2.0"/>
+<text x="400" y="419.7" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="700" font-size="55.1" fill="#ffffff" text-anchor="middle">C</text>
+<text x="400" y="505" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="600" font-size="22" letter-spacing="8" fill="#e4e4ea" text-anchor="middle">CONNECTION</text>
+<path d="M 172 548 L 100 520 M 628 548 L 700 520" stroke="#34343f" stroke-width="12" stroke-linecap="round"/>
+<path d="M 228 690 Q 400 712 572 690" stroke="#2e2e38" stroke-width="12" fill="none"/>
+</g></svg>

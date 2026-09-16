@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+<defs>
+<radialGradient id="teeartwork-bg" cx="50%" cy="38%" r="75%">
+<stop offset="0" stop-color="#4a0714"/>
+<stop offset="0.42" stop-color="#15040b"/>
+<stop offset="1" stop-color="#030305"/>
+</radialGradient>
+<linearGradient id="teeartwork-fab" x1="0" y1="0" x2="0.3" y2="1">
+<stop offset="0" stop-color="#1f1f27"/>
+<stop offset="0.55" stop-color="#121218"/>
+<stop offset="1" stop-color="#08080c"/>
+</linearGradient>
+<linearGradient id="teeartwork-beam" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</linearGradient>
+<radialGradient id="teeartwork-halo" cx="50%" cy="50%" r="50%">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</radialGradient>
+<filter id="teeartwork-glow" x="-30%" y="-30%" width="160%" height="160%">
+<feGaussianBlur stdDeviation="5" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="teeartwork-soft" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur stdDeviation="18"/>
+</filter>
+</defs><rect width="800" height="800" fill="#0d0d12"/><g>
+<ellipse cx="400" cy="390" rx="348.49999999999994" ry="225.49999999999997" fill="url(#teeartwork-halo)"/>
+<line x1="318.0" y1="390.0" x2="41.3" y2="390.0" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="322.0" y1="364.7" x2="58.8" y2="279.1" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="333.7" y1="341.8" x2="109.8" y2="179.1" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="351.8" y1="323.7" x2="189.1" y2="99.8" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="374.7" y1="312.0" x2="289.1" y2="48.8" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="400.0" y1="308.0" x2="400.0" y2="31.3" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="425.3" y1="312.0" x2="510.9" y2="48.8" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="448.2" y1="323.7" x2="610.9" y2="99.8" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="466.3" y1="341.8" x2="690.2" y2="179.1" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="478.0" y1="364.7" x2="741.2" y2="279.1" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/><line x1="482.0" y1="390.0" x2="758.8" y2="390.0" stroke="#FF173D" stroke-opacity="0.35" stroke-width="2.9"/>
+<g filter="url(#teeartwork-glow)"><path d="M 277 390 A 122.99999999999999 122.99999999999999 0 0 1 523 390" fill="none" stroke="#FF173D" stroke-width="13.1" opacity="0.95"/><path d="M 223.70000000000002 390 A 176.29999999999998 176.29999999999998 0 0 1 576.3 390" fill="none" stroke="#FF173D" stroke-width="9.8" opacity="0.77"/><path d="M 170.40000000000003 390 A 229.59999999999997 229.59999999999997 0 0 1 629.5999999999999 390" fill="none" stroke="#FF173D" stroke-width="6.6" opacity="0.59"/><path d="M 117.10000000000002 390 A 282.9 282.9 0 0 1 682.9 390" fill="none" stroke="#FF173D" stroke-width="3.3" opacity="0.41"/></g>
+<g filter="url(#teeartwork-glow)">
+<circle cx="400" cy="381.8" r="61.49999999999999" fill="none" stroke="#FF173D" stroke-width="7.4"/>
+</g>
+<circle cx="400" cy="381.8" r="49.2" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="2.2"/>
+<text x="400" y="402.7" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="700" font-size="58.4" fill="#ffffff" text-anchor="middle">C</text>
+<g opacity="1"><path d="M 41.25000000000006 609.76 L 41.3 537.5 Q 43.3 499.9 51.7 489.8 A 11.4 12.7 0 1 1 69.5 489.8 Q 77.9 499.9 79.9 537.5 L 79.9 537.5 Q 81.9 493.3 94.0 483.1 A 11.4 12.7 0 1 1 111.8 483.1 Q 123.9 493.3 125.9 537.5 L 125.9 537.5 Q 127.9 480.3 141.7 470.1 A 11.4 12.7 0 1 1 159.5 470.1 Q 173.3 480.3 175.3 537.5 L 175.3 537.5 Q 177.3 485.0 185.9 474.8 A 11.4 12.7 0 1 1 203.7 474.8 Q 212.2 485.0 214.2 537.5 L 214.2 537.5 Q 216.2 476.7 224.2 466.5 A 11.4 12.7 0 1 1 242.0 466.5 Q 250.0 476.7 252.0 537.5 L 252.0 537.5 Q 254.0 494.6 262.3 484.4 A 11.4 12.7 0 1 1 280.1 484.4 Q 288.4 494.6 290.4 537.5 L 290.4 537.5 Q 292.4 482.1 299.0 472.0 A 11.4 12.7 0 1 1 316.8 472.0 Q 323.3 482.1 325.3 537.5 L 325.3 537.5 Q 327.3 505.6 335.9 495.4 A 11.4 12.7 0 1 1 353.7 495.4 Q 362.3 505.6 364.3 537.5 L 364.3 537.5 Q 366.3 487.1 374.5 477.0 A 11.4 12.7 0 1 1 392.3 477.0 Q 400.6 487.1 402.6 537.5 L 402.6 537.5 Q 404.6 513.9 413.1 503.8 A 11.4 12.7 0 1 1 430.9 503.8 Q 439.4 513.9 441.4 537.5 L 441.4 537.5 Q 443.4 494.7 453.8 484.5 A 11.4 12.7 0 1 1 471.6 484.5 Q 482.0 494.7 484.0 537.5 L 484.0 537.5 Q 486.0 477.0 501.0 466.8 A 11.4 12.7 0 1 1 518.8 466.8 Q 533.7 477.0 535.7 537.5 L 535.7 537.5 Q 537.7 497.2 551.5 487.1 A 11.4 12.7 0 1 1 569.3 487.1 Q 583.1 497.2 585.1 537.5 L 585.1 537.5 Q 587.1 504.7 601.5 494.5 A 11.4 12.7 0 1 1 619.3 494.5 Q 633.7 504.7 635.7 537.5 L 635.7 537.5 Q 637.7 501.4 644.2 491.2 A 11.4 12.7 0 1 1 662.0 491.2 Q 668.6 501.4 670.6 537.5 L 670.6 537.5 Q 672.6 490.2 688.0 480.0 A 11.4 12.7 0 1 1 705.8 480.0 Q 721.3 490.2 723.3 537.5 L 723.3 537.5 Q 725.3 501.7 736.9 491.5 A 11.4 12.7 0 1 1 754.7 491.5 Q 766.4 501.7 768.4 537.5 L 758.75 609.76 Z" fill="#07070a"/><path d="M 66.7 508.1 L 85.7 425.6" stroke="#07070a" stroke-width="8.9" stroke-linecap="round"/><path d="M 196.9 508.1 L 192.3 385.2" stroke="#07070a" stroke-width="8.9" stroke-linecap="round"/><path d="M 292.0 508.1 L 277.6 423.6" stroke="#07070a" stroke-width="8.9" stroke-linecap="round"/><path d="M 468.9 508.1 L 465.4 421.3" stroke="#07070a" stroke-width="8.9" stroke-linecap="round"/><path d="M 590.1 508.1 L 587.8 374.4" stroke="#07070a" stroke-width="8.9" stroke-linecap="round"/></g>
+</g>
+<text x="400" y="650" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="700" font-size="92" letter-spacing="34" fill="#fff" text-anchor="middle">DESTINY</text></svg>

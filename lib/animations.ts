@@ -433,3 +433,37 @@ export const articleImageReveal: Variants = {
     transition: { duration: 0.75, ease: easeCubic },
   },
 };
+
+// ===== SHOP VARIANTS (/shop, /shop/[slug]) =====
+
+export const shopReveal: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, ease: easeCubic },
+  },
+};
+
+export const shopStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+/** One product silhouette in the hero composition. */
+export const shopProductReveal: Variants = {
+  hidden: { opacity: 0, y: 40, scale: 0.94 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.8, ease: easeCubic },
+  },
+};
+
+/** Product page image swap. */
+export const productImageSwap: Variants = {
+  enter: { opacity: 0, scale: 1.03 },
+  center: { opacity: 1, scale: 1, transition: { duration: 0.35, ease: easeCubic } },
+  exit: { opacity: 0, scale: 0.99, transition: { duration: 0.2, ease: easeCubic } },
+};

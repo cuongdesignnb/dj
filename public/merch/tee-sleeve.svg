@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+<defs>
+<radialGradient id="teesleeve-bg" cx="50%" cy="38%" r="75%">
+<stop offset="0" stop-color="#4a0714"/>
+<stop offset="0.42" stop-color="#15040b"/>
+<stop offset="1" stop-color="#030305"/>
+</radialGradient>
+<linearGradient id="teesleeve-fab" x1="0" y1="0" x2="0.3" y2="1">
+<stop offset="0" stop-color="#1f1f27"/>
+<stop offset="0.55" stop-color="#121218"/>
+<stop offset="1" stop-color="#08080c"/>
+</linearGradient>
+<linearGradient id="teesleeve-beam" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</linearGradient>
+<radialGradient id="teesleeve-halo" cx="50%" cy="50%" r="50%">
+<stop offset="0" stop-color="#FF173D" stop-opacity="0.55"/>
+<stop offset="1" stop-color="#FF173D" stop-opacity="0"/>
+</radialGradient>
+<filter id="teesleeve-glow" x="-30%" y="-30%" width="160%" height="160%">
+<feGaussianBlur stdDeviation="5" result="b"/>
+<feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="teesleeve-soft" x="-50%" y="-50%" width="200%" height="200%">
+<feGaussianBlur stdDeviation="18"/>
+</filter>
+</defs><rect width="800" height="800" fill="#0b0b10"/>
+<path d="M -40 360 Q 400 260 860 330 L 860 860 L -40 860 Z" fill="url(#teesleeve-fab)"/>
+<path d="M -40 360 Q 400 260 860 330" stroke="#2c2c36" stroke-width="30" fill="none"/>
+<path d="M -40 392 Q 400 292 860 362" stroke="#000" stroke-opacity="0.5" stroke-width="3" stroke-dasharray="10 8" fill="none"/>
+<text x="400" y="470" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="600" font-size="46" letter-spacing="16" fill="#e4e4ea" text-anchor="middle" transform="rotate(-5 400 470)">CONNECTION</text>
+<g filter="url(#teesleeve-glow)">
+<circle cx="400" cy="610" r="48" fill="none" stroke="#FF173D" stroke-width="5.8"/>
+</g>
+<circle cx="400" cy="610" r="38.4" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1.7"/>
+<text x="400" y="626.3" font-family="Oswald, 'Arial Narrow', Impact, sans-serif" font-weight="700" font-size="45.6" fill="#ffffff" text-anchor="middle">C</text>
+<g opacity="0.08"><line x1="0" y1="0" x2="800" y2="6" stroke="#fff"/><line x1="0" y1="20" x2="800" y2="26" stroke="#fff"/><line x1="0" y1="40" x2="800" y2="46" stroke="#fff"/><line x1="0" y1="60" x2="800" y2="66" stroke="#fff"/><line x1="0" y1="80" x2="800" y2="86" stroke="#fff"/><line x1="0" y1="100" x2="800" y2="106" stroke="#fff"/><line x1="0" y1="120" x2="800" y2="126" stroke="#fff"/><line x1="0" y1="140" x2="800" y2="146" stroke="#fff"/><line x1="0" y1="160" x2="800" y2="166" stroke="#fff"/><line x1="0" y1="180" x2="800" y2="186" stroke="#fff"/><line x1="0" y1="200" x2="800" y2="206" stroke="#fff"/><line x1="0" y1="220" x2="800" y2="226" stroke="#fff"/><line x1="0" y1="240" x2="800" y2="246" stroke="#fff"/><line x1="0" y1="260" x2="800" y2="266" stroke="#fff"/><line x1="0" y1="280" x2="800" y2="286" stroke="#fff"/><line x1="0" y1="300" x2="800" y2="306" stroke="#fff"/><line x1="0" y1="320" x2="800" y2="326" stroke="#fff"/><line x1="0" y1="340" x2="800" y2="346" stroke="#fff"/><line x1="0" y1="360" x2="800" y2="366" stroke="#fff"/><line x1="0" y1="380" x2="800" y2="386" stroke="#fff"/><line x1="0" y1="400" x2="800" y2="406" stroke="#fff"/><line x1="0" y1="420" x2="800" y2="426" stroke="#fff"/><line x1="0" y1="440" x2="800" y2="446" stroke="#fff"/><line x1="0" y1="460" x2="800" y2="466" stroke="#fff"/><line x1="0" y1="480" x2="800" y2="486" stroke="#fff"/><line x1="0" y1="500" x2="800" y2="506" stroke="#fff"/><line x1="0" y1="520" x2="800" y2="526" stroke="#fff"/><line x1="0" y1="540" x2="800" y2="546" stroke="#fff"/><line x1="0" y1="560" x2="800" y2="566" stroke="#fff"/><line x1="0" y1="580" x2="800" y2="586" stroke="#fff"/><line x1="0" y1="600" x2="800" y2="606" stroke="#fff"/><line x1="0" y1="620" x2="800" y2="626" stroke="#fff"/><line x1="0" y1="640" x2="800" y2="646" stroke="#fff"/><line x1="0" y1="660" x2="800" y2="666" stroke="#fff"/><line x1="0" y1="680" x2="800" y2="686" stroke="#fff"/><line x1="0" y1="700" x2="800" y2="706" stroke="#fff"/><line x1="0" y1="720" x2="800" y2="726" stroke="#fff"/><line x1="0" y1="740" x2="800" y2="746" stroke="#fff"/><line x1="0" y1="760" x2="800" y2="766" stroke="#fff"/><line x1="0" y1="780" x2="800" y2="786" stroke="#fff"/></g></svg>
