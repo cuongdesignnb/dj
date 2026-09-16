@@ -1,0 +1,91 @@
+import type { Metadata } from 'next';
+
+import Header from '@/components/home/Header';
+import EventsMotion from '@/components/events/EventsMotion';
+import EventsFooter from '@/components/events/EventsFooter';
+import PageHero from '@/components/shared/PageHero';
+import FinalCtaSection from '@/components/shared/FinalCtaSection';
+import NewsBrowser from '@/components/news/NewsBrowser';
+
+import { getNewsRepository } from '@/lib/news/repository';
+import { parseNewsFilter } from '@/lib/news/helpers';
+import type { NewsPageData } from '@/lib/news/types';
+import NewsError from './error';
+
+export const metadata: Metadata = {
+  title: 'News & Stories | Connection Rave',
+  description:
+    'Read Connection Rave news, announcements, event updates, artist stories and community features.',
+};
+
+async function loadNews(): Promise<
+  { data: NewsPageData } | { error: { message: string } }
+> {
+  const selection = getNewsRepository();
+  if (!selection.ok) {
+    return { error: { message: selection.error.message } };
+  }
+
+  const result = await selection.repository.getNewsPage();
+  if (!result.ok) {
+    return { error: { message: result.error.message } };
+  }
+
+  return { data: result.data };
+}
+
+/** Server Component. Only the filter, featured block and grid are interactive. */
+export default async function NewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const [params, result] = await Promise.all([searchParams, loadNews()]);
+
+  if ('error' in result) {
+    return <NewsError errorMessage={result.error.message} />;
+  }
+
+  const data = result.data;
+  const initialFilter = parseNewsFilter(params.category);
+
+  return (
+    <EventsMotion>
+      <Header />
+      <main id="main" className="min-h-screen bg-rave-black text-white">
+        <PageHero
+          crumbs={[{ label: 'Home', href: '/' }, { label: 'News' }]}
+          eyebrow={data.hero.eyebrow}
+          titleLines={data.hero.titleLines}
+          description={data.hero.description}
+          titleId="news-hero-title"
+          meta={[]}
+          visual={{ src: data.hero.visual.src, alt: data.hero.visual.alt }}
+          actions={[
+            { ...data.hero.primaryCta, tone: 'primary' },
+            { ...data.hero.secondaryCta, tone: 'secondary' },
+          ]}
+          sideNotes={data.hero.sideNotes}
+        />
+
+        <NewsBrowser
+          articles={data.articles}
+          featured={data.featuredArticle}
+          initialFilter={initialFilter}
+        />
+
+        <FinalCtaSection
+          cta={{
+            title: data.finalCta.title,
+            subtitle: data.finalCta.description,
+            primary: data.finalCta.primary,
+            secondary: data.finalCta.secondary,
+            background: data.finalCta.background,
+          }}
+          titleId="news-cta-title"
+        />
+      </main>
+      <EventsFooter footer={data.footer} />
+    </EventsMotion>
+  );
+}

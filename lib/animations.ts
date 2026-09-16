@@ -407,3 +407,29 @@ export const galleryImageReveal: Variants = {
     transition: { duration: 0.75, ease: easeCubic },
   },
 };
+
+// ===== NEWS VARIANTS (/news, /news/[slug]) =====
+
+export const newsReveal: Variants = {
+  hidden: { opacity: 0, y: 26 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: easeCubic },
+  },
+};
+
+export const newsStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+};
+
+export const articleImageReveal: Variants = {
+  hidden: { opacity: 0, scale: 1.03, clipPath: 'inset(6% 0 6% 0)' },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    clipPath: 'inset(0% 0 0% 0)',
+    transition: { duration: 0.75, ease: easeCubic },
+  },
+};
