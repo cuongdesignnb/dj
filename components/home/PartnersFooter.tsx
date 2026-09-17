@@ -103,7 +103,7 @@ export default function PartnersFooter() {
                 <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-medium group-hover:text-white transition-colors">Powered by</span>
                 <div className="h-9 flex items-center select-none">
                   <motion.img
-                    src="/assets/logo-mcq.png"
+                    src="/assets/logo-mcq.svg"
                     alt="MCQ Supermarket"
                     className="h-full w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity"
                     whileHover={{ scale: 1.1 }}
@@ -127,7 +127,7 @@ export default function PartnersFooter() {
                 <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-medium group-hover:text-white transition-colors">Presented by</span>
                 <div className="h-9 flex items-center select-none">
                   <motion.img
-                    src="/assets/logo-bihi.png"
+                    src="/assets/logo-bihi.svg"
                     alt="BIHI Entertainment"
                     className="h-full w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity"
                     whileHover={{ scale: 1.1 }}

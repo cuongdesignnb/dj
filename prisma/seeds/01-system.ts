@@ -2,6 +2,7 @@ import type { SeedContext } from './context';
 import { LOCALES } from './context';
 
 const PERMISSION_KEYS = [
+  'dashboard.view',
   'events.view', 'events.create', 'events.edit', 'events.publish', 'events.delete',
   'artists.view', 'artists.create', 'artists.edit', 'artists.publish', 'artists.delete',
   'products.view', 'products.create', 'products.edit', 'products.publish', 'products.delete',

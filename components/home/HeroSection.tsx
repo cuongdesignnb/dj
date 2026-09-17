@@ -405,7 +405,7 @@ export default function HeroSection() {
             >
               <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-semibold">Powered by</span>
               <div className="h-[44px] sm:h-[50px] flex items-center select-none">
-                <Image src="/assets/logo-mcq.png" alt="MCQ Supermarket" width={180} height={50} className="h-full w-auto object-contain" />
+                <Image src="/assets/logo-mcq.svg" alt="MCQ Supermarket" width={180} height={50} className="h-full w-auto object-contain" />
               </div>
               <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rave-red font-heading font-extrabold mt-1">POWERED BY MCQ SUPERMARKET</span>
             </motion.div>
@@ -425,7 +425,7 @@ export default function HeroSection() {
             >
               <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-semibold">Presented by</span>
               <div className="h-[44px] sm:h-[50px] flex items-center select-none">
-                <Image src="/assets/logo-bihi.png" alt="BIHI Entertainment" width={180} height={50} className="h-full w-auto object-contain" />
+                <Image src="/assets/logo-bihi.svg" alt="BIHI Entertainment" width={180} height={50} className="h-full w-auto object-contain" />
               </div>
               <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rave-red font-heading font-extrabold mt-1">PRESENTED BY BIHI ENTERTAINMENT</span>
             </motion.div>
@@ -436,7 +436,7 @@ export default function HeroSection() {
             variants={fadeUp}
             className="font-heading uppercase tracking-[0.25em] text-xs sm:text-sm text-white/90 font-medium mb-1"
           >
-            A high-energy rave experience
+            Perth&apos;s next high-energy rave experience
           </motion.p>
 
           {/* DESTINY wordmark with pulsing subwoofer circles */}
@@ -467,7 +467,7 @@ export default function HeroSection() {
               ⚠️
             </motion.span>
             <span className="font-heading uppercase tracking-[0.15em] text-xs sm:text-sm text-rave-red font-bold">
-              EVENT DETAILS TO BE CONFIRMED
+              FINAL TICKETS SELLING FAST – DON&apos;T MISS OUT
             </span>
           </motion.div>
 

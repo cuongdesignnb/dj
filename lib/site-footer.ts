@@ -8,12 +8,12 @@ export const SITE_FOOTER: EventsFooterData = {
     {
       id: 'mcq',
       name: 'MCQ Supermarket',
-      logo: { src: '/assets/logo-mcq.png', alt: 'MCQ Supermarket', width: 200, height: 64 },
+      logo: { src: '/assets/logo-mcq.svg', alt: 'MCQ Supermarket', width: 200, height: 64 },
     },
     {
       id: 'bihi',
       name: 'BIHI Entertainment',
-      logo: { src: '/assets/logo-bihi.png', alt: 'BIHI Entertainment', width: 200, height: 64 },
+      logo: { src: '/assets/logo-bihi.svg', alt: 'BIHI Entertainment', width: 200, height: 64 },
     },
   ],
   socials: [

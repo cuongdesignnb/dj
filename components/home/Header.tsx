@@ -93,7 +93,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                 style={{ margin: '-10px' }}
               />
               <Image
-                src="/assets/logo-connection.png"
+                src="/assets/logo-connection.svg"
                 alt="Connection Sound Meets Soul"
                 width={220}
                 height={58}

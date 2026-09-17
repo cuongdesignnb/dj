@@ -101,9 +101,9 @@ export default function VipTableSection() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
                 >
-                  <Image src="/assets/logo-mcq.png" alt="MCQ" width={116} height={32} className="h-8 w-auto object-contain" />
+                  <Image src="/assets/logo-mcq.svg" alt="MCQ" width={116} height={32} className="h-8 w-auto object-contain" />
                   <div className="w-px h-6 bg-white/15" />
-                  <Image src="/assets/logo-connection.png" alt="Connection" width={150} height={36} className="h-[36px] w-auto object-contain" />
+                  <Image src="/assets/logo-connection.svg" alt="Connection" width={150} height={36} className="h-[36px] w-auto object-contain" />
                 </motion.div>
 
                 <motion.span
