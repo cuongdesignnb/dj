@@ -14,12 +14,9 @@ import { getEventsRepository } from '@/lib/events/listing-repository';
 import type { PastEventsPageData } from '@/lib/events/listing-types';
 import { parsePastFilter } from '@/lib/events/listing-types';
 import PastEventsError from './error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Past Events | Connection Rave',
-  description:
-    'Explore Connection Rave past events, recaps, galleries and memorable nightlife experiences.',
-};
+export const metadata: Metadata = buildMetadata({ title: 'Past Events | Connection Rave', description: 'Explore published Connection Rave event archive records.', path: '/events/past', indexable: false });
 
 // No Event JSON-LD here: the archive currently holds placeholders, and
 // structured data would publish them as records of real nights.

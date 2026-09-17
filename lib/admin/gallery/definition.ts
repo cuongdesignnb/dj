@@ -55,7 +55,7 @@ export const galleryDefinition: ResourceDefinition<AdminAlbum> = {
   filters: [
     { key: 'status', label: 'Status', options: PUBLISH_OPTIONS },
     { key: 'featured', label: 'Featured', options: opts(['true', 'Featured'], ['false', 'Not featured']) },
-    { key: 'eventId', label: 'Related event', options: opts(['evt_destiny', 'DESTINY']) },
+    { key: 'eventId', label: 'Related event', options: [] },
   ],
   columns: [
     { key: 'cover', label: 'Cover', type: 'image' },
@@ -66,7 +66,7 @@ export const galleryDefinition: ResourceDefinition<AdminAlbum> = {
     { key: '_view.event', label: 'Related Event', type: 'text', hideOnMobile: true },
     { key: 'updatedAt', label: 'Updated', type: 'date', sortable: true },
   ],
-  decorate: (r) => ({ event: r.eventId === 'evt_destiny' ? 'DESTINY' : r.eventId ? r.eventId : '—' }),
+  decorate: (r) => ({ event: r.eventId || '—' }),
   actions: ['edit', 'duplicate', 'preview', 'archive', 'delete'],
   hasDetail: false,
   statusKey: 'status',

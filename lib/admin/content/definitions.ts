@@ -42,8 +42,8 @@ export const homeContentDefinition: SingletonDefinition = {
   apiPath: 'content/home',
   permission: 'content',
   seed: () => ({
-    hero: { ...sectionSeed(1, 'Connection Rave presents', 'DESTINY', 'Perth’s next high-energy rave experience.', 'Get Tickets', '/tickets'), media: { src: '/assets/hero-crowd.jpg', alt: 'Crowd under red lasers', mediaId: null } },
-    overview: { ...sectionSeed(2, 'The Event', 'Event Overview'), media: { src: '/assets/event-poster.jpg', alt: 'DESTINY poster', mediaId: null } },
+    hero: { ...sectionSeed(1, '', '', '', 'Get Tickets', '/tickets'), media: null },
+    overview: { ...sectionSeed(2, '', ''), media: null },
     lineup: sectionSeed(3, 'Lineup / Music', 'The Artists', '', 'View Lineup', '/lineup'),
     tickets: sectionSeed(4, 'Tickets & Pricing', 'Get Your Tickets', 'Choose your tier. Lock it in. Be part of the night.', 'Get Tickets', '/tickets'),
     vip: sectionSeed(5, 'Book The Table', 'VIP Table Bookings', 'Reserve your booth. Choose your bottle package. Pick your preferred table location.', 'Book Now', '/book-now'),
@@ -142,7 +142,7 @@ export const contactContentDefinition: SingletonDefinition = {
   seed: () => ({
     generalEnquiries: { en: '' },
     vipContact: { en: '' },
-    eventLocation: 'Metro City, Perth',
+    eventLocation: '',
     email: '',
     phone: '',
     address: '',

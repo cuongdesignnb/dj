@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import Header from '@/components/home/Header';
@@ -14,12 +13,15 @@ import { getVipRepository } from '@/lib/vip/repository';
 import { parseVipSelection } from '@/lib/vip/selection';
 import type { VipPageData } from '@/lib/vip/types';
 import BookNowError from './error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'VIP Booking Request | DESTINY — Connection Rave',
-  description:
-    'Send a VIP table booking request for DESTINY and share your preferred booth, group size and bottle selection.',
-};
+export async function generateMetadata(): Promise<ReturnType<typeof buildMetadata>> {
+  const result = await loadVipPage();
+  const title = 'VIP Booking Request | Connection Rave';
+  const description = 'Send a VIP table booking request and share your preferred booth, group size and bottle selection.';
+  if ('error' in result) return buildMetadata({ title, description, path: '/book-now', indexable: false, follow: false });
+  return buildMetadata({ title: `${result.data.event.title} VIP Booking Request | Connection Rave`, description, path: '/book-now', indexable: false, follow: false });
+}
 
 async function loadVipPage(): Promise<
   { data: VipPageData } | { error: { message: string } }

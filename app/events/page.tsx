@@ -14,12 +14,13 @@ import { getEventsRepository } from '@/lib/events/listing-repository';
 import type { EventsPageData } from '@/lib/events/listing-types';
 import { parseFilter } from '@/lib/events/listing-types';
 import EventsError from './error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Upcoming Events | Connection Rave',
-  description:
-    'Discover upcoming Connection Rave events in Perth, featuring immersive production, curated lineups and unforgettable nightlife experiences.',
-};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
+  const params = await searchParams;
+  const hasFilter = Object.entries(params).some(([key, value]) => key !== 'locale' && value !== undefined && value !== '');
+  return buildMetadata({ title: 'Upcoming Events | Connection Rave', description: 'Discover published Connection Rave events and experiences.', path: '/events', indexable: !hasFilter });
+}
 
 /**
  * Loads the page through the API-backed repository so the content source stays

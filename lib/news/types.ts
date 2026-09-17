@@ -93,6 +93,9 @@ export interface NewsArticle {
   eventHref?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  canonicalOverride?: string | null;
+  indexable?: boolean;
+  followLinks?: boolean;
 }
 
 export interface NewsHeroData {

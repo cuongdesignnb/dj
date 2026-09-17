@@ -70,6 +70,11 @@ export interface GalleryCollection {
   eventHref?: string | null;
 
   featured: boolean;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  canonicalOverride?: string | null;
+  indexable?: boolean;
+  followLinks?: boolean;
 }
 
 export interface GalleryHeroData {

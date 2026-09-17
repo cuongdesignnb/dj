@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -19,12 +18,9 @@ import { getCheckoutRepository } from '@/lib/checkout/repository';
 import type { CheckoutResult, CheckoutResultStatus, VerifiedOrder } from '@/lib/checkout/types';
 import { recommendProducts } from '@/lib/shop/helpers';
 import { getShopRepository } from '@/lib/shop/repository';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-// Generic on purpose: no order or customer detail ever reaches metadata.
-export const metadata: Metadata = {
-  title: 'Order Status | Connection Rave Merchandise',
-  robots: { index: false, follow: false },
-};
+export const metadata = buildMetadata({ title: 'Order Status | Connection Rave Merchandise', description: 'Check the status of a Connection Rave merchandise order.', path: '/checkout/result', indexable: false, follow: false });
 
 function heroSteps(status: CheckoutResultStatus, order?: VerifiedOrder | null): HeroStep[] {
   if (!order || !['paid', 'processing', 'pending'].includes(status)) return [];

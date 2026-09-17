@@ -1,5 +1,3 @@
-import type { Metadata } from 'next';
-
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
 import EventsFooter from '@/components/events/EventsFooter';
@@ -13,13 +11,7 @@ import { getShopRepository } from '@/lib/shop/repository';
 import { parseProductFilter } from '@/lib/shop/helpers';
 import type { ShopPageData } from '@/lib/shop/types';
 import ShopError from './error';
-
-// Describes the range without implying that anything can be bought yet.
-export const metadata: Metadata = {
-  title: 'Merchandise | Connection Rave',
-  description:
-    'Explore Connection Rave and DESTINY merchandise, including apparel, accessories, posters and collectibles.',
-};
+import { buildMetadata } from '@/lib/seo/metadata';
 
 async function loadShop(): Promise<{ data: ShopPageData } | { error: { message: string } }> {
   const selection = getShopRepository();
@@ -29,6 +21,14 @@ async function loadShop(): Promise<{ data: ShopPageData } | { error: { message: 
   if (!result.ok) return { error: { message: result.error.message } };
 
   return { data: result.data };
+}
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const filter = Array.isArray(params.category) ? params.category[0] : params.category;
+  const result = await loadShop();
+  const hasActive = 'data' in result && result.data.products.some((product) => product.status === 'active' && product.indexable !== false);
+  return buildMetadata({ title: 'Merchandise | Connection Rave', description: 'Explore published Connection Rave merchandise, apparel, accessories, posters and collectibles.', path: '/shop', indexable: !filter && hasActive });
 }
 
 /** Server Component. Filters, featured Add to Cart and the cart are the islands. */

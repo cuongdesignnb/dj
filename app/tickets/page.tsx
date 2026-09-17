@@ -12,12 +12,7 @@ import FinalCtaSection from '@/components/shared/FinalCtaSection';
 import { getTicketsRepository } from '@/lib/tickets/repository';
 import type { TicketsPageData } from '@/lib/tickets/types';
 import TicketsError from './error';
-
-export const metadata: Metadata = {
-  title: 'Tickets | DESTINY — Connection Rave',
-  description:
-    'Choose your ticket for the DESTINY experience at Metro City, Perth and continue securely to the official ticket provider.',
-};
+import { buildMetadata } from '@/lib/seo/metadata';
 
 // No Offer/Event structured data: the event date is unconfirmed and payment is
 // handled elsewhere, so there is nothing here that can be represented honestly.
@@ -36,6 +31,13 @@ async function loadTicketsPage(): Promise<
   }
 
   return { data: result.data };
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const result = await loadTicketsPage();
+  if ('error' in result) return buildMetadata({ title: 'Tickets | Connection Rave', description: 'Ticket information from Connection Rave.', path: '/tickets', indexable: false });
+  const event = result.data.event;
+  return buildMetadata({ title: `${event.title} Tickets | Connection Rave`, description: `Review ticket information for ${event.title} and continue to the official provider when a provider is configured.`, path: '/tickets', image: event.image.src ? { url: event.image.src, alt: event.image.alt, width: event.image.width, height: event.image.height } : null, indexable: true });
 }
 
 /**

@@ -130,6 +130,11 @@ export function normalizeArtist(value: unknown): Artist | null {
     upcomingEvents: list(value.upcomingEvents, eventReference),
     pastEvents: list(value.pastEvents, eventReference),
     featured: value.featured === true,
+    seoTitle: nullableStr(value.seoTitle),
+    seoDescription: nullableStr(value.seoDescription),
+    canonicalOverride: nullableStr(value.canonicalOverride),
+    indexable: value.indexable !== false,
+    followLinks: value.followLinks !== false,
   };
 }
 

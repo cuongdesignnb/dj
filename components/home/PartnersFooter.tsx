@@ -43,10 +43,7 @@ function TikTokIcon({ className }: { className?: string }) {
 }
 
 const partners = [
-  { label: 'RYAL', type: 'text' },
-  { label: 'EMS', type: 'text' },
-  { label: 'Connection Audio', type: 'text' },
-  { label: 'Vibe Visuals', type: 'text' },
+  { label: 'Partners to be announced', type: 'text' },
 ];
 
 const socialLinks = [
@@ -254,16 +251,16 @@ export default function PartnersFooter() {
                 <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">Event Info</h4>
                 <ul className="flex flex-col gap-2.5 text-sm text-rave-muted">
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    Friday, 30 May 2026
+                    Date to be announced
                   </motion.li>
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    Metro City, Perth
+                    Venue details to be confirmed
                   </motion.li>
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    18+ Event
+                    Event details to be confirmed
                   </motion.li>
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    Doors Open: 8:00 PM
+                    Schedule to be confirmed
                   </motion.li>
                 </ul>
               </motion.div>
@@ -278,29 +275,13 @@ export default function PartnersFooter() {
                 <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">Contact</h4>
                 <ul className="flex flex-col gap-2.5 text-sm text-rave-muted">
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    VIP & Tables: 0476 82 8888
+                    VIP & Tables: details to be confirmed
                   </motion.li>
                   <li>
-                    <motion.a
-                      href="mailto:hello@connectionrave.com.au"
-                      className="hover:text-white transition-colors"
-                      whileHover={{ x: 4 }}
-                      transition={{ type: 'spring', stiffness: 400 }}
-                    >
-                      hello@connectionrave.com.au
-                    </motion.a>
+                    <Link href="/contact" className="hover:text-white transition-colors">Send an enquiry</Link>
                   </li>
                   <li>
-                    <motion.a
-                      href="https://www.connectionland.com.au"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-white transition-colors"
-                      whileHover={{ x: 4 }}
-                      transition={{ type: 'spring', stiffness: 400 }}
-                    >
-                      www.connectionland.com.au
-                    </motion.a>
+                    Contact details to be confirmed
                   </li>
                 </ul>
               </motion.div>
@@ -348,7 +329,7 @@ export default function PartnersFooter() {
             transition={{ delay: 0.6 }}
           >
             <p className="text-xs text-rave-muted/60">
-              © 2026 Connection Rave. All Rights Reserved.
+              © Connection Rave. All Rights Reserved.
             </p>
             <div className="flex items-center gap-4">
               <Link href="/terms" className="text-xs text-rave-muted/60 hover:text-white transition-colors">

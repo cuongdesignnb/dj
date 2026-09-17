@@ -1,5 +1,3 @@
-import type { Metadata } from 'next';
-
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
 import EventsFooter from '@/components/events/EventsFooter';
@@ -12,12 +10,15 @@ import { getGalleryRepository } from '@/lib/gallery/repository';
 import type { GalleryCategoryFilter, GalleryPageData } from '@/lib/gallery/types';
 import { availableCategories } from '@/lib/gallery/helpers';
 import GalleryError from './error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Gallery | Connection Rave',
-  description:
-    'Explore the Connection Rave gallery preview featuring crowd energy, artist moments, venue visuals and event atmosphere.',
-};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const filter = Array.isArray(params.category) ? params.category[0] : params.category;
+  const result = await loadGallery();
+  const hasPublished = 'data' in result && result.data.collections.some((collection) => collection.status === 'published' && collection.indexable !== false);
+  return buildMetadata({ title: 'Gallery | Connection Rave', description: 'Explore published Connection Rave visual collections, artist moments, venue visuals and event atmosphere.', path: '/gallery', indexable: !filter && hasPublished });
+}
 
 async function loadGallery(): Promise<
   { data: GalleryPageData } | { error: { message: string } }

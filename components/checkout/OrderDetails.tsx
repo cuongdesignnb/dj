@@ -16,12 +16,11 @@ const STATUS_ICONS: Record<OrderStatus, LucideIcon> = {
 
 const STEP_ICONS: LucideIcon[] = [PackageCheck, Truck, Mail];
 
-// Perth is where the event is; dates render on the server only.
 const DATE_FORMAT = new Intl.DateTimeFormat('en-AU', {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
-  timeZone: 'Australia/Perth',
+  timeZone: process.env.NEXT_PUBLIC_EVENT_TIME_ZONE ?? 'UTC',
 });
 
 function Info({

@@ -18,6 +18,9 @@ import { getShopRepository } from '@/lib/shop/repository';
 import { getRelatedProducts, sortedImages } from '@/lib/shop/helpers';
 import type { Product, ShopPageData } from '@/lib/shop/types';
 import ShopError from '../error';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
+import { jsonLd, productSchema } from '@/lib/seo/structured-data';
 
 /**
  * Only the slugs generateStaticParams returns are routable; anything else is a
@@ -26,6 +29,7 @@ import ShopError from '../error';
  * become reachable on the next build.
  */
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
   const selection = getShopRepository();
@@ -66,30 +70,14 @@ export async function generateMetadata({
   const product = result?.ok ? result.data : null;
 
   if (!product) {
-    return {
-      title: 'Product Not Found | Connection Rave',
-      description: 'This merchandise item is not available.',
-      robots: { index: false, follow: true },
-    };
+    return buildMetadata({ title: 'Product Not Found', description: 'This merchandise item is not available.', path: `/shop/${slug}`, indexable: false });
   }
 
   const title = `${product.seoTitle ?? product.title} | Connection Rave Merchandise`;
   const description = product.seoDescription ?? product.excerpt;
   const image = sortedImages(product)[0]?.image;
 
-  // No Product/Offer JSON-LD: there is no confirmed availability, SKU or
-  // shipping to describe. Preview products stay out of search results until
-  // they can actually be bought.
-  return {
-    title,
-    description,
-    robots: product.status === 'preview' ? { index: false, follow: true } : undefined,
-    openGraph: {
-      title,
-      description,
-      images: image ? [{ url: image.src, alt: image.alt }] : [],
-    },
-  };
+  return buildMetadata({ title, description, path: `/shop/${product.slug}`, canonicalOverride: product.canonicalOverride, image: image ? { url: image.src, alt: image.alt, width: image.width, height: image.height } : null, indexable: product.status === 'active' && product.indexable !== false, follow: product.followLinks });
 }
 
 export default async function ProductPage({
@@ -109,6 +97,8 @@ export default async function ProductPage({
 
   const { product, page, all } = result;
   const related = getRelatedProducts(product, all, 4);
+  const breadcrumbs = breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Merchandise', path: '/shop' }, { name: product.title, path: `/shop/${product.slug}` }]);
+  const productJsonLd = productSchema({ title: product.title, description: product.description ?? product.excerpt, path: `/shop/${product.slug}`, image: sortedImages(product)[0]?.image.src ?? null, status: product.status, priceMinor: product.price.amountMinor, currency: product.price.currency });
 
   return (
     <EventsMotion>
@@ -147,6 +137,7 @@ export default async function ProductPage({
           }}
           titleId="product-cta-title"
         />
+        {[breadcrumbs, productJsonLd].filter(Boolean).map((schema, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) ?? '' }} />)}
       </main>
       <EventsFooter footer={page.footer} />
       <CartButton />

@@ -15,7 +15,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('en-AU', {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
-  timeZone: 'Australia/Perth',
+  timeZone: process.env.NEXT_PUBLIC_EVENT_TIME_ZONE ?? 'UTC',
 });
 
 const CRUMB: Record<LegalDocumentType, string> = { terms: 'Terms', privacy: 'Privacy' };

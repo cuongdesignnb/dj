@@ -231,7 +231,7 @@ export default function EventFooter({ event, routes }: Props) {
           className="border-t border-white/[0.06] py-6 flex flex-col sm:flex-row items-center justify-between gap-3"
         >
           <p className="text-xs text-rave-muted/60">
-            © 2026 Connection Rave. All rights reserved.
+            © Connection Rave. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-xs text-rave-muted/60">
             {termsHref ? (

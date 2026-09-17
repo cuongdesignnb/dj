@@ -120,7 +120,7 @@ export default function ArtistProfile({
                 variants={artistReveal}
                 className="font-heading text-xs font-semibold uppercase tracking-[0.28em] text-rave-red sm:text-sm"
               >
-                DESTINY Artist
+                Artist Profile
               </motion.span>
 
               <motion.p
@@ -234,7 +234,7 @@ export default function ArtistProfile({
                   id="artist-set-title"
                   className="font-heading text-2xl font-black uppercase tracking-tight text-white sm:text-[26px]"
                 >
-                  DESTINY Set
+                  Event Set
                 </h2>
                 <span
                   aria-hidden
@@ -354,7 +354,7 @@ export default function ArtistProfile({
               id="artist-cta-title"
               className="font-heading text-3xl font-black uppercase leading-[1.03] tracking-tight text-white sm:text-4xl md:text-5xl"
             >
-              See Them At DESTINY
+              See Them At The Event
             </motion.h2>
 
             <motion.div

@@ -12,12 +12,13 @@ import { getArtistRepository } from '@/lib/artists/repository';
 import { parseCountryFilter } from '@/lib/artists/helpers';
 import type { LineupPageData } from '@/lib/artists/types';
 import LineupError from './error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Artist Lineup | DESTINY — Connection Rave',
-  description:
-    'Meet the international and local artists performing as part of the DESTINY lineup by Connection Rave.',
-};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
+  const params = await searchParams;
+  const hasFilter = params.country !== undefined;
+  return buildMetadata({ title: 'Artist Lineup | Connection Rave', description: 'Meet the published artists connected to Connection Rave events.', path: '/lineup', indexable: !hasFilter });
+}
 
 async function loadLineup(): Promise<
   { data: LineupPageData } | { error: { message: string } }

@@ -53,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const result = await loadEventData();
   if ('error' in result) {
     return {
-      title: 'DESTINY — Event Details',
+      title: 'Event Details | Connection Rave',
       description: 'Event details for Connection Rave.',
       robots: { index: false, follow: false },
     };

@@ -36,6 +36,12 @@ function eventDto(event: any, locale: Locale) {
     description: translation?.description ?? null,
     poster: mediaDto(event.posterMedia),
     hero: mediaDto(event.heroMedia),
+    seoTitle: event.seoTitle ?? translation?.seoTitle ?? null,
+    seoDescription: event.seoDescription ?? translation?.seoDescription ?? null,
+    ogMediaId: event.ogMediaId ?? translation?.ogMediaId ?? null,
+    canonicalOverride: event.canonicalOverride ?? null,
+    indexable: event.indexable !== false,
+    followLinks: event.followLinks !== false,
     genres: event.genres.map((item: any) => item.genre),
     lineup: event.eventArtists.map((item: any) => ({ id: item.artist.id, slug: item.artist.slug, name: translated(item.artist.translations, locale)?.name ?? item.artist.slug, country: item.artist.country, portrait: mediaDto(item.artist.portraitMedia), sortOrder: item.sortOrder })),
   };
@@ -101,6 +107,12 @@ function artistDto(artist: any, locale: Locale) {
     heroImage: mediaDto(artist.heroMedia),
     bio: translation?.bio ?? null,
     genres: Array.isArray(translation?.genresJson) ? translation.genresJson : [],
+    seoTitle: artist.seoTitle ?? translation?.seoTitle ?? null,
+    seoDescription: artist.seoDescription ?? translation?.seoDescription ?? null,
+    ogMediaId: artist.ogMediaId ?? translation?.ogMediaId ?? null,
+    canonicalOverride: artist.canonicalOverride ?? null,
+    indexable: artist.indexable !== false,
+    followLinks: artist.followLinks !== false,
     setTime: artist.setTime?.toISOString() ?? null,
     setTimeStatus: artist.setTimeStatus,
     externalLinks: artist.links.map((link: any) => ({ type: link.type, url: link.url, label: link.label })),
@@ -153,8 +165,12 @@ function productDto(product: any, locale: Locale) {
     detailSections: [],
     collectionHighlights: [],
     sortOrder: product.sortOrder ?? 0,
-    seoTitle: translation?.title ?? null,
-    seoDescription: translation?.excerpt ?? null,
+    seoTitle: product.seoTitle ?? translation?.seoTitle ?? translation?.title ?? null,
+    seoDescription: product.seoDescription ?? translation?.seoDescription ?? translation?.excerpt ?? null,
+    ogMediaId: product.ogMediaId ?? translation?.ogMediaId ?? null,
+    canonicalOverride: product.canonicalOverride ?? null,
+    indexable: product.indexable !== false,
+    followLinks: product.followLinks !== false,
   };
 }
 
@@ -170,7 +186,7 @@ export async function getPublicProduct(slug: string, locale: Locale) {
 
 function articleDto(article: any, locale: Locale) {
   const translation = translated(article.translations, locale);
-  return { id: article.id, slug: article.slug, category: article.category, status: article.status.toLowerCase(), featured: article.featured, title: translation?.title ?? article.slug, excerpt: translation?.excerpt ?? '', body: translation?.bodyBlocksJson ?? [], quickSummary: translation?.quickSummaryJson ?? [], readingTimeMinutes: translation?.readingTimeOverride ?? null, heroImage: mediaDto(article.heroMedia), cardImage: mediaDto(article.cardMedia), tags: article.tags.map((item: any) => item.tag.key), relatedEvent: article.relatedEvent ? { id: article.relatedEvent.id, slug: article.relatedEvent.slug, title: translated(article.relatedEvent.translations, locale)?.title ?? article.relatedEvent.slug } : null, publishedAt: article.publishedAt?.toISOString() ?? null, updatedAt: article.updatedAt?.toISOString() ?? null, seoTitle: translation?.seoTitle ?? null, seoDescription: translation?.seoDescription ?? null };
+  return { id: article.id, slug: article.slug, category: article.category, status: article.status.toLowerCase(), featured: article.featured, title: translation?.title ?? article.slug, excerpt: translation?.excerpt ?? '', body: translation?.bodyBlocksJson ?? [], quickSummary: translation?.quickSummaryJson ?? [], readingTimeMinutes: translation?.readingTimeOverride ?? null, heroImage: mediaDto(article.heroMedia), cardImage: mediaDto(article.cardMedia), tags: article.tags.map((item: any) => item.tag.key), relatedEvent: article.relatedEvent ? { id: article.relatedEvent.id, slug: article.relatedEvent.slug, title: translated(article.relatedEvent.translations, locale)?.title ?? article.relatedEvent.slug } : null, publishedAt: article.publishedAt?.toISOString() ?? null, updatedAt: article.updatedAt?.toISOString() ?? null, seoTitle: article.seoTitle ?? translation?.seoTitle ?? null, seoDescription: article.seoDescription ?? translation?.seoDescription ?? null, ogMediaId: article.ogMediaId ?? null, canonicalOverride: article.canonicalOverride ?? null, indexable: article.indexable !== false, followLinks: article.followLinks !== false };
 }
 
 export async function listPublicNews(locale: Locale) {
@@ -185,7 +201,7 @@ export async function getPublicNews(slug: string, locale: Locale) {
 
 function galleryDto(album: any, locale: Locale) {
   const translation = translated(album.translations, locale);
-  return { id: album.id, slug: album.slug, status: album.status.toLowerCase(), featured: album.featured, title: translation?.title ?? album.slug, subtitle: translation?.subtitle ?? null, description: translation?.description ?? null, venue: album.venue, cover: mediaDto(album.coverMedia), hero: mediaDto(album.heroMedia), event: album.event ? { id: album.event.id, slug: album.event.slug, title: translated(album.event.translations, locale)?.title ?? album.event.slug } : null, media: album.media.map((item: any, index: number) => ({ id: item.id, type: item.mediaType.toLowerCase() === 'video' ? 'video' : 'photo', category: (item.category ?? 'other').toLowerCase(), title: item.title, caption: item.caption, featured: item.featured, sortOrder: item.sortOrder ?? index, video: item.externalVideoUrl ? { provider: item.videoProvider?.toLowerCase() ?? 'mp4', url: item.externalVideoUrl } : null, image: mediaDto(item.media), thumbnail: mediaDto(item.media) })) };
+  return { id: album.id, slug: album.slug, status: album.status.toLowerCase(), featured: album.featured, title: translation?.title ?? album.slug, subtitle: translation?.subtitle ?? null, description: translation?.description ?? null, venue: album.venue, cover: mediaDto(album.coverMedia), hero: mediaDto(album.heroMedia), event: album.event ? { id: album.event.id, slug: album.event.slug, title: translated(album.event.translations, locale)?.title ?? album.event.slug } : null, media: album.media.map((item: any, index: number) => ({ id: item.id, type: item.mediaType.toLowerCase() === 'video' ? 'video' : 'photo', category: (item.category ?? 'other').toLowerCase(), title: item.title, caption: item.caption, featured: item.featured, sortOrder: item.sortOrder ?? index, video: item.externalVideoUrl ? { provider: item.videoProvider?.toLowerCase() ?? 'mp4', url: item.externalVideoUrl } : null, image: mediaDto(item.media), thumbnail: mediaDto(item.media) })), seoTitle: album.seoTitle ?? translation?.seoTitle ?? null, seoDescription: album.seoDescription ?? translation?.seoDescription ?? null, ogMediaId: album.ogMediaId ?? null, canonicalOverride: album.canonicalOverride ?? null, indexable: album.indexable !== false, followLinks: album.followLinks !== false };
 }
 
 export async function listPublicGallery(locale: Locale) {
@@ -207,7 +223,7 @@ export async function getPublicLegal(type: string, locale: Locale) {
   const row = await db.legalDocument.findFirst({ where: { type, status: 'PUBLISHED' }, include: { translations: true } });
   if (!row) return null;
   const translation = translated(row.translations, locale);
-  return { type: row.type, status: row.status.toLowerCase(), version: row.version, effectiveDate: row.effectiveAt?.toISOString() ?? null, updatedAt: row.updatedAt.toISOString(), title: translation?.title ?? row.type, intro: translation?.intro ?? '', sections: translation?.sectionsJson ?? [], seoTitle: translation?.seoTitle ?? null, seoDescription: translation?.seoDescription ?? null };
+  return { type: row.type, status: row.status.toLowerCase(), version: row.version, effectiveDate: row.effectiveAt?.toISOString() ?? null, updatedAt: row.updatedAt.toISOString(), title: translation?.title ?? row.type, intro: translation?.intro ?? '', sections: translation?.sectionsJson ?? [], seoTitle: row.seoTitle ?? translation?.seoTitle ?? null, seoDescription: row.seoDescription ?? translation?.seoDescription ?? null, canonicalOverride: row.canonicalOverride ?? null, indexable: row.indexable !== false, followLinks: row.followLinks !== false };
 }
 
 export async function getPublicPartners(locale: Locale) {
@@ -216,6 +232,18 @@ export async function getPublicPartners(locale: Locale) {
 }
 
 export async function getPublicBootstrap(locale: Locale) {
-  const [settings, partners] = await Promise.all([db.siteSetting.findMany({ where: { isPublic: true } }), getPublicPartners(locale)]);
-  return { locale, settings: Object.fromEntries(settings.map((setting) => [setting.key, setting.valueJson])), partners };
+  const [settings, partners, pages] = await Promise.all([
+    db.siteSetting.findMany({ where: { isPublic: true } }),
+    getPublicPartners(locale),
+    db.contentPage.findMany({ where: { status: 'PUBLISHED' }, include: { translations: true }, orderBy: { slug: 'asc' } }),
+  ]);
+  return {
+    locale,
+    settings: Object.fromEntries(settings.map((setting) => [setting.key, setting.valueJson])),
+    partners,
+    pages: pages.map((page) => {
+      const translation = translated(page.translations, locale);
+      return { slug: page.slug, title: translation?.title ?? page.slug, content: translation?.contentJson ?? {}, seoTitle: page.seoTitle ?? translation?.seoTitle ?? null, seoDescription: page.seoDescription ?? translation?.seoDescription ?? null, canonicalOverride: page.canonicalOverride ?? null, indexable: page.indexable, followLinks: page.followLinks };
+    }),
+  };
 }

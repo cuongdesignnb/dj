@@ -113,6 +113,11 @@ export function normalizeCollection(value: unknown): GalleryCollection | null {
     eventSlug: nullableStr(value.eventSlug),
     eventHref: nullableStr(value.eventHref),
     featured: value.featured === true,
+    seoTitle: nullableStr(value.seoTitle),
+    seoDescription: nullableStr(value.seoDescription),
+    canonicalOverride: nullableStr(value.canonicalOverride),
+    indexable: value.indexable !== false,
+    followLinks: value.followLinks !== false,
   };
 }
 

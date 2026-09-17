@@ -233,7 +233,7 @@ export default function LineupPreview() {
             >
               <Sparkles className="w-3.5 h-3.5 text-rave-red" />
               <span className="font-heading uppercase tracking-[0.15em] text-xs text-rave-red font-semibold">
-                Save The Date 30 May 2026
+                Date to be announced
               </span>
             </div>
             <NeonButton href="/lineup" variant="ghost" className="!py-2.5 !px-5 !text-xs">

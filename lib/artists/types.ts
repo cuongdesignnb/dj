@@ -72,6 +72,11 @@ export interface Artist {
   pastEvents: ArtistEventReference[];
 
   featured?: boolean;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  canonicalOverride?: string | null;
+  indexable?: boolean;
+  followLinks?: boolean;
 }
 
 export interface LineupHeroData {

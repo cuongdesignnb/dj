@@ -12,6 +12,10 @@ function hashToken(value: string) {
   return createHash('sha256').update(value).digest('hex');
 }
 
+function secureCookie(config: ReturnType<typeof runtimeConfig>) {
+  return config.appUrl.startsWith('https://');
+}
+
 function cookieValue(request?: Request) {
   if (request) {
     const raw = request.headers.get('cookie') ?? '';
@@ -36,7 +40,7 @@ export async function createAdminSession(userId: string, response: Response, rem
   const session = await db.adminSession.create({
     data: { userId, tokenHash: hashToken(token), csrfHash: hashCsrf(csrfToken), expiresAt },
   });
-  const secure = process.env.NODE_ENV === 'production';
+  const secure = secureCookie(config);
   const cookieOptions = `Path=/; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}; Max-Age=${Math.floor((expiresAt.getTime() - Date.now()) / 1000)}`;
   response.headers.append('Set-Cookie', `${config.sessionCookieName}=${encodeURIComponent(token)}; ${cookieOptions}`);
   response.headers.append('Set-Cookie', `${config.csrfCookieName}=${encodeURIComponent(csrfToken)}; Path=/; SameSite=Lax${secure ? '; Secure' : ''}; Max-Age=${Math.floor((expiresAt.getTime() - Date.now()) / 1000)}`);
@@ -69,8 +73,9 @@ export async function destroyAdminSession(request: Request, response: Response) 
   const config = runtimeConfig();
   const token = cookieValue(request);
   if (token) await db.adminSession.deleteMany({ where: { tokenHash: hashToken(token) } });
-  response.headers.append('Set-Cookie', `${config.sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
-  response.headers.append('Set-Cookie', `${config.csrfCookieName}=; Path=/; SameSite=Lax; Max-Age=0`);
+  const secure = secureCookie(config);
+  response.headers.append('Set-Cookie', `${config.sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}; Max-Age=0`);
+  response.headers.append('Set-Cookie', `${config.csrfCookieName}=; Path=/; SameSite=Lax${secure ? '; Secure' : ''}; Max-Age=0`);
 }
 
 export async function destroyAdminSessionFromCookies() {

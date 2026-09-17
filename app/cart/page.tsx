@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { connection } from 'next/server';
 
 import Header from '@/components/home/Header';
@@ -12,11 +11,9 @@ import { CART_CONTENT } from '@/lib/cart/content';
 import { getCheckoutMode } from '@/lib/checkout/config';
 import { getShopRepository } from '@/lib/shop/repository';
 import ShopError from '../shop/error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Cart | Connection Rave Merchandise',
-  robots: { index: false, follow: false },
-};
+export const metadata = buildMetadata({ title: 'Cart | Connection Rave Merchandise', description: 'Review your selected merchandise before checkout.', path: '/cart', indexable: false, follow: false });
 
 /**
  * Server shell. The catalogue is loaded here so the client can check saved

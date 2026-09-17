@@ -13,6 +13,9 @@ import { getGalleryRepository } from '@/lib/gallery/repository';
 import { countPhotos, countVideos, statusLabel } from '@/lib/gallery/helpers';
 import type { GalleryCollection } from '@/lib/gallery/types';
 import GalleryError from '../error';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
+import { jsonLd } from '@/lib/seo/structured-data';
 
 /**
  * Collections are a known, finite set, so only the slugs generateStaticParams
@@ -21,6 +24,7 @@ import GalleryError from '../error';
  * answers 200 — the page looks right while the status lies.
  */
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
   const selection = getGalleryRepository();
@@ -57,11 +61,7 @@ export async function generateMetadata({
   const result = await loadCollection(slug);
 
   if ('error' in result || !result.collection) {
-    return {
-      title: 'Collection Not Found | Connection Rave',
-      description: 'This gallery collection is not available.',
-      robots: { index: false, follow: true },
-    };
+    return buildMetadata({ title: 'Collection Not Found', description: 'This gallery collection is not available.', path: `/gallery/${slug}`, indexable: false });
   }
 
   const collection = result.collection;
@@ -75,17 +75,7 @@ export async function generateMetadata({
     : (collection.description ??
       `Explore the ${collection.title} gallery from Connection Rave.`);
 
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      images: collection.cover.src
-        ? [{ url: collection.cover.src, alt: collection.cover.alt }]
-        : [],
-    },
-  };
+  return buildMetadata({ title, description, path: `/gallery/${collection.slug}`, canonicalOverride: collection.canonicalOverride, image: collection.cover.src ? { url: collection.cover.src, alt: collection.cover.alt, width: collection.cover.width, height: collection.cover.height } : null, indexable: !preview && collection.indexable !== false, follow: collection.followLinks });
 }
 
 export default async function GalleryCollectionPage({
@@ -114,6 +104,7 @@ export default async function GalleryCollectionPage({
     ? all.data.filter((candidate) => candidate.slug !== collection.slug)
     : [];
   const page = selection.ok ? await selection.repository.getGalleryPage() : null;
+  const breadcrumbs = breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Gallery', path: '/gallery' }, { name: collection.title, path: `/gallery/${collection.slug}` }]);
 
   return (
     <EventsMotion>
@@ -157,6 +148,7 @@ export default async function GalleryCollectionPage({
           }}
           titleId="collection-cta-title"
         />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) ?? '' }} />
       </main>
       <EventsFooter footer={page?.ok ? page.data.footer : { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' }} />
     </EventsMotion>

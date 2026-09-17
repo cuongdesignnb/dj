@@ -191,6 +191,9 @@ export function normalizeProduct(raw: unknown, index = 0): Product | null {
     sortOrder: typeof raw.sortOrder === 'number' ? raw.sortOrder : index,
     seoTitle: nullableStr(raw.seoTitle),
     seoDescription: nullableStr(raw.seoDescription),
+    canonicalOverride: nullableStr(raw.canonicalOverride),
+    indexable: raw.indexable !== false,
+    followLinks: raw.followLinks !== false,
   };
 }
 

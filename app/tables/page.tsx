@@ -13,12 +13,7 @@ import { getVipRepository } from '@/lib/vip/repository';
 import { parseVipSelection } from '@/lib/vip/selection';
 import type { VipPageData } from '@/lib/vip/types';
 import TablesError from './error';
-
-export const metadata: Metadata = {
-  title: 'VIP Tables | DESTINY — Connection Rave',
-  description:
-    'Explore the DESTINY VIP booth package, preferred table areas and bottle options at Metro City, Perth.',
-};
+import { buildMetadata } from '@/lib/seo/metadata';
 
 async function loadVipPage(): Promise<
   { data: VipPageData } | { error: { message: string } }
@@ -34,6 +29,13 @@ async function loadVipPage(): Promise<
   }
 
   return { data: result.data };
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const result = await loadVipPage();
+  if ('error' in result) return buildMetadata({ title: 'VIP Tables | Connection Rave', description: 'VIP table information from Connection Rave.', path: '/tables', indexable: false });
+  const event = result.data.event;
+  return buildMetadata({ title: `${event.title} VIP Tables | Connection Rave`, description: `Review VIP table and bottle information for ${event.title}. Availability is confirmed directly with the team.`, path: '/tables', image: event.image.src ? { url: event.image.src, alt: event.image.alt, width: event.image.width, height: event.image.height } : null, indexable: true });
 }
 
 /**

@@ -38,6 +38,9 @@ export interface LegalDocument {
 
   seoTitle?: string | null;
   seoDescription?: string | null;
+  canonicalOverride?: string | null;
+  indexable?: boolean;
+  followLinks?: boolean;
 
   finalCta: {
     title: string;

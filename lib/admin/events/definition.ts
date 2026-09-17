@@ -74,7 +74,7 @@ export const eventsDefinition: ResourceDefinition<AdminEvent> = {
   filters: [
     STATUS_FILTER,
     { key: 'phase', label: 'Upcoming / Past', options: opts(['upcoming', 'Upcoming'], ['past', 'Past']) },
-    { key: 'venue', label: 'Venue', options: opts(['Metro City', 'Metro City']) },
+    { key: 'venue', label: 'Venue', options: [] },
     { key: 'dates', label: 'Date', options: opts(['tba', 'Date TBA'], ['confirmed', 'Date confirmed']) },
   ],
   columns: [
@@ -101,7 +101,7 @@ export const eventsDefinition: ResourceDefinition<AdminEvent> = {
   actions: ['view', 'edit', 'duplicate', 'preview', 'archive', 'delete'],
   hasDetail: true,
   statusKey: 'status',
-  publicPath: (r) => (r.slug === 'destiny' ? '/event' : null),
+  publicPath: (r) => (r.slug ? `/events/${encodeURIComponent(r.slug)}` : null),
   empty: { title: 'No events yet.', description: 'Create your first event.' },
   newRecord: () => ({
     name: { en: '' },

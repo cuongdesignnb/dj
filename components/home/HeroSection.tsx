@@ -434,7 +434,7 @@ export default function HeroSection() {
             variants={fadeUp}
             className="font-heading uppercase tracking-[0.25em] text-xs sm:text-sm text-white/90 font-medium mb-1"
           >
-            Perth&apos;s next high-energy rave experience
+            A high-energy rave experience
           </motion.p>
 
           {/* DESTINY wordmark with pulsing subwoofer circles */}
@@ -465,7 +465,7 @@ export default function HeroSection() {
               ⚠️
             </motion.span>
             <span className="font-heading uppercase tracking-[0.15em] text-xs sm:text-sm text-rave-red font-bold">
-              FINAL TICKETS SELLING FAST – DON&apos;T MISS OUT
+              EVENT DETAILS TO BE CONFIRMED
             </span>
           </motion.div>
 

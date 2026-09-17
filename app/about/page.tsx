@@ -9,23 +9,13 @@ import AboutPartners from '@/components/about/AboutPartners';
 import AboutCTA from '@/components/about/AboutCTA';
 import AboutFooter from '@/components/about/AboutFooter';
 import { getAboutRepository } from '@/lib/about/repository';
+import { getContentSeo } from '@/lib/seo/content';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'About Connection Land | Sound Meets Soul',
-  description:
-    'Discover Connection Land — a Perth nightlife and entertainment brand connecting music, artists, culture and unforgettable experiences.',
-  openGraph: {
-    title: 'About Connection Land | Sound Meets Soul',
-    description:
-      'A nightlife and entertainment brand creating immersive music experiences that bring together sound, people and culture.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'About Connection Land | Sound Meets Soul',
-    description:
-      'A nightlife and entertainment brand creating immersive music experiences.',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getContentSeo('about', { title: 'About Connection Rave', description: 'Learn about Connection Rave, its music, people and culture.' });
+  return buildMetadata({ ...seo, path: '/about' });
+}
 
 export default async function AboutPage() {
   const repo = getAboutRepository();

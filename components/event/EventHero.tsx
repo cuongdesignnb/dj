@@ -169,6 +169,7 @@ export default function EventHero({ event, routes }: EventHeroProps) {
   const reduced = useReducedMotion();
   const e = event.event;
   const bg = e.heroBackground;
+  const venueLabel = [e.venue.name, e.venue.city].filter(Boolean).join(', ') || 'Venue to be announced';
   const tickets = resolveTicketsAction(e, routes);
   const vip = resolveVipAction(e, routes);
 
@@ -270,7 +271,7 @@ export default function EventHero({ event, routes }: EventHeroProps) {
               variants={lineReveal}
               className="font-heading uppercase tracking-[0.3em] text-xs sm:text-sm text-rave-red font-bold"
             >
-              METRO CITY, PERTH
+              {venueLabel}
             </motion.span>
 
             <motion.h1

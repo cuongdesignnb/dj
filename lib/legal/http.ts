@@ -64,6 +64,9 @@ export function normalizeLegalDocument(
     sections,
     seoTitle: str(doc.seoTitle) || null,
     seoDescription: str(doc.seoDescription) || null,
+    canonicalOverride: str(doc.canonicalOverride) || null,
+    indexable: doc.indexable !== false,
+    followLinks: doc.followLinks !== false,
     finalCta: fallbackCta,
   };
 }

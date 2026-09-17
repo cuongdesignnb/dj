@@ -50,10 +50,10 @@ export default function EventOverview() {
             {/* Eyebrow and Title */}
             <motion.div variants={fadeUp} className="flex flex-col gap-2">
               <span className="font-heading uppercase tracking-[0.25em] text-sm text-rave-red font-bold">
-                METRO CITY, PERTH
+                EVENT DETAILS
               </span>
               <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[1.1] text-white">
-                THE DESTINY EXPERIENCE
+                THE CONNECTION EXPERIENCE
               </h2>
             </motion.div>
 
@@ -114,21 +114,21 @@ export default function EventOverview() {
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-rave-red" />
                 <span className="font-heading tracking-widest text-sm sm:text-base text-white uppercase font-bold">
-                  Friday, 30.05.2026
+                  DATE TO BE ANNOUNCED
                 </span>
               </div>
               
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-rave-red" />
                 <span className="font-heading tracking-widest text-sm sm:text-base text-white uppercase font-bold">
-                  STARTING AT 9PM, ENDING 5AM
+                  SCHEDULE TO BE CONFIRMED
                 </span>
               </div>
 
               <div className="flex items-center gap-3 mt-1">
                 <AlertTriangle className="w-5 h-5 text-rave-red animate-pulse" />
                 <span className="font-heading tracking-wider text-xs sm:text-sm text-rave-red font-black uppercase text-neon-red">
-                  ⚠️ FINAL RELEASE TICKETS AVAILABLE NOW
+                  ⚠️ TICKET AVAILABILITY TO BE CONFIRMED
                 </span>
               </div>
             </motion.div>
@@ -136,7 +136,7 @@ export default function EventOverview() {
             {/* CTA Button - glowing red pill style with double chevrons */}
             <motion.div variants={fadeUp} className="self-start">
               <NeonButton
-                href="https://megatix.com.au"
+                href="/tickets"
                 variant="primary"
                 hideChevron={true}
                 icon={

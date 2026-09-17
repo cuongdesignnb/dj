@@ -9,7 +9,7 @@ export type ResolvedAction = {
   note?: string;
 };
 
-const PERTH_TZ = 'Australia/Perth';
+const DEFAULT_EVENT_TZ = process.env.EVENT_TIME_ZONE?.trim() || 'UTC';
 
 function safeHref(value: string | null | undefined): ResolvedAction | null {
   if (!value) return null;
@@ -75,7 +75,7 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('en-AU', {
   day: '2-digit',
   month: 'long',
   year: 'numeric',
-  timeZone: PERTH_TZ,
+  timeZone: DEFAULT_EVENT_TZ,
 });
 
 function parseIso(s: string): Date | null {
@@ -94,7 +94,7 @@ export function formatEventDate(
   doorsOpenAt: string | null,
   timeZone: string,
 ): FormattedDate {
-  const tz = timeZone || PERTH_TZ;
+  const tz = timeZone || DEFAULT_EVENT_TZ;
   if (!startsAt) {
     return { label: 'Date to be announced', fullLabel: 'Date to be announced' };
   }
@@ -148,7 +148,7 @@ export function formatDateChip(startsAt: string | null, timeZone: string): strin
         year: 'numeric',
         timeZone,
       })
-    : DATE_FORMATTER;
+    : new Intl.DateTimeFormat('en-AU', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric', timeZone: DEFAULT_EVENT_TZ });
   return fmt.format(d);
 }
 
@@ -160,7 +160,7 @@ export function formatTimeChip(
   if (!startsAt) return 'Schedule to be confirmed';
   const start = parseIso(startsAt);
   if (!start) return 'Schedule to be confirmed';
-  const tz = timeZone || PERTH_TZ;
+  const tz = timeZone || DEFAULT_EVENT_TZ;
   const timeFmt = new Intl.DateTimeFormat('en-AU', {
     hour: '2-digit',
     minute: '2-digit',

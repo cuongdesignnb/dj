@@ -1,5 +1,3 @@
-import type { Metadata } from 'next';
-
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
 import EventsFooter from '@/components/events/EventsFooter';
@@ -11,12 +9,15 @@ import { getNewsRepository } from '@/lib/news/repository';
 import { parseNewsFilter } from '@/lib/news/helpers';
 import type { NewsPageData } from '@/lib/news/types';
 import NewsError from './error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'News & Stories | Connection Rave',
-  description:
-    'Read Connection Rave news, announcements, event updates, artist stories and community features.',
-};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const filter = Array.isArray(params.category) ? params.category[0] : params.category;
+  const result = await loadNews();
+  const hasPublished = 'data' in result && result.data.articles.some((article) => article.status === 'published' && article.indexable !== false);
+  return buildMetadata({ title: 'News & Stories | Connection Rave', description: 'Read published Connection Rave announcements, event updates, artist stories and community features.', path: '/news', indexable: !filter && hasPublished });
+}
 
 async function loadNews(): Promise<
   { data: NewsPageData } | { error: { message: string } }

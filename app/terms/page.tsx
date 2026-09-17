@@ -4,6 +4,7 @@ import LegalPage from '@/components/legal/LegalPage';
 import { getLegalRepository } from '@/lib/legal/repository';
 import { isDraft } from '@/lib/legal/types';
 import LegalError from './error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
 const FALLBACK_TITLE = 'Terms & Conditions | Connection Rave';
 const FALLBACK_DESCRIPTION =
@@ -12,12 +13,7 @@ const FALLBACK_DESCRIPTION =
 export async function generateMetadata(): Promise<Metadata> {
   const result = await getLegalRepository().getTerms();
   const document = result.ok ? result.document : null;
-  return {
-    title: document?.seoTitle ?? FALLBACK_TITLE,
-    description: document?.seoDescription ?? FALLBACK_DESCRIPTION,
-    // Kept out of search results until the document is published.
-    robots: document && !isDraft(document) ? undefined : { index: false, follow: true },
-  };
+  return buildMetadata({ title: document?.seoTitle ?? FALLBACK_TITLE, description: document?.seoDescription ?? FALLBACK_DESCRIPTION, path: '/terms', canonicalOverride: document?.canonicalOverride, indexable: Boolean(document && !isDraft(document) && document.indexable !== false), follow: document?.followLinks });
 }
 
 /** Server Component; shares its layout with the other legal document. */

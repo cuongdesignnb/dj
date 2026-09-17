@@ -99,6 +99,9 @@ export interface EventRecord {
     title: string;
     description: string;
     image: MediaAsset | null;
+    canonicalOverride: string | null;
+    indexable: boolean;
+    followLinks: boolean;
   };
   contentStatus: 'preview' | 'published';
 }

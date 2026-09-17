@@ -115,6 +115,9 @@ export interface Product {
 
   seoTitle?: string | null;
   seoDescription?: string | null;
+  canonicalOverride?: string | null;
+  indexable?: boolean;
+  followLinks?: boolean;
 }
 
 export interface LinkAction {

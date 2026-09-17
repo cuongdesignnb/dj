@@ -10,23 +10,9 @@ import CollaborationProcess from '@/components/partners/CollaborationProcess';
 import PartnersCTA from '@/components/partners/PartnersCTA';
 import PartnersFooter from '@/components/partners/PartnersFooter';
 import { getPartnersRepository } from '@/lib/partners/repository';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Partners & Sponsors | Connection Rave',
-  description:
-    'Explore partnership and sponsorship opportunities with Connection Rave and discover how brands can connect with music, events and community.',
-  openGraph: {
-    title: 'Partners & Sponsors | Connection Rave',
-    description:
-      'Explore partnership and sponsorship opportunities with Connection Rave.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Partners & Sponsors | Connection Rave',
-    description:
-      'Explore partnership and sponsorship opportunities with Connection Rave.',
-  },
-};
+export const metadata: Metadata = buildMetadata({ title: 'Partners & Sponsors | Connection Rave', description: 'Explore partnership and sponsorship opportunities with Connection Rave.', path: '/partners' });
 
 export default async function PartnersPage() {
   const repo = getPartnersRepository();

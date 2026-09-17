@@ -366,7 +366,7 @@ function buildShards(
 }
 
 export default function DESTINYShatter({
-  text = 'DESTINY',
+  text = 'EVENT',
   fontSize = 200,
   className = '',
   cycleMs = 8000,

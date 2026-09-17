@@ -21,6 +21,9 @@ import {
 } from '@/lib/news/helpers';
 import type { NewsArticle } from '@/lib/news/types';
 import NewsError from '../error';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
+import { articleSchema, jsonLd } from '@/lib/seo/structured-data';
 
 /**
  * Only the slugs generateStaticParams returns are routable; anything else is a
@@ -30,6 +33,7 @@ import NewsError from '../error';
  * build.
  */
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
   const selection = getNewsRepository();
@@ -66,31 +70,12 @@ export async function generateMetadata({
   const result = await loadArticle(slug);
 
   if ('error' in result || !result.article) {
-    return {
-      title: 'Story Not Found | Connection Rave',
-      description: 'This article is not available.',
-      robots: { index: false, follow: true },
-    };
+    return buildMetadata({ title: 'Story Not Found', description: 'This article is not available.', path: `/news/${slug}`, indexable: false });
   }
 
   const article = result.article;
-  const title = `${article.seoTitle ?? article.title} | Connection Rave`;
   const description = article.seoDescription ?? article.excerpt;
-
-  // No NewsArticle JSON-LD and no publishedTime: this is preview editorial with
-  // no publication date, and structured data would assert one.
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'article',
-      images: article.heroImage.src
-        ? [{ url: article.heroImage.src, alt: article.heroImage.alt }]
-        : [],
-    },
-  };
+  return buildMetadata({ title: article.seoTitle ?? `${article.title} | Connection Rave`, description, path: `/news/${article.slug}`, canonicalOverride: article.canonicalOverride, type: 'article', image: article.heroImage.src ? { url: article.heroImage.src, alt: article.heroImage.alt, width: article.heroImage.width, height: article.heroImage.height } : null, indexable: article.status === 'published' && article.indexable !== false, follow: article.followLinks });
 }
 
 export default async function ArticlePage({
@@ -116,6 +101,8 @@ export default async function ArticlePage({
   const latest = latestStories(articles, article);
   const related = relatedStories(articles, article);
   const page = selection.ok ? await selection.repository.getNewsPage() : null;
+  const breadcrumbs = breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'News', path: '/news' }, { name: article.title, path: `/news/${article.slug}` }]);
+  const articleJsonLd = articleSchema({ title: article.title, description: article.excerpt, path: `/news/${article.slug}`, image: article.heroImage.src, publishedAt: article.publishedAt, updatedAt: article.updatedAt, published: article.status === 'published' && article.indexable !== false });
 
   return (
     <EventsMotion>
@@ -190,6 +177,7 @@ export default async function ArticlePage({
           }}
           titleId="article-cta-title"
         />
+        {[breadcrumbs, articleJsonLd].filter(Boolean).map((schema, index) => <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) ?? '' }} />)}
       </main>
       <EventsFooter footer={page?.ok ? page.data.footer : { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' }} />
     </EventsMotion>

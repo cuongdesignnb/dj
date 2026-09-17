@@ -132,6 +132,9 @@ export function normalizeArticle(value: unknown): NewsArticle | null {
     eventHref: nullableStr(value.eventHref),
     seoTitle: nullableStr(value.seoTitle),
     seoDescription: nullableStr(value.seoDescription),
+    canonicalOverride: nullableStr(value.canonicalOverride),
+    indexable: value.indexable !== false,
+    followLinks: value.followLinks !== false,
   };
 }
 

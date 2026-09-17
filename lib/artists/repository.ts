@@ -4,7 +4,7 @@
 
 import type { Artist, LineupPageData } from './types';
 import { normalizeArtist, normalizeArtists } from './http';
-import { publicApiBaseUrl } from '@/lib/api/public';
+import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 
 export interface ArtistRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -114,7 +114,7 @@ export class HttpArtistRepository implements ArtistRepository {
           visual: result.data[0]?.heroImage ?? result.data[0]?.portrait ?? { src: '', alt: '' },
           sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'],
           badge: [],
-          location: 'Perth',
+          location: process.env.EVENT_CITY?.trim() ?? '',
         },
         artists: result.data,
         story: { eyebrow: 'THE LINEUP', title: 'Artists in focus', description: 'Published artist profiles for the current programme.', image: result.data[0]?.heroImage ?? { src: '', alt: '' } },
@@ -134,7 +134,7 @@ export class HttpArtistRepository implements ArtistRepository {
       return { ok: false, error: result.error };
     }
 
-    return { ok: true, data: normalizeArtist(result.raw) };
+    return { ok: true, data: normalizeArtist(unwrapApiData(result.raw)) };
   }
 }
 

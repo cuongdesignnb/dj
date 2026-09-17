@@ -28,14 +28,14 @@ export interface TableRow {
   archived: boolean;
 }
 
-const DATE = new Intl.DateTimeFormat('en-AU', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Australia/Perth' });
+const DATE = new Intl.DateTimeFormat('en-AU', { day: 'numeric', month: 'short', year: 'numeric', timeZone: process.env.NEXT_PUBLIC_EVENT_TIME_ZONE ?? 'UTC' });
 const DATE_TIME = new Intl.DateTimeFormat('en-AU', {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
   hour: 'numeric',
   minute: '2-digit',
-  timeZone: 'Australia/Perth',
+  timeZone: process.env.NEXT_PUBLIC_EVENT_TIME_ZONE ?? 'UTC',
 });
 
 export function formatDate(value: unknown, withTime = false): string {

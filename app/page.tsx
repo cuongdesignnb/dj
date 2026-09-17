@@ -14,6 +14,7 @@ import EventMotion from '@/components/event/EventMotion';
 import EventVenue from '@/components/event/EventVenue';
 import Header from '@/components/home/Header';
 import EventError from './event/error';
+import { buildMetadata } from '@/lib/seo/metadata';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,8 +34,8 @@ async function loadHomeEvent(): Promise<{ data: EventPageData } | { error: strin
 
 export async function generateMetadata(): Promise<Metadata> {
   const result = await loadHomeEvent();
-  if ('error' in result) return { title: 'Connection Rave', robots: { index: false, follow: false } };
-  return { title: result.data.event.seo.title, description: result.data.event.seo.description };
+  if ('error' in result) return buildMetadata({ title: 'Connection Rave', description: 'Connection Rave event information.', path: '/', indexable: false, follow: false });
+  return buildMetadata({ title: result.data.event.seo.title, description: result.data.event.seo.description, path: '/', canonicalOverride: result.data.event.seo.canonicalOverride, image: result.data.event.seo.image ? { url: result.data.event.seo.image.src, alt: result.data.event.seo.image.alt, width: result.data.event.seo.image.width, height: result.data.event.seo.image.height } : null, indexable: result.data.event.seo.indexable, follow: result.data.event.seo.followLinks });
 }
 
 export default async function HomePage() {

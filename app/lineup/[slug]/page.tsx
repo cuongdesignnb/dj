@@ -9,6 +9,10 @@ import ArtistProfile from '@/components/artists/ArtistProfile';
 import { getArtistRepository } from '@/lib/artists/repository';
 import { relatedArtists } from '@/lib/artists/helpers';
 import type { Artist } from '@/lib/artists/types';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
+import { jsonLd } from '@/lib/seo/structured-data';
+import { isThinProfile } from '@/lib/seo/indexability';
 import LineupError from '../error';
 
 /**
@@ -21,6 +25,7 @@ import LineupError from '../error';
  * build; revisit this if the lineup starts changing between deploys.
  */
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 /**
  * One dynamic route serves every artist — there are no per-artist page files.
@@ -60,26 +65,12 @@ export async function generateMetadata({
   const result = await loadArtist(slug);
 
   if ('error' in result || !result.artist) {
-    return {
-      title: 'Artist Not Found | DESTINY — Connection Rave',
-      description: 'This artist profile is not available.',
-      robots: { index: false, follow: true },
-    };
+    return buildMetadata({ title: 'Artist Not Found', description: 'This artist profile is not available.', path: `/lineup/${slug}`, indexable: false });
   }
 
   const artist = result.artist;
-  // The description never quotes a bio the artist does not have.
-  return {
-    title: `${artist.name} | DESTINY Artist — Connection Rave`,
-    description: `Meet ${artist.name}, part of the DESTINY artist lineup by Connection Rave.`,
-    openGraph: {
-      title: `${artist.name} | DESTINY Artist`,
-      description: `Meet ${artist.name}, part of the DESTINY artist lineup by Connection Rave.`,
-      images: artist.portrait.src
-        ? [{ url: artist.portrait.src, alt: artist.portrait.alt }]
-        : [],
-    },
-  };
+  const description = artist.seoDescription ?? `Published artist profile for ${artist.name}.`;
+  return buildMetadata({ title: artist.seoTitle ?? `${artist.name} | Connection Rave`, description, path: `/lineup/${artist.slug}`, canonicalOverride: artist.canonicalOverride, image: artist.portrait.src ? { url: artist.portrait.src, alt: artist.portrait.alt, width: artist.portrait.width, height: artist.portrait.height } : null, indexable: artist.indexable !== false && !isThinProfile({ bio: artist.bio, mediaCount: artist.media.length }), follow: artist.followLinks });
 }
 
 export default async function ArtistPage({
@@ -103,12 +94,14 @@ export default async function ArtistPage({
   const all = selection.ok ? await selection.repository.getArtists() : null;
   const related = all?.ok ? relatedArtists(all.data, artist) : [];
   const page = selection.ok ? await selection.repository.getLineupPage() : null;
+  const breadcrumbs = breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Lineup', path: '/lineup' }, { name: artist.name, path: `/lineup/${artist.slug}` }]);
 
   return (
     <EventsMotion>
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <ArtistProfile artist={artist} related={related} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbs) ?? '' }} />
       </main>
       <EventsFooter footer={page?.ok ? page.data.footer : { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' }} />
     </EventsMotion>
