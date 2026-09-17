@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 const email = z.string().trim().toLowerCase().email().max(320);
-const uuid = z.string().uuid();
+// PostgreSQL UUID values in the existing content seed are canonical 36-character
+// UUIDs but do not all carry RFC 4122 version bits. Keep the shape check strict
+// without rejecting those stable database identifiers.
+const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'Invalid UUID');
 const locale = z.enum(['en', 'vi']).default('en');
 
 export const loginSchema = z.object({ email, password: z.string().min(1).max(200), remember: z.boolean().optional().default(false) }).strict();
@@ -41,6 +44,37 @@ export const checkoutSchema = z.object({
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
 }).strict().refine((value) => Boolean(value.items?.length || value.lines?.length), { message: 'At least one checkout line is required.', path: ['items'] }).transform((value) => ({ ...value, items: value.items ?? value.lines ?? [] }));
+
+export const squarePaymentSchema = z.object({
+  sourceId: z.string().trim().min(1).max(1000),
+  verificationToken: z.string().trim().min(1).max(2000).optional().nullable(),
+  idempotencyKey: z.string().trim().regex(/^[A-Za-z0-9_-]{8,45}$/),
+}).strict();
+
+export const ticketCheckoutSchema = z.object({
+  eventId: uuid,
+  customerName: z.string().trim().min(2).max(160),
+  customerEmail: email,
+  items: z.array(z.object({ ticketTierId: uuid, quantity: z.number().int().min(1).max(20) }).strict()).min(1).max(20),
+  clientReference: z.string().trim().regex(/^[A-Za-z0-9-]{8,80}$/).optional(),
+}).strict();
+
+export const vipCheckoutSchema = z.object({
+  eventId: uuid,
+  vipPackageId: uuid,
+  boothId: uuid.optional().nullable(),
+  customerName: z.string().trim().min(2).max(160),
+  customerEmail: email,
+  phone: z.string().trim().max(40).optional().nullable(),
+  groupSize: z.number().int().min(1).max(100),
+  clientReference: z.string().trim().regex(/^[A-Za-z0-9-]{8,80}$/).optional(),
+}).strict();
+
+export const refundSchema = z.object({
+  amountMinor: z.number().int().positive().optional(),
+  reason: z.string().trim().max(200).optional().nullable(),
+  idempotencyKey: z.string().trim().regex(/^[A-Za-z0-9_-]{8,45}$/).optional(),
+}).strict();
 
 export const paginationSchema = z.object({ page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(20) });
 

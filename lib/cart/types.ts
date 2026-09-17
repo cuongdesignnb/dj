@@ -82,6 +82,7 @@ export type CheckoutAvailability = 'ready' | 'unavailable' | 'loading';
 
 export interface CheckoutSessionResult {
   status: 'ready' | 'unavailable' | 'error';
+  checkoutId?: string;
   checkoutUrl?: string;
   message?: string;
 }

@@ -10,7 +10,7 @@ panel communicate through the versioned `/api/v1` contract.
 - PostgreSQL 16 with Prisma migrations and seed data
 - Redis 7 for rate limiting (with a development-only in-memory fallback)
 - Opaque database sessions, CSRF protection, Argon2id passwords, RBAC and audit logs
-- Stripe hosted checkout and idempotent webhook processing
+- Square Web Payments checkout, Orders, Payments, webhooks and refunds
 - Local media storage by default, with S3-compatible configuration available
 
 ## Local development
@@ -47,6 +47,27 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
 The container applies `prisma migrate deploy` before starting Next.js when
 `RUN_DB_MIGRATIONS=true`.
+
+### Local admin and checkout smoke test
+
+With the Docker defaults, open [http://localhost:43171/admin/login](http://localhost:43171/admin/login) and use `admin@example.test` / `local-admin-password-change-me`. Change both values before any shared or production deployment.
+
+Paid flows do not accept card numbers from the API. The storefront creates a
+server-priced checkout intent first, then Square Web Payments tokenizes the
+card in `/checkout/pay/{checkoutId}`. For example:
+
+```powershell
+Invoke-RestMethod http://localhost:43171/api/v1/checkout/session `
+  -Method Post -ContentType 'application/json' `
+  -Body '{"items":[{"productId":"<published-product-uuid>","quantity":1}],"customerEmail":"test@example.com"}'
+```
+
+Ticket and VIP intents use `/api/v1/checkout/ticket-intent` and
+`/api/v1/checkout/vip-intent`. A 422 means the content is not currently
+published/online-sale enabled; a 409 means the business state (for example a
+request-only VIP package) intentionally prevents payment. A real card payment
+requires Square Sandbox credentials, location ID, application ID, webhook
+signature key and a reachable HTTPS webhook URL.
 
 ## Quality checks
 

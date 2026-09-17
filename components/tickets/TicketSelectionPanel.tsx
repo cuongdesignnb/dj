@@ -1,8 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, BadgeCheck, CalendarDays, Clock, MapPin, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, BadgeCheck, CalendarDays, CircleAlert, Clock, Mail, MapPin, ShieldCheck, User, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type {
   TicketEventInfo,
@@ -36,6 +37,10 @@ export default function TicketSelectionPanel({
   const lineItems = buildSelectedLineItems(tiers, selection);
   const subtotal = calculateTicketSubtotal(tiers, selection);
   const hasSelection = lineItems.length > 0;
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
 
   // The CTA is only a real link when a provider URL has been configured.
   const providerReady = provider.mode === 'external-link' && !!provider.checkoutUrl;
@@ -50,6 +55,33 @@ export default function TicketSelectionPanel({
     : !hasSelection
       ? 'Select at least one ticket to continue.'
       : null;
+
+  async function startTicketCheckout(formEvent: React.FormEvent<HTMLFormElement>) {
+    formEvent.preventDefault();
+    if (checkoutBusy || !hasSelection) return;
+    setCheckoutBusy(true);
+    setCheckoutError(null);
+    try {
+      const response = await fetch('/api/v1/checkout/ticket-intent', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({
+          eventId: event.id,
+          customerName: customerName.trim(),
+          customerEmail: customerEmail.trim(),
+          items: lineItems.map((item) => ({ ticketTierId: item.tier.id, quantity: item.quantity })),
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as { data?: { checkoutUrl?: string }; error?: { message?: string } } | null;
+      if (!response.ok || !payload?.data?.checkoutUrl || !/^\/checkout\/pay\/[0-9a-f-]{36}$/i.test(payload.data.checkoutUrl)) {
+        throw new Error(payload?.error?.message ?? 'The ticket checkout could not be started.');
+      }
+      window.location.assign(payload.data.checkoutUrl);
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'The ticket checkout could not be started.');
+      setCheckoutBusy(false);
+    }
+  }
 
   return (
     <div className="rounded-[20px] border border-white/[0.08] bg-rave-panel/80 p-5 sm:p-6">
@@ -180,9 +212,52 @@ export default function TicketSelectionPanel({
         </p>
       </div>
 
-      {/* Provider hand-off */}
+      {/* Square checkout or provider hand-off */}
       <div className="mt-5">
-        {ctaEnabled ? (
+        {hasSelection ? (
+          <form onSubmit={startTicketCheckout} className="flex flex-col gap-3 border-t border-white/[0.08] pt-5">
+            <p className="font-heading text-xs uppercase tracking-[0.18em] text-rave-red">Secure ticket checkout</p>
+            <label className="flex items-center gap-2 text-sm text-rave-muted">
+              <User aria-hidden className="h-4 w-4 text-rave-red" />
+              <span className="sr-only">Full name</span>
+              <input
+                required
+                minLength={2}
+                value={customerName}
+                onChange={(event) => setCustomerName(event.target.value)}
+                placeholder="Full name"
+                className="w-full rounded-[10px] border border-white/[0.12] bg-[#0B0B12] px-3 py-3 text-white placeholder:text-rave-muted/60 focus:border-rave-red focus:outline-none"
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm text-rave-muted">
+              <Mail aria-hidden className="h-4 w-4 text-rave-red" />
+              <span className="sr-only">Email</span>
+              <input
+                required
+                type="email"
+                value={customerEmail}
+                onChange={(event) => setCustomerEmail(event.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-[10px] border border-white/[0.12] bg-[#0B0B12] px-3 py-3 text-white placeholder:text-rave-muted/60 focus:border-rave-red focus:outline-none"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={checkoutBusy}
+              className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgba(255,23,61,0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-wait disabled:opacity-70 sm:text-base"
+            >
+              <span>{checkoutBusy ? 'Starting checkout…' : 'Continue to secure payment'}</span>
+              <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />
+            </button>
+            {checkoutError && (
+              <p role="alert" className="flex items-start gap-2 text-sm text-rave-red">
+                <CircleAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
+                {checkoutError}
+              </p>
+            )}
+            <p className="text-xs leading-relaxed text-rave-muted/80">Price and availability are checked again on the server before the hold is created.</p>
+          </form>
+        ) : ctaEnabled ? (
           <a
             href={provider.checkoutUrl as string}
             target="_blank"

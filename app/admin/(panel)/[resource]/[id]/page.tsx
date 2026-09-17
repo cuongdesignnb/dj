@@ -6,6 +6,7 @@ import { notFound, redirect } from 'next/navigation';
 import { ExternalLink, Pencil } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/layout/AdminPageHeader';
 import OrderActions from '@/components/admin/modules/OrderActions';
+import PaymentActions from '@/components/admin/modules/PaymentActions';
 import AdminCard from '@/components/admin/ui/AdminCard';
 import { buttonClass } from '@/components/admin/ui/buttonClass';
 import { PageReveal } from '@/components/admin/ui/Reveal';
@@ -369,6 +370,63 @@ function OrderDetail({ record, canEdit }: { record: AdminRecord; canEdit: boolea
   );
 }
 
+function PaymentDetail({ record, canEdit }: { record: AdminRecord; canEdit: boolean }) {
+  const refunds = arr(record.refunds);
+  return (
+    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="space-y-5">
+        <AdminCard title="Provider record" titleId="d-provider-payment"><Facts items={[
+          ['Provider', String(record.provider ?? 'Square')],
+          ['Square payment', String(record.providerPaymentId ?? record.id)],
+          ['Square order', String(record.providerOrderId || 'Not set')],
+          ['Checkout intent', String(record.checkoutIntentId || 'Not set')],
+          ['Location', String(record.locationId || 'Not set')],
+          ['Paid at', record.paidAt ? formatDate(record.paidAt, true) : 'Not completed'],
+        ]} /></AdminCard>
+        <AdminCard title="Refunds" titleId="d-refunds">
+          {refunds.length === 0 ? <p className="text-sm text-admin-muted">No refunds recorded.</p> : <ul className="space-y-2 text-sm">{refunds.map((refund, index) => <li key={index} className="flex justify-between gap-3 border-b border-admin-border pb-2"><span>{String(refund.status)}</span><span>{money({ amountMinor: Number(refund.amountMinor), currency: String(record.amount && typeof record.amount === 'object' ? (record.amount as Record<string, unknown>).currency : record.currency ?? 'AUD') })}</span></li>)}</ul>}
+        </AdminCard>
+      </div>
+      <div className="space-y-5"><AdminCard title="Amount" titleId="d-payment-amount"><Facts items={[
+        ['Status', <StatusBadge key="s" value={String(record.status)} />],
+        ['Amount', money(record.amount)],
+        ['Created', formatDate(record.createdAt, true)],
+      ]} /></AdminCard><PaymentActions id={String(record.id)} status={String(record.status)} canEdit={canEdit} /></div>
+    </div>
+  );
+}
+
+function TicketPurchaseDetail({ record }: { record: AdminRecord }) {
+  return <div className="grid grid-cols-1 gap-5 lg:grid-cols-2"><AdminCard title="Customer and hold" titleId="d-ticket-purchase"><Facts items={[
+    ['Customer', String(record.customerName ?? 'Not set')],
+    ['Email', String(record.customerEmail ?? 'Not set')],
+    ['Status', <StatusBadge key="s" value={String(record.status)} />],
+    ['Quantity', String(record.quantity ?? 0)],
+    ['Issued QR tickets', String(record.issuedCount ?? 0)],
+    ['Expires', formatDate(record.expiresAt, true)],
+  ]} /></AdminCard><AdminCard title="Amount" titleId="d-ticket-amount"><Facts items={[
+    ['Total', money(record.amount)],
+    ['Event', String(record.eventId ?? 'Not set')],
+    ['Created', formatDate(record.createdAt, true)],
+  ]} /></AdminCard></div>;
+}
+
+function VipBookingDetail({ record }: { record: AdminRecord }) {
+  return <div className="grid grid-cols-1 gap-5 lg:grid-cols-2"><AdminCard title="VIP booking" titleId="d-vip-booking"><Facts items={[
+    ['Customer', String(record.customerName ?? 'Not set')],
+    ['Email', String(record.customerEmail ?? 'Not set')],
+    ['Status', <StatusBadge key="s" value={String(record.status)} />],
+    ['Event', String(record.eventId ?? 'Not set')],
+    ['Package', String(record.vipPackageId ?? 'Not set')],
+    ['Booth', String(record.boothId || 'Not selected')],
+    ['Expires', formatDate(record.expiresAt, true)],
+  ]} /></AdminCard><AdminCard title="Amount" titleId="d-vip-amount"><Facts items={[
+    ['Due now', money(record.amount)],
+    ['Total package', money(record.total)],
+    ['Created', formatDate(record.createdAt, true)],
+  ]} /></AdminCard></div>;
+}
+
 export default async function ResourceDetailPage({ params }: Props) {
   const { resource, id } = await params;
   const definition = getResource(resource);
@@ -424,6 +482,12 @@ export default async function ResourceDetailPage({ params }: Props) {
         <ArtistDetail record={record} />
       ) : definition.key === 'products' ? (
         <ProductDetail record={record} />
+      ) : definition.key === 'payments' ? (
+        <PaymentDetail record={record} canEdit={canEdit} />
+      ) : definition.key === 'ticket-purchases' ? (
+        <TicketPurchaseDetail record={record} />
+      ) : definition.key === 'vip-bookings' ? (
+        <VipBookingDetail record={record} />
       ) : (
         <OrderDetail record={record} canEdit={canEdit} />
       )}

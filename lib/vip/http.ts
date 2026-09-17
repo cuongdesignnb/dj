@@ -80,10 +80,15 @@ function vipPackage(value: unknown): VipPackage | null {
   const price = money(value.price);
   if (!id || !price) return null;
   const maxBottles = Math.max(1, Math.trunc(num(value.maxBottleSelections, 3)));
+  const paymentMode = value.paymentMode === 'full-payment' || value.paymentMode === 'deposit'
+    ? value.paymentMode
+    : 'request-only';
   return {
     id,
     name: str(value.name, 'Booth Package'),
     price,
+    paymentMode,
+    deposit: money(value.deposit),
     capacity: Math.max(1, Math.trunc(num(value.capacity, 1))),
     includedBottleCount: Math.max(0, Math.trunc(num(value.includedBottleCount, 0))),
     minBottleSelections: Math.min(

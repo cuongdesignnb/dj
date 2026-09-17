@@ -155,7 +155,7 @@ export const integrationsDefinition: SingletonDefinition = {
   seed: () => ({
     items: [
       { id: 'ticket-provider', name: 'Ticket Provider', description: 'Hosted ticket sales for events.', state: 'not-connected', keyConfigured: false, newKey: '', endpoint: '' },
-      { id: 'stripe', name: 'Stripe', description: 'Merchandise checkout sessions.', state: 'not-connected', keyConfigured: false, newKey: '', endpoint: '' },
+      { id: 'square', name: 'Square', description: 'Card payments, orders, refunds and webhooks.', state: 'not-connected', keyConfigured: false, newKey: '', endpoint: '/api/v1/webhooks/square' },
       { id: 'mailchimp', name: 'Mailchimp', description: 'Newsletter audience.', state: 'not-connected', keyConfigured: false, newKey: '', endpoint: '' },
       { id: 'brevo', name: 'Brevo', description: 'Transactional and newsletter email.', state: 'not-connected', keyConfigured: false, newKey: '', endpoint: '' },
       { id: 'social', name: 'Social Links', description: 'Public profile links (Social / Contact).', state: 'not-connected', keyConfigured: false, newKey: '', endpoint: '' },

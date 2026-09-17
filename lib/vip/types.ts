@@ -63,6 +63,8 @@ export interface VipPackage {
   id: string;
   name: string;
   price: Money;
+  paymentMode: 'request-only' | 'full-payment' | 'deposit';
+  deposit?: Money | null;
   capacity: number;
   includedBottleCount: number;
   minBottleSelections: number;

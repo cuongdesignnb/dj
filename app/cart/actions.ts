@@ -61,8 +61,8 @@ export async function createCheckoutSession(raw: unknown): Promise<CheckoutSessi
     return { status: 'unavailable', message: 'Merchandise checkout is not available yet.' };
   }
 
-  // The backend re-prices every line, creates the Stripe Checkout
-  // Session and returns the hosted checkout URL.
+  // The backend re-prices every line and creates an opaque Square checkout
+  // intent. The browser never supplies a price or a provider payment state.
   try {
     const response = await fetch(`${getApiBaseUrl()}/api/v1/checkout/session`, {
       method: 'POST',
@@ -82,11 +82,11 @@ export async function createCheckoutSession(raw: unknown): Promise<CheckoutSessi
 
     const payload = isRecord(body) && isRecord(body.data) ? body.data : body;
     const url = isRecord(payload) && typeof payload.checkoutUrl === 'string' ? payload.checkoutUrl : '';
-    // Only ever redirect to an https URL the backend returned.
-    if (!/^https:\/\//.test(url)) {
+    const checkoutId = isRecord(payload) && typeof payload.checkoutId === 'string' ? payload.checkoutId : undefined;
+    if (!/^\/checkout\/pay\/[A-Za-z0-9-]{20,}$/.test(url) || !checkoutId) {
       return { status: 'error', message: 'Checkout could not be started. Please try again.' };
     }
-    return { status: 'ready', checkoutUrl: url };
+    return { status: 'ready', checkoutId, checkoutUrl: url };
   } catch {
     return { status: 'error', message: 'Checkout could not be reached. Please try again.' };
   }

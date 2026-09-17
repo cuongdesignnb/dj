@@ -1,9 +1,8 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import argon2 from 'argon2';
-import Stripe from 'stripe';
 import { Prisma } from '@prisma/client';
 import { db } from '@/server/db/client';
-import { env, runtimeConfig } from '@/server/config';
+import { env } from '@/server/config';
 import { ApiError, conflict, notFound, unauthorized, validationError } from '@/server/errors';
 import { requestContext, dataResponse, errorResponse, listResponse, logRequest } from '@/server/http/response';
 import { createAdminSession, destroyAdminSession, getAdminSession } from '@/server/auth/session';
@@ -13,6 +12,22 @@ import { writeAuditLog } from '@/server/audit/log';
 import { readCsrfCookie, requestCsrfToken } from '@/server/security/csrf';
 import { mediaResponse, storeMedia } from '@/server/media/storage';
 import { createBooking, createContact, subscribeNewsletter } from '@/server/services/leads';
+import {
+  createMerchandiseCheckoutIntent,
+  createTicketCheckoutIntent,
+  createVipCheckoutIntent,
+  expireExpiredCheckoutIntents,
+  expireCheckoutIntent,
+  getCheckoutIntentPublic,
+  getCheckoutResult,
+  payCheckoutIntent,
+} from '@/server/services/payments/checkout-intent';
+import { receiveSquareWebhook } from '@/server/services/payments/square-webhook.service';
+import { preflightSquareLocation } from '@/server/integrations/square/locations';
+import { getSquarePayment, squarePaymentStatus } from '@/server/integrations/square/payments';
+import { refundSquarePayment } from '@/server/integrations/square/refunds';
+import { finalizeCompletedPayment } from '@/server/services/payments/finalizer';
+import { verifyIssuedTicketToken } from '@/server/services/tickets/verify';
 import {
   getPublicArtist,
   getPublicBootstrap,
@@ -46,6 +61,10 @@ import {
   paginationSchema,
   partnerMutationSchema,
   productMutationSchema,
+  refundSchema,
+  squarePaymentSchema,
+  ticketCheckoutSchema,
+  vipCheckoutSchema,
   zodFieldErrors,
 } from '@/server/validators/api';
 
@@ -105,8 +124,12 @@ function query(request: Request) {
   return new URL(request.url).searchParams;
 }
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 function adminResourcePermission(resource: string, action: 'view' | 'create' | 'edit' | 'delete' | 'publish') {
-  const normalized = resource === 'orders' ? 'orders' : resource === 'staff' ? 'staff' : resource === 'roles' ? 'roles' : resource === 'settings' || resource === 'audit' || resource === 'tasks' ? 'settings' : resource === 'faq' || resource === 'legal' || resource === 'booking-requests' || resource === 'contact-messages' ? 'support' : resource;
+  const normalized = resource === 'orders' || resource === 'payments' || resource === 'ticket-purchases' || resource === 'vip-bookings' ? 'orders' : resource === 'staff' ? 'staff' : resource === 'roles' ? 'roles' : resource === 'settings' || resource === 'audit' || resource === 'tasks' ? 'settings' : resource === 'faq' || resource === 'legal' || resource === 'booking-requests' || resource === 'contact-messages' ? 'support' : resource;
   return `${normalized}.${action}`;
 }
 
@@ -267,6 +290,54 @@ function adminRecord(resource: string, row: any) {
       updatedAt: iso(row.updatedAt),
     };
   }
+  if (resource === 'payments') {
+    return {
+      ...base,
+      providerPaymentId: row.providerPaymentId ?? row.id,
+      providerOrderId: row.providerOrderId ?? '',
+      checkoutIntentId: row.checkoutIntentId ?? '',
+      amount: { amountMinor: row.amountMinor, currency: row.currency },
+      status: String(row.status).toLowerCase(),
+      provider: row.provider,
+      locationId: row.locationId ?? '',
+      paidAt: row.paidAt ? iso(row.paidAt) : null,
+      createdAt: iso(row.createdAt),
+      updatedAt: iso(row.updatedAt ?? row.createdAt),
+    };
+  }
+  if (resource === 'ticket-purchases') {
+    const safeBase = { ...base };
+    delete safeBase.issuedTickets;
+    return {
+      ...safeBase,
+      customerName: row.customerName,
+      customerEmail: row.customerEmail,
+      quantity: (row.items ?? []).reduce((sum: number, item: any) => sum + item.quantity, 0),
+      amount: { amountMinor: row.totalMinor, currency: row.currency },
+      status: String(row.status).toLowerCase(),
+      issuedCount: (row.issuedTickets ?? []).length,
+      eventId: row.eventId,
+      expiresAt: iso(row.expiresAt),
+      createdAt: iso(row.createdAt),
+      updatedAt: iso(row.updatedAt),
+    };
+  }
+  if (resource === 'vip-bookings') {
+    return {
+      ...base,
+      customerName: row.customerName,
+      customerEmail: row.customerEmail,
+      amount: { amountMinor: row.amountDueMinor, currency: row.currency },
+      total: { amountMinor: row.totalMinor, currency: row.currency },
+      status: String(row.status).toLowerCase(),
+      eventId: row.eventId,
+      vipPackageId: row.vipPackageId,
+      boothId: row.boothId ?? '',
+      expiresAt: iso(row.expiresAt),
+      createdAt: iso(row.createdAt),
+      updatedAt: iso(row.updatedAt),
+    };
+  }
   if (resource === 'media') {
     const name = String(row.storageKey).split('/').pop() ?? row.storageKey;
     return { ...base, name, url: row.publicUrl, kind: row.mimeType.startsWith('video/') ? 'video-thumbnail' : row.mimeType === 'application/pdf' ? 'document' : row.mimeType.includes('svg') ? 'logo' : 'image', alt: row.altText, usedBy: [], updatedAt: iso(row.updatedAt) };
@@ -323,6 +394,18 @@ async function adminList(resource: string, request: Request) {
   }
   if (resource === 'orders') {
     const [rows, total] = await Promise.all([db.order.findMany({ skip, take: pageSize, orderBy: { createdAt: 'desc' }, include: { items: true, payments: true } }), db.order.count()]);
+    return { rows, total };
+  }
+  if (resource === 'payments') {
+    const [rows, total] = await Promise.all([db.payment.findMany({ skip, take: pageSize, orderBy: { createdAt: 'desc' }, where: query(request).get('status') ? { status: String(query(request).get('status')).toUpperCase() as any } : undefined, include: { order: true, checkoutIntent: true, refunds: true } }), db.payment.count()]);
+    return { rows, total };
+  }
+  if (resource === 'ticket-purchases') {
+    const [rows, total] = await Promise.all([db.ticketPurchase.findMany({ skip, take: pageSize, orderBy: { createdAt: 'desc' }, where: query(request).get('status') ? { status: String(query(request).get('status')).toUpperCase() as any } : undefined, include: { items: true, holds: true, issuedTickets: true, event: true } }), db.ticketPurchase.count()]);
+    return { rows, total };
+  }
+  if (resource === 'vip-bookings') {
+    const [rows, total] = await Promise.all([db.vipBooking.findMany({ skip, take: pageSize, orderBy: { createdAt: 'desc' }, where: query(request).get('status') ? { status: String(query(request).get('status')).toUpperCase() as any } : undefined, include: { event: true, vipPackage: true, booth: true, hold: true, payments: true } }), db.vipBooking.count()]);
     return { rows, total };
   }
   if (resource === 'booking-requests') {
@@ -587,77 +670,50 @@ async function deleteAdminResource(resource: string, id: string, requestId: stri
 
 async function handleCheckout(request: Request) {
   const input = parse(checkoutSchema, await body(request));
-  const secret = env('STRIPE_SECRET_KEY');
-  if (!secret) throw new ApiError(503, 'STRIPE_NOT_CONFIGURED', 'Checkout is not configured.');
-  const stripe = new Stripe(secret);
-  const products = await db.product.findMany({ where: { id: { in: input.items.map((item) => item.productId) }, status: 'PUBLISHED', deletedAt: null }, include: { translations: true, variants: true, images: { orderBy: { sortOrder: 'asc' }, include: { media: true } } } });
-  const byId = new Map(products.map((product) => [product.id, product]));
-  const lineItems = [] as Array<{ productId: string; variantId: string | null; title: string; image: string | null; unitPrice: number; quantity: number; lineTotal: number }>;
-  for (const item of input.items) {
-    const product = byId.get(item.productId);
-    if (!product) throw validationError({ items: 'A product is unavailable.' });
-    const variant = item.variantId ? product.variants.find((row) => row.id === item.variantId && row.enabled) : null;
-    if (item.variantId && !variant) throw validationError({ items: 'A selected variant is unavailable.' });
-    const price = variant?.priceMinor ?? product.basePriceMinor;
-    if (product.stockTracking === 'TRACKED' && variant?.stockQuantity !== null && variant?.stockQuantity !== undefined && variant.stockQuantity < item.quantity) throw validationError({ items: 'A selected item is out of stock.' });
-    const title = product.translations.find((row) => row.locale === 'en')?.title ?? product.slug;
-    const lineTotal = price * item.quantity;
-    lineItems.push({ productId: product.id, variantId: variant?.id ?? null, title, image: product.images[0]?.media?.publicUrl ?? null, unitPrice: price, quantity: item.quantity, lineTotal });
-  }
-  const subtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
-  const discount = input.promoCode ? await db.discount.findFirst({ where: { code: input.promoCode.toUpperCase(), active: true, OR: [{ startsAt: null }, { startsAt: { lte: new Date() } }], AND: [{ OR: [{ endsAt: null }, { endsAt: { gte: new Date() } }] }] } }) : null;
-  let discountMinor = 0;
-  if (discount && (!discount.minimumSubtotalMinor || subtotal >= discount.minimumSubtotalMinor)) {
-    discountMinor = discount.type === 'PERCENTAGE' && discount.percentage ? Math.floor(subtotal * Number(discount.percentage) / 100) : Math.min(subtotal, discount.valueMinor ?? 0);
-  }
-  const total = subtotal - discountMinor;
-  const result = await db.$transaction(async (tx) => {
-    const order = await tx.order.create({ data: { orderNumber: `DR-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0, 8).toUpperCase()}`, clientReference: input.clientReference ?? null, customerEmail: input.customerEmail?.toLowerCase() ?? null, subtotalMinor: subtotal, discountMinor, totalMinor: total, currency: 'AUD', discountId: discount?.id ?? null, items: { create: lineItems.map((item) => ({ productId: item.productId, variantId: item.variantId, titleSnapshot: item.title, imageUrlSnapshot: item.image, unitPriceMinor: item.unitPrice, quantity: item.quantity, lineTotalMinor: item.lineTotal })) } } });
-    const session = await stripe.checkout.sessions.create({ mode: 'payment', ...(input.customerEmail ? { customer_email: input.customerEmail } : { customer_creation: 'always' }), line_items: lineItems.map((item) => ({ quantity: item.quantity, price_data: { currency: 'aud', unit_amount: item.unitPrice, product_data: { name: item.title, ...(item.image ? { images: [new URL(item.image, runtimeConfig().appUrl).toString()] } : {}) } } })), success_url: input.successUrl ?? `${runtimeConfig().appUrl}/checkout/result?session_id={CHECKOUT_SESSION_ID}`, cancel_url: input.cancelUrl ?? `${runtimeConfig().appUrl}/cart` });
-    if (!session.id) throw new ApiError(502, 'CHECKOUT_FAILED', 'Stripe did not return a checkout session.');
-    await tx.checkoutSession.create({ data: { orderId: order.id, provider: 'stripe', providerSessionId: session.id, status: 'OPEN', expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : null } });
-    return { order, session };
-  });
-  return { checkoutUrl: result.session.url, sessionId: result.session.id, orderNumber: result.order.orderNumber };
+  return createMerchandiseCheckoutIntent({ ...input, items: input.items });
 }
 
-async function handleStripeWebhook(request: Request) {
-  const secret = env('STRIPE_SECRET_KEY');
-  const webhookSecret = env('STRIPE_WEBHOOK_SECRET');
-  if (!secret || !webhookSecret) throw new ApiError(503, 'STRIPE_NOT_CONFIGURED', 'Stripe webhook is not configured.');
-  const signature = request.headers.get('stripe-signature');
-  if (!signature) throw new ApiError(400, 'INVALID_SIGNATURE', 'Stripe signature is required.');
-  const raw = await request.text();
-  const stripe = new Stripe(secret);
-  let event: Stripe.Event;
-  try { event = stripe.webhooks.constructEvent(raw, signature, webhookSecret); } catch { throw new ApiError(400, 'INVALID_SIGNATURE', 'Invalid Stripe signature.'); }
-  const payloadHash = createHash('sha256').update(raw).digest('hex');
-  const existing = await db.webhookEvent.findUnique({ where: { provider_providerEventId: { provider: 'stripe', providerEventId: event.id } } });
-  if (existing?.status === 'PROCESSED') return { received: true, duplicate: true };
-  const record = existing ?? await db.webhookEvent.create({ data: { provider: 'stripe', providerEventId: event.id, eventType: event.type, payloadHash, status: 'PROCESSING' } });
-  try {
-    if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      await db.$transaction(async (tx) => {
-        const checkout = await tx.checkoutSession.findUnique({ where: { providerSessionId: session.id } });
-        if (!checkout) return;
-        await tx.checkoutSession.update({ where: { id: checkout.id }, data: { status: 'COMPLETE' } });
-        await tx.order.update({ where: { id: checkout.orderId }, data: { paymentStatus: 'PAID', customerEmail: session.customer_details?.email ?? undefined } });
-        const paymentId = typeof session.payment_intent === 'string' ? session.payment_intent : null;
-        if (paymentId && !(await tx.payment.findFirst({ where: { provider: 'stripe', providerPaymentId: paymentId } }))) {
-          await tx.payment.create({ data: { orderId: checkout.orderId, provider: 'stripe', providerPaymentId: paymentId, status: 'PAID', amountMinor: session.amount_total ?? 0, currency: (session.currency ?? 'aud').toUpperCase(), paidAt: new Date() } });
-        }
-      });
-    } else if (event.type === 'checkout.session.expired') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      await db.checkoutSession.updateMany({ where: { providerSessionId: session.id }, data: { status: 'EXPIRED' } });
-    }
-    await db.webhookEvent.update({ where: { id: record.id }, data: { status: 'PROCESSED', processedAt: new Date() } });
-  } catch (error) {
-    await db.webhookEvent.update({ where: { id: record.id }, data: { status: 'FAILED' } });
-    throw error;
+async function handlePayCheckout(request: Request, checkoutId: string) {
+  const input = parse(squarePaymentSchema, await body(request));
+  return payCheckoutIntent({ checkoutId, ...input });
+}
+
+async function handleSquareWebhook(request: Request) {
+  return receiveSquareWebhook(await request.text(), request.headers.get('x-square-hmacsha256-signature'));
+}
+
+async function handleAdminRefund(request: Request, paymentId: string, requestId: string, userId: string) {
+  const input = parse(refundSchema, await body(request));
+  const payment = await db.payment.findUnique({ where: { id: paymentId }, include: { refunds: true } });
+  if (!payment) throw notFound('Payment not found.');
+  if (payment.provider !== 'square' || !payment.providerPaymentId) throw conflict('This payment has no Square payment to refund.');
+  if (!['COMPLETED', 'PAID'].includes(String(payment.status))) throw conflict('Only a completed payment can be refunded.');
+  const completedRefunded = payment.refunds.filter((refund) => refund.status === 'COMPLETED').reduce((sum, refund) => sum + refund.amountMinor, 0);
+  const amountMinor = input.amountMinor ?? payment.amountMinor - completedRefunded;
+  if (amountMinor <= 0 || amountMinor > payment.amountMinor - completedRefunded) throw validationError({ amountMinor: 'Refund amount exceeds the remaining refundable amount.' });
+  const idempotencyKey = input.idempotencyKey ?? `ref_${randomUUID().replaceAll('-', '')}`.slice(0, 45);
+  const providerRefund = await refundSquarePayment({ paymentId: payment.providerPaymentId, idempotencyKey, amountMinor, currency: payment.currency, reason: input.reason });
+  const status = String(providerRefund.status ?? '').toUpperCase();
+  const localStatus = status === 'COMPLETED' ? 'COMPLETED' : status === 'FAILED' ? 'FAILED' : status === 'CANCELED' ? 'CANCELLED' : 'PENDING';
+  const refund = await db.refund.create({ data: { paymentId: payment.id, providerRefundId: providerRefund.id, idempotencyKey, amountMinor, currency: payment.currency, reason: input.reason ?? null, status: localStatus } });
+  if (localStatus === 'COMPLETED') {
+    const total = completedRefunded + amountMinor;
+    await db.payment.update({ where: { id: payment.id }, data: { status: total >= payment.amountMinor ? 'REFUNDED' : 'PARTIALLY_REFUNDED' } });
   }
-  return { received: true };
+  await writeAuditLog({ actorUserId: userId, action: 'refund', entityType: 'payment', entityId: payment.id, after: refund, requestId });
+  return refund;
+}
+
+async function handleAdminReconcile(paymentId: string) {
+  const payment = await db.payment.findUnique({ where: { id: paymentId } });
+  if (!payment) throw notFound('Payment not found.');
+  if (payment.provider !== 'square' || !payment.providerPaymentId) throw conflict('This payment has no Square payment to reconcile.');
+  const providerPayment = await getSquarePayment(payment.providerPaymentId);
+  if (!providerPayment) throw notFound('Square payment not found.');
+  const status = squarePaymentStatus(providerPayment.status);
+  const updated = await db.payment.update({ where: { id: payment.id }, data: { status, providerOrderId: providerPayment.orderId, locationId: providerPayment.locationId, paidAt: status === 'COMPLETED' ? (payment.paidAt ?? new Date()) : payment.paidAt } });
+  if (status === 'COMPLETED') await finalizeCompletedPayment(updated.id);
+  return db.payment.findUnique({ where: { id: updated.id }, include: { order: true, checkoutIntent: true, ticketPurchase: true, vipBooking: true, refunds: true } });
 }
 
 async function dispatch(request: Request, path: string[], requestId: string) {
@@ -690,9 +746,20 @@ async function dispatch(request: Request, path: string[], requestId: string) {
   if (root === 'events' && request.method === 'GET') {
     if (second === 'past') return dataResponse(await listPublicEvents(locale, true));
     if (second && third === 'tickets') { const rows = await getPublicTickets(second); if (!rows) throw notFound('Event not found.'); return dataResponse(rows.map((row) => ({ id: row.id, name: row.name, priceMinor: row.priceMinor, currency: row.currency, badge: row.badge, purchasableOnline: row.purchasableOnline, purchasableAtDoor: row.purchasableAtDoor, availabilityStatus: row.availabilityStatus, providerName: row.providerName, providerExternalId: row.providerExternalId, providerUrl: row.providerUrl }))); }
-    if (second && third === 'vip') { const result = await getPublicVip(second); if (!result) throw notFound('Event not found.'); return dataResponse({ packages: result.packages.map((row) => ({ id: row.id, name: row.name, priceMinor: row.priceMinor, currency: row.currency, capacity: row.capacity, includedBottleCount: row.includedBottleCount, bottles: row.packageBottles.map((item) => ({ id: item.bottleOption.id, name: item.bottleOption.name, image: item.bottleOption.media ? { src: item.bottleOption.media.publicUrl, alt: item.bottleOption.media.altText, width: item.bottleOption.media.width, height: item.bottleOption.media.height } : null })) })), booths: result.booths.map((booth) => ({ id: booth.id, label: booth.code, zone: booth.zone?.toLowerCase(), x: booth.x ? Number(booth.x) : 50, y: booth.y ? Number(booth.y) : 50, requestable: booth.requestable, availability: booth.availabilityStatus.toLowerCase() })) }); }
+    if (second && third === 'vip') { const result = await getPublicVip(second); if (!result) throw notFound('Event not found.'); return dataResponse({ packages: result.packages.map((row) => ({ id: row.id, name: row.name, priceMinor: row.priceMinor, currency: row.currency, paymentMode: row.paymentMode.toLowerCase().replace('_', '-'), deposit: row.depositAmountMinor == null ? null : { amountMinor: row.depositAmountMinor, currency: row.currency }, capacity: row.capacity, includedBottleCount: row.includedBottleCount, bottles: row.packageBottles.map((item) => ({ id: item.bottleOption.id, name: item.bottleOption.name, image: item.bottleOption.media ? { src: item.bottleOption.media.publicUrl, alt: item.bottleOption.media.altText, width: item.bottleOption.media.width, height: item.bottleOption.media.height } : null })) })), booths: result.booths.map((booth) => ({ id: booth.id, label: booth.code, zone: booth.zone?.toLowerCase(), x: booth.x ? Number(booth.x) : 50, y: booth.y ? Number(booth.y) : 50, requestable: booth.requestable, availability: booth.availabilityStatus.toLowerCase() })) }); }
     if (second) { const event = await getPublicEvent(second, locale); if (!event) throw notFound('Event not found.'); return dataResponse(event); }
     return dataResponse(await listPublicEvents(locale));
+  }
+  if (root === 'tickets' && second === 'verify' && request.method === 'GET') {
+    await enforceRateLimit(`ticket-verify:${ip(request)}`, 30, 60);
+    const token = params.get('token')?.trim() ?? '';
+    if (!/^tkt_[A-Za-z0-9_-]{12,120}$/.test(token)) return dataResponse({ valid: false, ticket: null });
+    const ticket = await verifyIssuedTicketToken(token);
+    const valid = Boolean(ticket);
+    return dataResponse({
+      valid,
+      ticket: ticket ? { id: ticket.id, eventSlug: ticket.eventSlug, tierName: ticket.tierName, issuedAt: ticket.issuedAt } : null,
+    });
   }
   if (root === 'artists' && request.method === 'GET') {
     if (second) { const artist = await getPublicArtist(second, locale); if (!artist) throw notFound('Artist not found.'); return dataResponse(artist); }
@@ -720,34 +787,21 @@ async function dispatch(request: Request, path: string[], requestId: string) {
   if (root === 'contact' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`contact:${ip(request)}`, 10, 3600); return dataResponse(await createContact(parse(contactSchema, await body(request))), { status: 202 }); }
   if (root === 'newsletter' && second === 'subscribe' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`newsletter:${ip(request)}`, 5, 3600); return dataResponse(await subscribeNewsletter(parse(newsletterSchema, await body(request))), { status: 202 }); }
   if (root === 'checkout' && second === 'session' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`checkout:${ip(request)}`, 10, 600); return dataResponse(await handleCheckout(request), { status: 201 }); }
+  if (root === 'checkout' && second === 'ticket-intent' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`ticket-checkout:${ip(request)}`, 10, 600); return dataResponse(await createTicketCheckoutIntent(parse(ticketCheckoutSchema, await body(request))), { status: 201 }); }
+  if (root === 'checkout' && second === 'vip-intent' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`vip-checkout:${ip(request)}`, 10, 600); return dataResponse(await createVipCheckoutIntent(parse(vipCheckoutSchema, await body(request))), { status: 201 }); }
+  if (root === 'checkout' && (second === 'intent' || second === 'intents') && third && !isUuid(third)) throw notFound('Checkout intent not found.');
+  if (root === 'checkout' && (second === 'intent' || second === 'intents') && third && path[3] === 'pay' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`pay:${ip(request)}`, 10, 600); return dataResponse(await handlePayCheckout(request, third), { status: 200 }); }
+  if (root === 'checkout' && second === 'pay' && third && (!isUuid(third) || request.method !== 'POST')) { if (request.method !== 'POST') throw notFound(); throw notFound('Checkout intent not found.'); }
+  if (root === 'checkout' && second === 'pay' && third && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`pay:${ip(request)}`, 10, 600); return dataResponse(await handlePayCheckout(request, third), { status: 200 }); }
+  if (root === 'checkout' && (second === 'intent' || second === 'intents') && third && path[3] === 'cancel' && request.method === 'POST') { assertSameOrigin(request); await expireCheckoutIntent(third); return dataResponse({ cancelled: true }); }
+  if (root === 'checkout' && (second === 'intent' || second === 'intents') && third && request.method === 'GET') return dataResponse(await getCheckoutIntentPublic(third));
   if (root === 'checkout' && second === 'result' && request.method === 'GET') {
-    const sessionId = params.get('session_id');
-    if (!sessionId) throw validationError({ session_id: 'session_id is required.' });
-    const row = await db.checkoutSession.findUnique({ where: { providerSessionId: sessionId }, include: { order: { include: { items: true } } } });
-    if (!row) throw notFound('Checkout session not found.');
-    const status = row.order.paymentStatus === 'PAID' ? 'paid' : row.order.paymentStatus === 'FAILED' ? 'failed' : row.status === 'EXPIRED' ? 'cancelled' : row.status === 'COMPLETE' ? 'processing' : 'pending';
-    const orderStatus = status;
-    return dataResponse({
-      status,
-      order: {
-        id: row.order.id,
-        orderNumber: row.order.orderNumber,
-        status: orderStatus,
-        createdAt: row.order.createdAt.toISOString(),
-        customerEmail: row.order.customerEmail,
-        clientReference: row.order.clientReference,
-        lines: row.order.items.map((item) => ({ id: item.id, productId: item.productId ?? '', variantId: item.variantId, productSlug: null, title: item.titleSnapshot, image: item.imageUrlSnapshot ? { src: item.imageUrlSnapshot, alt: item.titleSnapshot } : null, sizeLabel: null, colorLabel: null, quantity: item.quantity, unitPrice: { amountMinor: item.unitPriceMinor, currency: row.order.currency }, lineTotal: { amountMinor: item.lineTotalMinor, currency: row.order.currency } })),
-        subtotal: { amountMinor: row.order.subtotalMinor, currency: row.order.currency },
-        discount: row.order.discountMinor ? { amountMinor: row.order.discountMinor, currency: row.order.currency } : null,
-        shipping: row.order.shippingMinor ? { amountMinor: row.order.shippingMinor, currency: row.order.currency } : null,
-        tax: row.order.taxMinor ? { amountMinor: row.order.taxMinor, currency: row.order.currency } : null,
-        total: { amountMinor: row.order.totalMinor, currency: row.order.currency },
-        confirmationEmailSent: false,
-        progress: [],
-      },
-    });
+    const checkoutId = params.get('checkout_id');
+    if (!checkoutId) throw validationError({ checkout_id: 'checkout_id is required.' });
+    if (!isUuid(checkoutId)) throw notFound('Checkout intent not found.');
+    return dataResponse(await getCheckoutResult(checkoutId));
   }
-  if (root === 'webhooks' && second === 'stripe' && request.method === 'POST') return dataResponse(await handleStripeWebhook(request));
+  if (root === 'webhooks' && second === 'square' && request.method === 'POST') return dataResponse(await handleSquareWebhook(request));
 
   if (root === 'admin') {
     if (second === 'dashboard' && request.method === 'GET') {
@@ -762,7 +816,29 @@ async function dispatch(request: Request, path: string[], requestId: string) {
     }
     if (second === 'integrations' && third === 'status' && request.method === 'GET') {
       await requirePermission(request, 'settings.view');
-      return dataResponse(['stripe', 'redis', 'brevo', 'mailchimp', 's3'].map((provider) => ({ provider, configured: provider === 'stripe' ? Boolean(env('STRIPE_SECRET_KEY')) : provider === 'redis' ? Boolean(env('REDIS_URL')) : provider === 'brevo' ? Boolean(env('BREVO_API_KEY')) : provider === 'mailchimp' ? Boolean(env('MAILCHIMP_API_KEY')) : Boolean(env('S3_BUCKET')) })));
+      const square = await preflightSquareLocation();
+      return dataResponse([
+        { provider: 'square', configured: square.configured, healthy: square.ok, locationId: square.locationId, currency: square.currency, environment: env('SQUARE_ENVIRONMENT') ?? 'sandbox', errorCode: square.errorCode ?? null },
+        { provider: 'redis', configured: Boolean(env('REDIS_URL')) },
+        { provider: 'brevo', configured: Boolean(env('BREVO_API_KEY')) },
+        { provider: 'mailchimp', configured: Boolean(env('MAILCHIMP_API_KEY')) },
+        { provider: 's3', configured: Boolean(env('S3_BUCKET')) },
+      ]);
+    }
+    if (second === 'payments' && third === 'expire-holds' && request.method === 'POST') {
+      assertSameOrigin(request);
+      await requirePermission(request, 'orders.edit', true);
+      return dataResponse(await expireExpiredCheckoutIntents());
+    }
+    if (second === 'payments' && third && path[3] === 'refund' && request.method === 'POST') {
+      assertSameOrigin(request);
+      const session = await requirePermission(request, 'orders.edit', true);
+      return dataResponse(await handleAdminRefund(request, third, requestId, session.user.id), { status: 201 });
+    }
+    if (second === 'payments' && third && path[3] === 'reconcile' && request.method === 'POST') {
+      assertSameOrigin(request);
+      await requirePermission(request, 'orders.edit', true);
+      return dataResponse(await handleAdminReconcile(third));
     }
     if (second === 'media' && third === 'upload' && request.method === 'POST') {
       assertSameOrigin(request);
@@ -803,6 +879,9 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       if (resource === 'faq') { const row = await db.faqItem.findUnique({ where: { id: resourceId }, include: { category: true, translations: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'legal') { const row = await db.legalDocument.findFirst({ where: { type: resourceId }, include: { translations: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'orders') { const row = await db.order.findUnique({ where: { id: resourceId }, include: { items: true, payments: true, checkoutSessions: true, notes: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
+      if (resource === 'payments') { const row = await db.payment.findUnique({ where: { id: resourceId }, include: { order: true, checkoutIntent: true, ticketPurchase: true, vipBooking: true, refunds: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
+      if (resource === 'ticket-purchases') { const row = await db.ticketPurchase.findUnique({ where: { id: resourceId }, include: { items: true, holds: true, issuedTickets: true, event: true, checkoutIntent: true, payments: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
+      if (resource === 'vip-bookings') { const row = await db.vipBooking.findUnique({ where: { id: resourceId }, include: { event: true, vipPackage: true, booth: true, hold: true, checkoutIntent: true, payments: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       throw notFound();
     }
     if (resourceId && !action && (request.method === 'PATCH' || request.method === 'PUT')) {

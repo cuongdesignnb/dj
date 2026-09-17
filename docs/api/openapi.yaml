@@ -60,12 +60,20 @@ paths:
     post: { summary: Subscribe an email address, responses: { '202': { description: Accepted } } }
   /checkout/session:
     post:
-      summary: Re-price cart lines and create a hosted Stripe Checkout session
-      responses: { '201': { $ref: '#/components/responses/Json' }, '503': { description: Stripe is not configured } }
+      summary: Re-price cart lines and create a server-side Square checkout intent
+      responses: { '201': { $ref: '#/components/responses/Json' }, '503': { description: Square is not configured } }
   /checkout/result:
-    get: { summary: Read verified order status, parameters: [{ name: session_id, in: query, required: true, schema: { type: string } }], responses: { '200': { $ref: '#/components/responses/Json' } } }
-  /webhooks/stripe:
-    post: { summary: Verify and process a Stripe webhook idempotently, responses: { '200': { description: Received }, '400': { description: Invalid signature } } }
+    get: { summary: Read verified order status, parameters: [{ name: checkout_id, in: query, required: true, schema: { type: string } }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /checkout/intent/{checkoutId}/pay:
+    post: { summary: Tokenize a payment with Square and create the provider payment, responses: { '200': { $ref: '#/components/responses/Json' }, '502': { description: Square payment failure } } }
+  /checkout/ticket-intent:
+    post: { summary: Create a server-priced ticket checkout intent with a temporary hold, responses: { '201': { $ref: '#/components/responses/Json' } } }
+  /checkout/vip-intent:
+    post: { summary: Create a payable VIP checkout intent when the package is configured for full payment or deposit, responses: { '201': { $ref: '#/components/responses/Json' } } }
+  /tickets/verify:
+    get: { summary: Verify an issued ticket token from a QR code without exposing customer PII, parameters: [{ name: token, in: query, required: true, schema: { type: string } }], responses: { '200': { $ref: '#/components/responses/Json' } } }
+  /webhooks/square:
+    post: { summary: Verify and process Square payment/refund webhooks idempotently, responses: { '200': { description: Received }, '403': { description: Invalid signature } } }
   /admin/{resource}:
     get: { summary: Paginated admin resource list, security: [{ adminSession: [] }], parameters: [{ $ref: '#/components/parameters/AdminResource' }], responses: { '200': { $ref: '#/components/responses/Paginated' } } }
     post: { summary: Create an admin resource, security: [{ adminSession: [] }, { csrf: [] }], parameters: [{ $ref: '#/components/parameters/AdminResource' }], responses: { '201': { $ref: '#/components/responses/Json' } } }

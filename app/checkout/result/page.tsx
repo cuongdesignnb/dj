@@ -13,7 +13,7 @@ import { ClearCartOnPaid } from '@/components/checkout/ResultActions';
 import { isPaidStatus, resultCopy } from '@/components/checkout/resultCopy';
 
 import { RESULT_CONTENT } from '@/lib/cart/content';
-import { parseSessionId } from '@/lib/checkout/config';
+import { parseCheckoutId } from '@/lib/checkout/config';
 import { getCheckoutRepository } from '@/lib/checkout/repository';
 import type { CheckoutResult, CheckoutResultStatus, VerifiedOrder } from '@/lib/checkout/types';
 import { recommendProducts } from '@/lib/shop/helpers';
@@ -40,11 +40,11 @@ function heroSteps(status: CheckoutResultStatus, order?: VerifiedOrder | null): 
   ];
 }
 
-async function verify(sessionId: string | null): Promise<CheckoutResult> {
+async function verify(checkoutId: string | null): Promise<CheckoutResult> {
   // A missing or malformed reference never reaches the checkout service.
-  if (!sessionId) return { status: 'not-found' };
+  if (!checkoutId) return { status: 'not-found' };
   try {
-    return await getCheckoutRepository().getResultBySessionId(sessionId);
+    return await getCheckoutRepository().getResultBySessionId(checkoutId);
   } catch {
     return {
       status: 'network-error',
@@ -55,7 +55,7 @@ async function verify(sessionId: string | null): Promise<CheckoutResult> {
 
 /**
  * Server Component. The status shown is whatever the checkout service
- * verified for `session_id` — the only value read from the URL. Parameters
+ * verified for `checkout_id` — the only value read from the URL. Parameters
  * such as ?status=paid or ?total=1 are ignored entirely.
  */
 export default async function CheckoutResultPage({
@@ -65,7 +65,7 @@ export default async function CheckoutResultPage({
 }) {
   const params = await searchParams;
   const [result, shopPage] = await Promise.all([
-    verify(parseSessionId(params.session_id)),
+    verify(parseCheckoutId(params.checkout_id)),
     (async () => {
       const selection = getShopRepository();
       return selection.ok ? selection.repository.getShopPage() : null;

@@ -107,7 +107,7 @@ export async function seedSystem({ db }: SeedContext) {
     });
   }
 
-  for (const provider of ['stripe', 'redis', 'brevo', 'mailchimp', 's3']) {
+  for (const provider of ['square', 'redis', 'brevo', 'mailchimp', 's3']) {
     await db.integrationSetting.upsert({
       where: { provider },
       update: {},

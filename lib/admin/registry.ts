@@ -13,6 +13,7 @@ import { eventsDefinition } from './events/definition';
 import { artistsDefinition } from './artists/definition';
 import { productsDefinition } from './products/definition';
 import { ordersDefinition } from './orders/definition';
+import { paymentsDefinition, ticketPurchasesDefinition, vipBookingsDefinition } from './payments/definition';
 import { discountsDefinition } from './discounts/definition';
 import { newsDefinition } from './news/definition';
 import { galleryDefinition } from './gallery/definition';
@@ -37,6 +38,9 @@ export const RESOURCES: Record<ResourceKey, AnyDefinition> = {
   artists: artistsDefinition as unknown as AnyDefinition,
   products: productsDefinition as unknown as AnyDefinition,
   orders: ordersDefinition as unknown as AnyDefinition,
+  payments: paymentsDefinition as unknown as AnyDefinition,
+  'ticket-purchases': ticketPurchasesDefinition as unknown as AnyDefinition,
+  'vip-bookings': vipBookingsDefinition as unknown as AnyDefinition,
   discounts: discountsDefinition as unknown as AnyDefinition,
   news: newsDefinition as unknown as AnyDefinition,
   gallery: galleryDefinition as unknown as AnyDefinition,
@@ -67,6 +71,9 @@ export const ROUTED_RESOURCES: ResourceKey[] = [
   'artists',
   'products',
   'orders',
+  'payments',
+  'ticket-purchases',
+  'vip-bookings',
   'discounts',
   'news',
   'gallery',

@@ -5,6 +5,7 @@
 // In api mode the backend enforces the same rules again.
 
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { destroyAdminSessionFromCookies } from '@/server/auth/session';
 import { can, getAdminSession } from '@/lib/admin/auth/session';
 import type { Permission } from '@/lib/admin/auth/permissions';
@@ -14,6 +15,8 @@ import type { ResourceKey, SingletonKey } from '@/lib/admin/common/resource';
 import type { AdminApiError, AdminRecord } from '@/lib/admin/common/types';
 import { validateValues } from '@/lib/admin/common/validation';
 import { RESOURCES, SINGLETONS, getRepository, getSingletonRepository } from '@/lib/admin/registry';
+import { apiRequest } from '@/lib/api/client';
+import { getApiBaseUrl } from '@/lib/checkout/config';
 
 export type ActionResult<T = null> =
   | { ok: true; data: T; message?: string }
@@ -546,6 +549,26 @@ export async function updateOrder(
   const saved = await repo.update(id, patch);
   if (!saved.ok) return saved;
   return { ok: true, data: saved.data, message: action === 'note' ? 'Note added.' : 'Order updated.' };
+}
+
+function csrfFromCookie(cookie: string) {
+  const match = cookie.match(/(?:^|;\s*)destiny_csrf=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+export async function paymentAction(id: string, action: 'reconcile' | 'refund', amountMinor?: number, reason?: string): Promise<ActionResult<AdminRecord>> {
+  const auth = await authorize('orders.edit');
+  if (!auth.ok) return auth.result;
+  const cookie = (await cookies()).toString();
+  const path = `/api/v1/admin/payments/${encodeURIComponent(id)}/${action}`;
+  const result = await apiRequest<AdminRecord>(getApiBaseUrl(), path, {
+    method: 'POST',
+    body: action === 'refund' ? { ...(amountMinor ? { amountMinor } : {}), reason: reason?.trim() || null } : undefined,
+    cookie,
+    csrfToken: csrfFromCookie(cookie),
+  });
+  if (!result.ok) return result;
+  return { ok: true, data: result.data, message: action === 'refund' ? 'Refund request sent to Square.' : 'Payment reconciled from Square.' };
 }
 
 export async function staffAction(id: string, action: 'invite' | 'resend' | 'disable' | 'enable'): Promise<ActionResult> {

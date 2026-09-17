@@ -28,7 +28,7 @@ const routes = [
   { path: '/admin/login', kind: 'private' },
   { path: '/book-now', kind: 'private' },
   { path: '/cart', kind: 'private' },
-  { path: '/checkout/result?session_id=seo-audit', kind: 'private' },
+  { path: '/checkout/result?checkout_id=seo-audit', kind: 'private' },
   { path: '/gallery/destiny', kind: 'missing', status: 404 },
   { path: '/news/welcome-to-connection', kind: 'missing', status: 404 },
   { path: '/shop/destiny-oversized-tee', kind: 'missing', status: 404 },

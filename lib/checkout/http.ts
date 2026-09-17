@@ -141,7 +141,7 @@ export class HttpCheckoutRepository implements CheckoutRepository {
   constructor(private readonly baseUrl: string) {}
 
   async getResultBySessionId(sessionId: string): Promise<CheckoutResult> {
-    const url = `${this.baseUrl}/api/v1/checkout/result?session_id=${encodeURIComponent(sessionId)}`;
+    const url = `${this.baseUrl}/api/v1/checkout/result?checkout_id=${encodeURIComponent(sessionId)}`;
 
     let response: Response;
     try {

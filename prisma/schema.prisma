@@ -93,10 +93,13 @@ enum DiscountType {
 
 enum PaymentStatus {
   PENDING
+  APPROVED
+  COMPLETED
   PAID
   FAILED
   CANCELLED
   REFUNDED
+  PARTIALLY_REFUNDED
 }
 
 enum FulfillmentStatus {
@@ -111,6 +114,83 @@ enum CheckoutSessionStatus {
   OPEN
   COMPLETE
   EXPIRED
+  FAILED
+}
+
+enum CheckoutIntentKind {
+  MERCHANDISE
+  TICKET
+  VIP
+}
+
+enum CheckoutIntentStatus {
+  OPEN
+  PROCESSING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  PENDING
+  APPROVED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TicketPurchaseStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+}
+
+enum TicketHoldStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+  EXPIRED
+}
+
+enum TicketIssuanceStatus {
+  ISSUED
+  VOIDED
+}
+
+enum VipPaymentMode {
+  REQUEST_ONLY
+  FULL_PAYMENT
+  DEPOSIT
+}
+
+enum VipBookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+}
+
+enum VipBoothHoldStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+  EXPIRED
+}
+
+enum RefundStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  SENT
   FAILED
 }
 
@@ -157,15 +237,15 @@ model Locale {
 }
 
 model AdminUser {
-  id            String     @id @default(uuid()) @db.Uuid
-  email         String     @unique @db.VarChar(320)
-  passwordHash  String     @map("password_hash")
+  id            String         @id @default(uuid()) @db.Uuid
+  email         String         @unique @db.VarChar(320)
+  passwordHash  String         @map("password_hash")
   name          String
-  status        UserStatus @default(ACTIVE)
-  locale        String     @default("en") @db.VarChar(2)
-  lastLoginAt   DateTime?  @map("last_login_at")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  status        UserStatus     @default(ACTIVE)
+  locale        String         @default("en") @db.VarChar(2)
+  lastLoginAt   DateTime?      @map("last_login_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
   sessions      AdminSession[]
   userRoles     UserRole[]
   auditLogs     AuditLog[]
@@ -232,15 +312,15 @@ model RolePermission {
 }
 
 model AuditLog {
-  id          String    @id @default(uuid()) @db.Uuid
-  actorUserId String?   @map("actor_user_id") @db.Uuid
-  action      String    @db.VarChar(100)
-  entityType  String    @map("entity_type") @db.VarChar(100)
-  entityId    String?   @map("entity_id") @db.Uuid
-  beforeJson  Json?     @map("before_json")
-  afterJson   Json?     @map("after_json")
-  requestId   String    @map("request_id") @db.VarChar(100)
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id          String     @id @default(uuid()) @db.Uuid
+  actorUserId String?    @map("actor_user_id") @db.Uuid
+  action      String     @db.VarChar(100)
+  entityType  String     @map("entity_type") @db.VarChar(100)
+  entityId    String?    @map("entity_id") @db.Uuid
+  beforeJson  Json?      @map("before_json")
+  afterJson   Json?      @map("after_json")
+  requestId   String     @map("request_id") @db.VarChar(100)
+  createdAt   DateTime   @default(now()) @map("created_at")
   actor       AdminUser? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([entityType, entityId, createdAt])
@@ -248,84 +328,84 @@ model AuditLog {
 }
 
 model MediaAsset {
-  id                String          @id @default(uuid()) @db.Uuid
-  storageDriver     StorageDriver   @map("storage_driver")
-  storageKey        String          @unique @map("storage_key")
-  publicUrl         String          @map("public_url")
-  mimeType          String          @map("mime_type") @db.VarChar(120)
-  sizeBytes         Int             @map("size_bytes")
-  width             Int?
-  height            Int?
-  altText           String          @map("alt_text")
-  metadata          Json?
-  uploadedBy        String?         @map("uploaded_by") @db.Uuid
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
-  deletedAt         DateTime?       @map("deleted_at")
-  uploader          AdminUser?      @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
-  contentHeroes     ContentPage[]   @relation("contentHeroMedia")
-  contentOgImages   ContentPageTranslation[] @relation("contentOgMedia")
-  eventPosters      Event[]         @relation("eventPosterMedia")
-  eventHeroes       Event[]         @relation("eventHeroMedia")
-  eventOgImages     EventTranslation[] @relation("eventOgMedia")
-  artistPortraits   Artist[]        @relation("artistPortraitMedia")
-  artistHeroes      Artist[]        @relation("artistHeroMedia")
-  artistMedia       ArtistMedia[]
-  bottleMedia       BottleOption[]
-  newsHeroes        NewsArticle[]   @relation("newsHeroMedia")
-  newsCards         NewsArticle[]   @relation("newsCardMedia")
-  galleryCovers     GalleryAlbum[]  @relation("galleryCoverMedia")
-  galleryHeroes     GalleryAlbum[]  @relation("galleryHeroMedia")
-  galleryMedia      GalleryMedia[]
-  productImages     ProductImage[]
-  partnerLogos      Partner[]       @relation("partnerLogoMedia")
-  partnerImages     Partner[]       @relation("partnerImageMedia")
+  id              String                   @id @default(uuid()) @db.Uuid
+  storageDriver   StorageDriver            @map("storage_driver")
+  storageKey      String                   @unique @map("storage_key")
+  publicUrl       String                   @map("public_url")
+  mimeType        String                   @map("mime_type") @db.VarChar(120)
+  sizeBytes       Int                      @map("size_bytes")
+  width           Int?
+  height          Int?
+  altText         String                   @map("alt_text")
+  metadata        Json?
+  uploadedBy      String?                  @map("uploaded_by") @db.Uuid
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+  deletedAt       DateTime?                @map("deleted_at")
+  uploader        AdminUser?               @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+  contentHeroes   ContentPage[]            @relation("contentHeroMedia")
+  contentOgImages ContentPageTranslation[] @relation("contentOgMedia")
+  eventPosters    Event[]                  @relation("eventPosterMedia")
+  eventHeroes     Event[]                  @relation("eventHeroMedia")
+  eventOgImages   EventTranslation[]       @relation("eventOgMedia")
+  artistPortraits Artist[]                 @relation("artistPortraitMedia")
+  artistHeroes    Artist[]                 @relation("artistHeroMedia")
+  artistMedia     ArtistMedia[]
+  bottleMedia     BottleOption[]
+  newsHeroes      NewsArticle[]            @relation("newsHeroMedia")
+  newsCards       NewsArticle[]            @relation("newsCardMedia")
+  galleryCovers   GalleryAlbum[]           @relation("galleryCoverMedia")
+  galleryHeroes   GalleryAlbum[]           @relation("galleryHeroMedia")
+  galleryMedia    GalleryMedia[]
+  productImages   ProductImage[]
+  partnerLogos    Partner[]                @relation("partnerLogoMedia")
+  partnerImages   Partner[]                @relation("partnerImageMedia")
 
   @@index([createdAt])
   @@map("media_assets")
 }
 
 model SiteSetting {
-  id         String   @id @default(uuid()) @db.Uuid
-  key        String   @unique @db.VarChar(160)
-  valueJson  Json     @map("value_json")
-  isPublic   Boolean  @default(false) @map("is_public")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique @db.VarChar(160)
+  valueJson Json     @map("value_json")
+  isPublic  Boolean  @default(false) @map("is_public")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
 }
 
 model ContentPage {
-  id              String                    @id @default(uuid()) @db.Uuid
-  slug            String                    @unique @db.VarChar(80)
-  status          ContentStatus             @default(DRAFT)
-  seoTitle        String?                   @map("seo_title")
-  seoDescription  String?                   @map("seo_description")
-  ogMediaId       String?                   @map("og_media_id") @db.Uuid
-  canonicalOverride String?                 @map("canonical_override")
-  indexable       Boolean                   @default(true)
-  followLinks     Boolean                   @default(true) @map("follow_links")
-  heroMediaId     String?                   @map("hero_media_id") @db.Uuid
-  publishedAt     DateTime?                 @map("published_at")
-  createdAt       DateTime                  @default(now()) @map("created_at")
-  updatedAt       DateTime                  @updatedAt @map("updated_at")
-  heroMedia       MediaAsset?              @relation("contentHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
-  translations    ContentPageTranslation[]
+  id                String                   @id @default(uuid()) @db.Uuid
+  slug              String                   @unique @db.VarChar(80)
+  status            ContentStatus            @default(DRAFT)
+  seoTitle          String?                  @map("seo_title")
+  seoDescription    String?                  @map("seo_description")
+  ogMediaId         String?                  @map("og_media_id") @db.Uuid
+  canonicalOverride String?                  @map("canonical_override")
+  indexable         Boolean                  @default(true)
+  followLinks       Boolean                  @default(true) @map("follow_links")
+  heroMediaId       String?                  @map("hero_media_id") @db.Uuid
+  publishedAt       DateTime?                @map("published_at")
+  createdAt         DateTime                 @default(now()) @map("created_at")
+  updatedAt         DateTime                 @updatedAt @map("updated_at")
+  heroMedia         MediaAsset?              @relation("contentHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  translations      ContentPageTranslation[]
 
   @@map("content_pages")
 }
 
 model ContentPageTranslation {
-  id              String      @id @default(uuid()) @db.Uuid
-  pageId          String      @map("page_id") @db.Uuid
-  locale          String      @db.VarChar(2)
-  title           String
-  contentJson     Json        @map("content_json")
-  seoTitle        String?     @map("seo_title")
-  seoDescription  String?     @map("seo_description")
-  ogMediaId       String?     @map("og_media_id") @db.Uuid
-  page            ContentPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  ogMedia         MediaAsset? @relation("contentOgMedia", fields: [ogMediaId], references: [id], onDelete: SetNull)
+  id             String      @id @default(uuid()) @db.Uuid
+  pageId         String      @map("page_id") @db.Uuid
+  locale         String      @db.VarChar(2)
+  title          String
+  contentJson    Json        @map("content_json")
+  seoTitle       String?     @map("seo_title")
+  seoDescription String?     @map("seo_description")
+  ogMediaId      String?     @map("og_media_id") @db.Uuid
+  page           ContentPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  ogMedia        MediaAsset? @relation("contentOgMedia", fields: [ogMediaId], references: [id], onDelete: SetNull)
 
   @@unique([pageId, locale])
   @@map("content_page_translations")
@@ -344,46 +424,48 @@ model SlugHistory {
 }
 
 model Event {
-  id              String                @id @default(uuid()) @db.Uuid
-  slug            String                @unique @db.VarChar(120)
-  status          ContentStatus         @default(DRAFT)
-  seoTitle        String?               @map("seo_title")
-  seoDescription  String?               @map("seo_description")
-  ogMediaId       String?               @map("og_media_id") @db.Uuid
+  id                String              @id @default(uuid()) @db.Uuid
+  slug              String              @unique @db.VarChar(120)
+  status            ContentStatus       @default(DRAFT)
+  seoTitle          String?             @map("seo_title")
+  seoDescription    String?             @map("seo_description")
+  ogMediaId         String?             @map("og_media_id") @db.Uuid
   canonicalOverride String?             @map("canonical_override")
-  indexable       Boolean               @default(true)
-  followLinks     Boolean               @default(true) @map("follow_links")
-  lifecycleStatus String                @default("UPCOMING") @map("lifecycle_status") @db.VarChar(40)
-  dateStatus      DateStatus            @default(TBA) @map("date_status")
-  scheduleStatus  ScheduleStatus        @default(TBC) @map("schedule_status")
-  startAt         DateTime?             @map("start_at")
-  endAt           DateTime?             @map("end_at")
-  venueName       String                @map("venue_name")
-  city            String
-  region          String?
-  country         String
-  address         String?
-  mapUrl          String?               @map("map_url")
-  featured        Boolean               @default(false)
-  posterMediaId   String?               @map("poster_media_id") @db.Uuid
-  heroMediaId     String?               @map("hero_media_id") @db.Uuid
-  publishedAt     DateTime?             @map("published_at")
-  createdAt       DateTime              @default(now()) @map("created_at")
-  updatedAt       DateTime              @updatedAt @map("updated_at")
-  deletedAt       DateTime?             @map("deleted_at")
-  posterMedia     MediaAsset?           @relation("eventPosterMedia", fields: [posterMediaId], references: [id], onDelete: SetNull)
-  heroMedia       MediaAsset?           @relation("eventHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
-  translations    EventTranslation[]
-  genres          EventGenre[]
-  scheduleItems   EventScheduleItem[]
-  ticketTiers     TicketTier[]
-  vipPackages     VipPackage[]
-  vipBooths       VipBooth[]
-  eventArtists    EventArtist[]
-  bookingRequests BookingRequest[]
-  faqItems        FaqItem[]
-  galleryAlbums   GalleryAlbum[]
-  newsArticles    NewsArticle[]
+  indexable         Boolean             @default(true)
+  followLinks       Boolean             @default(true) @map("follow_links")
+  lifecycleStatus   String              @default("UPCOMING") @map("lifecycle_status") @db.VarChar(40)
+  dateStatus        DateStatus          @default(TBA) @map("date_status")
+  scheduleStatus    ScheduleStatus      @default(TBC) @map("schedule_status")
+  startAt           DateTime?           @map("start_at")
+  endAt             DateTime?           @map("end_at")
+  venueName         String              @map("venue_name")
+  city              String
+  region            String?
+  country           String
+  address           String?
+  mapUrl            String?             @map("map_url")
+  featured          Boolean             @default(false)
+  posterMediaId     String?             @map("poster_media_id") @db.Uuid
+  heroMediaId       String?             @map("hero_media_id") @db.Uuid
+  publishedAt       DateTime?           @map("published_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  deletedAt         DateTime?           @map("deleted_at")
+  posterMedia       MediaAsset?         @relation("eventPosterMedia", fields: [posterMediaId], references: [id], onDelete: SetNull)
+  heroMedia         MediaAsset?         @relation("eventHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  translations      EventTranslation[]
+  genres            EventGenre[]
+  scheduleItems     EventScheduleItem[]
+  ticketTiers       TicketTier[]
+  vipPackages       VipPackage[]
+  vipBooths         VipBooth[]
+  eventArtists      EventArtist[]
+  bookingRequests   BookingRequest[]
+  ticketPurchases   TicketPurchase[]
+  vipBookings       VipBooking[]
+  faqItems          FaqItem[]
+  galleryAlbums     GalleryAlbum[]
+  newsArticles      NewsArticle[]
 
   @@index([status, startAt])
   @@index([lifecycleStatus])
@@ -391,18 +473,18 @@ model Event {
 }
 
 model EventTranslation {
-  id              String      @id @default(uuid()) @db.Uuid
-  eventId         String      @map("event_id") @db.Uuid
-  locale          String      @db.VarChar(2)
-  title           String
-  eyebrow         String?
-  shortDescription String?    @map("short_description")
-  description     String?
-  seoTitle        String?     @map("seo_title")
-  seoDescription  String?     @map("seo_description")
-  ogMediaId       String?     @map("og_media_id") @db.Uuid
-  event           Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  ogMedia         MediaAsset? @relation("eventOgMedia", fields: [ogMediaId], references: [id], onDelete: SetNull)
+  id               String      @id @default(uuid()) @db.Uuid
+  eventId          String      @map("event_id") @db.Uuid
+  locale           String      @db.VarChar(2)
+  title            String
+  eyebrow          String?
+  shortDescription String?     @map("short_description")
+  description      String?
+  seoTitle         String?     @map("seo_title")
+  seoDescription   String?     @map("seo_description")
+  ogMediaId        String?     @map("og_media_id") @db.Uuid
+  event            Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ogMedia          MediaAsset? @relation("eventOgMedia", fields: [ogMediaId], references: [id], onDelete: SetNull)
 
   @@unique([eventId, locale])
   @@map("event_translations")
@@ -433,21 +515,26 @@ model EventScheduleItem {
 }
 
 model TicketTier {
-  id                  String                    @id @default(uuid()) @db.Uuid
-  eventId             String                    @map("event_id") @db.Uuid
-  name                String
-  priceMinor          Int                       @map("price_minor")
-  currency            String                    @default("AUD") @db.Char(3)
-  badge               String?
-  purchasableOnline   Boolean                   @default(false) @map("purchasable_online")
-  purchasableAtDoor   Boolean                   @default(false) @map("purchasable_at_door")
-  providerName        String?                   @map("provider_name")
-  providerExternalId  String?                   @map("provider_external_id")
-  providerUrl         String?                   @map("provider_url")
-  availabilityStatus  TicketAvailabilityStatus @default(NOT_AVAILABLE) @map("availability_status")
-  sortOrder           Int                       @default(0) @map("sort_order")
-  enabled             Boolean                   @default(true)
-  event               Event                     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id                 String                   @id @default(uuid()) @db.Uuid
+  eventId            String                   @map("event_id") @db.Uuid
+  name               String
+  priceMinor         Int                      @map("price_minor")
+  currency           String                   @default("AUD") @db.Char(3)
+  badge              String?
+  purchasableOnline  Boolean                  @default(false) @map("purchasable_online")
+  purchasableAtDoor  Boolean                  @default(false) @map("purchasable_at_door")
+  providerName       String?                  @map("provider_name")
+  providerExternalId String?                  @map("provider_external_id")
+  providerUrl        String?                  @map("provider_url")
+  availabilityStatus TicketAvailabilityStatus @default(NOT_AVAILABLE) @map("availability_status")
+  capacity           Int?
+  soldQuantity       Int                      @default(0) @map("sold_quantity")
+  sortOrder          Int                      @default(0) @map("sort_order")
+  enabled            Boolean                  @default(true)
+  event              Event                    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  purchaseItems      TicketPurchaseItem[]
+  holds              TicketHold[]
+  issuedTickets      IssuedTicket[]
 
   @@index([eventId, enabled, sortOrder])
   @@map("ticket_tiers")
@@ -462,39 +549,44 @@ model VipPackage {
   capacity            Int
   includedBottleCount Int                @map("included_bottle_count")
   enabled             Boolean            @default(true)
+  paymentMode         VipPaymentMode     @default(REQUEST_ONLY) @map("payment_mode")
+  depositAmountMinor  Int?               @map("deposit_amount_minor")
   sortOrder           Int                @default(0) @map("sort_order")
   event               Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
   packageBottles      VipPackageBottle[]
   bookingRequests     BookingRequest[]
+  bookings            VipBooking[]
 
   @@index([eventId, enabled, sortOrder])
   @@map("vip_packages")
 }
 
 model VipBooth {
-  id                String          @id @default(uuid()) @db.Uuid
-  eventId           String          @map("event_id") @db.Uuid
-  code              String
-  zone              String?
-  x                 Decimal?        @db.Decimal(8, 4)
-  y                 Decimal?        @db.Decimal(8, 4)
-  requestable       Boolean         @default(true)
+  id                 String                   @id @default(uuid()) @db.Uuid
+  eventId            String                   @map("event_id") @db.Uuid
+  code               String
+  zone               String?
+  x                  Decimal?                 @db.Decimal(8, 4)
+  y                  Decimal?                 @db.Decimal(8, 4)
+  requestable        Boolean                  @default(true)
   availabilityStatus TicketAvailabilityStatus @default(AVAILABLE) @map("availability_status")
-  sortOrder         Int             @default(0) @map("sort_order")
-  event             Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  bookingRequests   BookingRequest[]
+  sortOrder          Int                      @default(0) @map("sort_order")
+  event              Event                    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  bookingRequests    BookingRequest[]
+  holds              VipBoothHold[]
+  bookings           VipBooking[]
 
   @@unique([eventId, code])
   @@map("vip_booths")
 }
 
 model BottleOption {
-  id             String             @id @default(uuid()) @db.Uuid
+  id             String                 @id @default(uuid()) @db.Uuid
   name           String
-  mediaId        String?            @map("media_id") @db.Uuid
-  enabled        Boolean            @default(true)
-  sortOrder      Int                @default(0) @map("sort_order")
-  media          MediaAsset?        @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+  mediaId        String?                @map("media_id") @db.Uuid
+  enabled        Boolean                @default(true)
+  sortOrder      Int                    @default(0) @map("sort_order")
+  media          MediaAsset?            @relation(fields: [mediaId], references: [id], onDelete: SetNull)
   packageBottles VipPackageBottle[]
   bookingBottles BookingRequestBottle[]
 
@@ -513,23 +605,23 @@ model VipPackageBottle {
 }
 
 model BookingRequest {
-  id                String                  @id @default(uuid()) @db.Uuid
-  eventId           String                  @map("event_id") @db.Uuid
-  vipPackageId      String?                 @map("vip_package_id") @db.Uuid
-  preferredBoothId  String?                 @map("preferred_booth_id") @db.Uuid
-  fullName          String                  @map("full_name")
-  email             String                  @db.VarChar(320)
-  phone             String?
-  groupSize         Int                     @map("group_size")
-  specialRequests   String?                 @map("special_requests")
-  status            BookingStatus           @default(RECEIVED)
+  id                 String                 @id @default(uuid()) @db.Uuid
+  eventId            String                 @map("event_id") @db.Uuid
+  vipPackageId       String?                @map("vip_package_id") @db.Uuid
+  preferredBoothId   String?                @map("preferred_booth_id") @db.Uuid
+  fullName           String                 @map("full_name")
+  email              String                 @db.VarChar(320)
+  phone              String?
+  groupSize          Int                    @map("group_size")
+  specialRequests    String?                @map("special_requests")
+  status             BookingStatus          @default(RECEIVED)
   notificationStatus NotificationStatus     @default(PENDING) @map("notification_status")
-  createdAt         DateTime                @default(now()) @map("created_at")
-  updatedAt         DateTime                @updatedAt @map("updated_at")
-  event             Event                   @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  vipPackage        VipPackage?             @relation(fields: [vipPackageId], references: [id], onDelete: SetNull)
-  preferredBooth    VipBooth?               @relation(fields: [preferredBoothId], references: [id], onDelete: SetNull)
-  bottles           BookingRequestBottle[]
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
+  event              Event                  @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  vipPackage         VipPackage?            @relation(fields: [vipPackageId], references: [id], onDelete: SetNull)
+  preferredBooth     VipBooth?              @relation(fields: [preferredBoothId], references: [id], onDelete: SetNull)
+  bottles            BookingRequestBottle[]
 
   @@index([status, createdAt])
   @@index([email])
@@ -547,73 +639,73 @@ model BookingRequestBottle {
 }
 
 model Artist {
-  id              String              @id @default(uuid()) @db.Uuid
-  slug            String              @unique @db.VarChar(120)
-  country         String              @db.VarChar(80)
-  seoTitle        String?             @map("seo_title")
-  seoDescription  String?             @map("seo_description")
-  ogMediaId       String?             @map("og_media_id") @db.Uuid
-  canonicalOverride String?           @map("canonical_override")
-  indexable       Boolean             @default(true)
-  followLinks     Boolean             @default(true) @map("follow_links")
-  yearLabel       String?             @map("year_label")
-  status          ArtistStatus        @default(DRAFT)
-  featured        Boolean             @default(false)
-  portraitMediaId String?             @map("portrait_media_id") @db.Uuid
-  heroMediaId     String?             @map("hero_media_id") @db.Uuid
-  setTimeStatus   ArtistSetTimeStatus @default(TBA) @map("set_time_status")
-  setTime         DateTime?           @map("set_time")
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
-  deletedAt       DateTime?           @map("deleted_at")
-  portraitMedia   MediaAsset?         @relation("artistPortraitMedia", fields: [portraitMediaId], references: [id], onDelete: SetNull)
-  heroMedia       MediaAsset?         @relation("artistHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
-  translations    ArtistTranslation[]
-  links           ArtistLink[]
-  media           ArtistMedia[]
-  eventArtists    EventArtist[]
+  id                String              @id @default(uuid()) @db.Uuid
+  slug              String              @unique @db.VarChar(120)
+  country           String              @db.VarChar(80)
+  seoTitle          String?             @map("seo_title")
+  seoDescription    String?             @map("seo_description")
+  ogMediaId         String?             @map("og_media_id") @db.Uuid
+  canonicalOverride String?             @map("canonical_override")
+  indexable         Boolean             @default(true)
+  followLinks       Boolean             @default(true) @map("follow_links")
+  yearLabel         String?             @map("year_label")
+  status            ArtistStatus        @default(DRAFT)
+  featured          Boolean             @default(false)
+  portraitMediaId   String?             @map("portrait_media_id") @db.Uuid
+  heroMediaId       String?             @map("hero_media_id") @db.Uuid
+  setTimeStatus     ArtistSetTimeStatus @default(TBA) @map("set_time_status")
+  setTime           DateTime?           @map("set_time")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  deletedAt         DateTime?           @map("deleted_at")
+  portraitMedia     MediaAsset?         @relation("artistPortraitMedia", fields: [portraitMediaId], references: [id], onDelete: SetNull)
+  heroMedia         MediaAsset?         @relation("artistHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  translations      ArtistTranslation[]
+  links             ArtistLink[]
+  media             ArtistMedia[]
+  eventArtists      EventArtist[]
 
   @@index([status])
   @@map("artists")
 }
 
 model ArtistTranslation {
-  id              String   @id @default(uuid()) @db.Uuid
-  artistId        String   @map("artist_id") @db.Uuid
-  locale          String   @db.VarChar(2)
-  name            String
-  bio             String?
-  genresJson      Json?    @map("genres_json")
-  seoTitle        String?  @map("seo_title")
-  seoDescription  String?  @map("seo_description")
-  artist           Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  id             String  @id @default(uuid()) @db.Uuid
+  artistId       String  @map("artist_id") @db.Uuid
+  locale         String  @db.VarChar(2)
+  name           String
+  bio            String?
+  genresJson     Json?   @map("genres_json")
+  seoTitle       String? @map("seo_title")
+  seoDescription String? @map("seo_description")
+  artist         Artist  @relation(fields: [artistId], references: [id], onDelete: Cascade)
 
   @@unique([artistId, locale])
   @@map("artist_translations")
 }
 
 model ArtistLink {
-  id       String @id @default(uuid()) @db.Uuid
-  artistId String @map("artist_id") @db.Uuid
-  type     String @db.VarChar(40)
-  url      String
-  label    String?
-  sortOrder Int   @default(0) @map("sort_order")
-  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid()) @db.Uuid
+  artistId  String  @map("artist_id") @db.Uuid
+  type      String  @db.VarChar(40)
+  url       String
+  label     String?
+  sortOrder Int     @default(0) @map("sort_order")
+  artist    Artist  @relation(fields: [artistId], references: [id], onDelete: Cascade)
 
   @@index([artistId, sortOrder])
   @@map("artist_links")
 }
 
 model ArtistMedia {
-  id          String     @id @default(uuid()) @db.Uuid
-  artistId    String     @map("artist_id") @db.Uuid
-  mediaId     String?    @map("media_id") @db.Uuid
-  type        String     @db.VarChar(20)
-  externalUrl String?    @map("external_url")
+  id          String      @id @default(uuid()) @db.Uuid
+  artistId    String      @map("artist_id") @db.Uuid
+  mediaId     String?     @map("media_id") @db.Uuid
+  type        String      @db.VarChar(20)
+  externalUrl String?     @map("external_url")
   title       String?
-  sortOrder   Int        @default(0) @map("sort_order")
-  artist      Artist     @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  sortOrder   Int         @default(0) @map("sort_order")
+  artist      Artist      @relation(fields: [artistId], references: [id], onDelete: Cascade)
   media       MediaAsset? @relation(fields: [mediaId], references: [id], onDelete: SetNull)
 
   @@index([artistId, sortOrder])
@@ -634,56 +726,56 @@ model EventArtist {
 }
 
 model NewsArticle {
-  id             String            @id @default(uuid()) @db.Uuid
-  slug           String            @unique @db.VarChar(160)
-  category       String            @db.VarChar(80)
-  status         ContentStatus     @default(DRAFT)
-  seoTitle       String?           @map("seo_title")
-  seoDescription String?           @map("seo_description")
-  ogMediaId      String?           @map("og_media_id") @db.Uuid
-  canonicalOverride String?        @map("canonical_override")
-  indexable      Boolean           @default(true)
-  followLinks    Boolean           @default(true) @map("follow_links")
-  featured       Boolean           @default(false)
-  heroMediaId    String?           @map("hero_media_id") @db.Uuid
-  cardMediaId    String?           @map("card_media_id") @db.Uuid
-  relatedEventId String?           @map("related_event_id") @db.Uuid
-  publishedAt    DateTime?         @map("published_at")
-  createdAt      DateTime          @default(now()) @map("created_at")
-  updatedAt      DateTime          @updatedAt @map("updated_at")
-  deletedAt      DateTime?         @map("deleted_at")
-  heroMedia      MediaAsset?       @relation("newsHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
-  cardMedia      MediaAsset?       @relation("newsCardMedia", fields: [cardMediaId], references: [id], onDelete: SetNull)
-  relatedEvent   Event?            @relation(fields: [relatedEventId], references: [id], onDelete: SetNull)
-  translations   NewsTranslation[]
-  tags           NewsTag[]
+  id                String            @id @default(uuid()) @db.Uuid
+  slug              String            @unique @db.VarChar(160)
+  category          String            @db.VarChar(80)
+  status            ContentStatus     @default(DRAFT)
+  seoTitle          String?           @map("seo_title")
+  seoDescription    String?           @map("seo_description")
+  ogMediaId         String?           @map("og_media_id") @db.Uuid
+  canonicalOverride String?           @map("canonical_override")
+  indexable         Boolean           @default(true)
+  followLinks       Boolean           @default(true) @map("follow_links")
+  featured          Boolean           @default(false)
+  heroMediaId       String?           @map("hero_media_id") @db.Uuid
+  cardMediaId       String?           @map("card_media_id") @db.Uuid
+  relatedEventId    String?           @map("related_event_id") @db.Uuid
+  publishedAt       DateTime?         @map("published_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  deletedAt         DateTime?         @map("deleted_at")
+  heroMedia         MediaAsset?       @relation("newsHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  cardMedia         MediaAsset?       @relation("newsCardMedia", fields: [cardMediaId], references: [id], onDelete: SetNull)
+  relatedEvent      Event?            @relation(fields: [relatedEventId], references: [id], onDelete: SetNull)
+  translations      NewsTranslation[]
+  tags              NewsTag[]
 
   @@index([status, publishedAt])
   @@map("news_articles")
 }
 
 model NewsTranslation {
-  id                 String      @id @default(uuid()) @db.Uuid
-  articleId          String      @map("article_id") @db.Uuid
-  locale             String      @db.VarChar(2)
-  title              String
-  excerpt            String?
-  bodyBlocksJson     Json        @map("body_blocks_json")
-  quickSummaryJson   Json?       @map("quick_summary_json")
-  readingTimeOverride Int?      @map("reading_time_override")
-  seoTitle           String?     @map("seo_title")
-  seoDescription     String?     @map("seo_description")
-  article            NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  id                  String      @id @default(uuid()) @db.Uuid
+  articleId           String      @map("article_id") @db.Uuid
+  locale              String      @db.VarChar(2)
+  title               String
+  excerpt             String?
+  bodyBlocksJson      Json        @map("body_blocks_json")
+  quickSummaryJson    Json?       @map("quick_summary_json")
+  readingTimeOverride Int?        @map("reading_time_override")
+  seoTitle            String?     @map("seo_title")
+  seoDescription      String?     @map("seo_description")
+  article             NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@unique([articleId, locale])
   @@map("news_translations")
 }
 
 model Tag {
-  id         String    @id @default(uuid()) @db.Uuid
-  key        String    @unique @db.VarChar(80)
-  label      String
-  newsTags   NewsTag[]
+  id       String    @id @default(uuid()) @db.Uuid
+  key      String    @unique @db.VarChar(80)
+  label    String
+  newsTags NewsTag[]
 
   @@map("tags")
 }
@@ -699,105 +791,105 @@ model NewsTag {
 }
 
 model GalleryAlbum {
-  id           String              @id @default(uuid()) @db.Uuid
-  slug         String              @unique @db.VarChar(160)
-  status       ContentStatus       @default(DRAFT)
-  seoTitle     String?             @map("seo_title")
-  seoDescription String?           @map("seo_description")
-  ogMediaId    String?             @map("og_media_id") @db.Uuid
-  canonicalOverride String?        @map("canonical_override")
-  indexable    Boolean             @default(true)
-  followLinks  Boolean             @default(true) @map("follow_links")
-  featured     Boolean             @default(false)
-  coverMediaId String?             @map("cover_media_id") @db.Uuid
-  heroMediaId  String?             @map("hero_media_id") @db.Uuid
-  eventId      String?             @map("event_id") @db.Uuid
-  venue        String?
-  publishedAt  DateTime?           @map("published_at")
-  createdAt    DateTime            @default(now()) @map("created_at")
-  updatedAt    DateTime            @updatedAt @map("updated_at")
-  deletedAt    DateTime?           @map("deleted_at")
-  coverMedia   MediaAsset?         @relation("galleryCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
-  heroMedia    MediaAsset?         @relation("galleryHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
-  event        Event?              @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  translations GalleryTranslation[]
-  media        GalleryMedia[]
+  id                String               @id @default(uuid()) @db.Uuid
+  slug              String               @unique @db.VarChar(160)
+  status            ContentStatus        @default(DRAFT)
+  seoTitle          String?              @map("seo_title")
+  seoDescription    String?              @map("seo_description")
+  ogMediaId         String?              @map("og_media_id") @db.Uuid
+  canonicalOverride String?              @map("canonical_override")
+  indexable         Boolean              @default(true)
+  followLinks       Boolean              @default(true) @map("follow_links")
+  featured          Boolean              @default(false)
+  coverMediaId      String?              @map("cover_media_id") @db.Uuid
+  heroMediaId       String?              @map("hero_media_id") @db.Uuid
+  eventId           String?              @map("event_id") @db.Uuid
+  venue             String?
+  publishedAt       DateTime?            @map("published_at")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  deletedAt         DateTime?            @map("deleted_at")
+  coverMedia        MediaAsset?          @relation("galleryCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  heroMedia         MediaAsset?          @relation("galleryHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  event             Event?               @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  translations      GalleryTranslation[]
+  media             GalleryMedia[]
 
   @@index([status, publishedAt])
   @@map("gallery_albums")
 }
 
 model GalleryTranslation {
-  id          String        @id @default(uuid()) @db.Uuid
-  albumId     String        @map("album_id") @db.Uuid
-  locale      String        @db.VarChar(2)
-  title       String
-  subtitle    String?
-  description String?
-  seoTitle    String?       @map("seo_title")
-  seoDescription String?    @map("seo_description")
-  album       GalleryAlbum  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  id             String       @id @default(uuid()) @db.Uuid
+  albumId        String       @map("album_id") @db.Uuid
+  locale         String       @db.VarChar(2)
+  title          String
+  subtitle       String?
+  description    String?
+  seoTitle       String?      @map("seo_title")
+  seoDescription String?      @map("seo_description")
+  album          GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
 
   @@unique([albumId, locale])
   @@map("gallery_translations")
 }
 
 model GalleryMedia {
-  id                String       @id @default(uuid()) @db.Uuid
-  albumId           String       @map("album_id") @db.Uuid
-  mediaId           String?      @map("media_id") @db.Uuid
-  mediaType         String       @map("media_type") @db.VarChar(20)
-  category          String?
-  videoProvider     String?      @map("video_provider")
-  externalVideoUrl  String?      @map("external_video_url")
-  title             String?
-  caption           String?
-  featured          Boolean      @default(false)
-  sortOrder         Int          @default(0) @map("sort_order")
-  album             GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  media             MediaAsset?  @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+  id               String       @id @default(uuid()) @db.Uuid
+  albumId          String       @map("album_id") @db.Uuid
+  mediaId          String?      @map("media_id") @db.Uuid
+  mediaType        String       @map("media_type") @db.VarChar(20)
+  category         String?
+  videoProvider    String?      @map("video_provider")
+  externalVideoUrl String?      @map("external_video_url")
+  title            String?
+  caption          String?
+  featured         Boolean      @default(false)
+  sortOrder        Int          @default(0) @map("sort_order")
+  album            GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  media            MediaAsset?  @relation(fields: [mediaId], references: [id], onDelete: SetNull)
 
   @@index([albumId, sortOrder])
   @@map("gallery_media")
 }
 
 model ProductCategory {
-  id         String    @id @default(uuid()) @db.Uuid
-  key        String    @unique @db.VarChar(80)
-  label      String
-  sortOrder  Int       @default(0) @map("sort_order")
-  products   Product[]
+  id        String    @id @default(uuid()) @db.Uuid
+  key       String    @unique @db.VarChar(80)
+  label     String
+  sortOrder Int       @default(0) @map("sort_order")
+  products  Product[]
 
   @@map("product_categories")
 }
 
 model Product {
-  id                 String             @id @default(uuid()) @db.Uuid
-  slug               String             @unique @db.VarChar(160)
-  categoryId         String?            @map("category_id") @db.Uuid
-  status             ContentStatus      @default(DRAFT)
-  seoTitle           String?            @map("seo_title")
-  seoDescription     String?            @map("seo_description")
-  ogMediaId          String?            @map("og_media_id") @db.Uuid
-  canonicalOverride  String?            @map("canonical_override")
-  indexable          Boolean            @default(true)
-  followLinks        Boolean            @default(true) @map("follow_links")
-  basePriceMinor     Int                @map("base_price_minor")
-  currency           String             @default("AUD") @db.Char(3)
-  badge              String?
-  featured           Boolean            @default(false)
-  stockTracking      ProductStockTracking @default(NONE) @map("stock_tracking")
-  publishedAt        DateTime?          @map("published_at")
-  createdAt          DateTime           @default(now()) @map("created_at")
-  updatedAt          DateTime           @updatedAt @map("updated_at")
-  deletedAt          DateTime?          @map("deleted_at")
-  category           ProductCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  translations       ProductTranslation[]
-  images             ProductImage[]
-  optionGroups       ProductOptionGroup[]
-  variants           ProductVariant[]
-  discountProducts   DiscountProduct[]
-  orderItems         OrderItem[]
+  id                String               @id @default(uuid()) @db.Uuid
+  slug              String               @unique @db.VarChar(160)
+  categoryId        String?              @map("category_id") @db.Uuid
+  status            ContentStatus        @default(DRAFT)
+  seoTitle          String?              @map("seo_title")
+  seoDescription    String?              @map("seo_description")
+  ogMediaId         String?              @map("og_media_id") @db.Uuid
+  canonicalOverride String?              @map("canonical_override")
+  indexable         Boolean              @default(true)
+  followLinks       Boolean              @default(true) @map("follow_links")
+  basePriceMinor    Int                  @map("base_price_minor")
+  currency          String               @default("AUD") @db.Char(3)
+  badge             String?
+  featured          Boolean              @default(false)
+  stockTracking     ProductStockTracking @default(NONE) @map("stock_tracking")
+  publishedAt       DateTime?            @map("published_at")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  deletedAt         DateTime?            @map("deleted_at")
+  category          ProductCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  translations      ProductTranslation[]
+  images            ProductImage[]
+  optionGroups      ProductOptionGroup[]
+  variants          ProductVariant[]
+  discountProducts  DiscountProduct[]
+  orderItems        OrderItem[]
 
   @@index([status, categoryId])
   @@index([featured])
@@ -805,17 +897,17 @@ model Product {
 }
 
 model ProductTranslation {
-  id                    String  @id @default(uuid()) @db.Uuid
-  productId             String  @map("product_id") @db.Uuid
-  locale                String  @db.VarChar(2)
-  title                 String
-  excerpt               String?
-  description           String?
-  detailSectionsJson    Json?   @map("detail_sections_json")
-  collectionHighlightsJson Json? @map("collection_highlights_json")
-  seoTitle              String? @map("seo_title")
-  seoDescription        String? @map("seo_description")
-  product               Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id                       String  @id @default(uuid()) @db.Uuid
+  productId                String  @map("product_id") @db.Uuid
+  locale                   String  @db.VarChar(2)
+  title                    String
+  excerpt                  String?
+  description              String?
+  detailSectionsJson       Json?   @map("detail_sections_json")
+  collectionHighlightsJson Json?   @map("collection_highlights_json")
+  seoTitle                 String? @map("seo_title")
+  seoDescription           String? @map("seo_description")
+  product                  Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, locale])
   @@map("product_translations")
@@ -835,12 +927,12 @@ model ProductImage {
 }
 
 model ProductOptionGroup {
-  id        String                @id @default(uuid()) @db.Uuid
-  productId String                @map("product_id") @db.Uuid
-  key       String                @db.VarChar(80)
+  id        String               @id @default(uuid()) @db.Uuid
+  productId String               @map("product_id") @db.Uuid
+  key       String               @db.VarChar(80)
   label     String
-  sortOrder Int                   @default(0) @map("sort_order")
-  product   Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sortOrder Int                  @default(0) @map("sort_order")
+  product   Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
   values    ProductOptionValue[]
 
   @@unique([productId, key])
@@ -848,13 +940,13 @@ model ProductOptionGroup {
 }
 
 model ProductOptionValue {
-  id            String                    @id @default(uuid()) @db.Uuid
-  optionGroupId String                    @map("option_group_id") @db.Uuid
-  valueKey      String                    @map("value_key") @db.VarChar(80)
+  id            String               @id @default(uuid()) @db.Uuid
+  optionGroupId String               @map("option_group_id") @db.Uuid
+  valueKey      String               @map("value_key") @db.VarChar(80)
   label         String
-  colorHex      String?                   @map("color_hex")
-  sortOrder     Int                       @default(0) @map("sort_order")
-  optionGroup   ProductOptionGroup        @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+  colorHex      String?              @map("color_hex")
+  sortOrder     Int                  @default(0) @map("sort_order")
+  optionGroup   ProductOptionGroup   @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
   variantValues VariantOptionValue[]
 
   @@unique([optionGroupId, valueKey])
@@ -862,15 +954,15 @@ model ProductOptionValue {
 }
 
 model ProductVariant {
-  id            String                   @id @default(uuid()) @db.Uuid
-  productId     String                   @map("product_id") @db.Uuid
-  sku           String                   @unique @db.VarChar(100)
-  priceMinor    Int                      @map("price_minor")
-  currency      String                   @default("AUD") @db.Char(3)
-  stockStatus   VariantStockStatus       @default(IN_STOCK) @map("stock_status")
-  stockQuantity Int?                     @map("stock_quantity")
-  enabled       Boolean                  @default(true)
-  product       Product                  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id            String               @id @default(uuid()) @db.Uuid
+  productId     String               @map("product_id") @db.Uuid
+  sku           String               @unique @db.VarChar(100)
+  priceMinor    Int                  @map("price_minor")
+  currency      String               @default("AUD") @db.Char(3)
+  stockStatus   VariantStockStatus   @default(IN_STOCK) @map("stock_status")
+  stockQuantity Int?                 @map("stock_quantity")
+  enabled       Boolean              @default(true)
+  product       Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
   optionValues  VariantOptionValue[]
   orderItems    OrderItem[]
 
@@ -889,19 +981,19 @@ model VariantOptionValue {
 }
 
 model Discount {
-  id                    String             @id @default(uuid()) @db.Uuid
-  code                  String             @unique @db.VarChar(80)
-  type                  DiscountType
-  valueMinor            Int?               @map("value_minor")
-  percentage            Decimal?           @db.Decimal(5, 2)
-  currency              String?            @db.Char(3)
-  minimumSubtotalMinor  Int?               @map("minimum_subtotal_minor")
-  usageLimit            Int?               @map("usage_limit")
-  usageCount            Int                @default(0) @map("usage_count")
-  startsAt              DateTime?          @map("starts_at")
-  endsAt                DateTime?          @map("ends_at")
-  active                Boolean            @default(true)
-  products              DiscountProduct[]
+  id                   String            @id @default(uuid()) @db.Uuid
+  code                 String            @unique @db.VarChar(80)
+  type                 DiscountType
+  valueMinor           Int?              @map("value_minor")
+  percentage           Decimal?          @db.Decimal(5, 2)
+  currency             String?           @db.Char(3)
+  minimumSubtotalMinor Int?              @map("minimum_subtotal_minor")
+  usageLimit           Int?              @map("usage_limit")
+  usageCount           Int               @default(0) @map("usage_count")
+  startsAt             DateTime?         @map("starts_at")
+  endsAt               DateTime?         @map("ends_at")
+  active               Boolean           @default(true)
+  products             DiscountProduct[]
   orders               Order[]
 
   @@index([active, startsAt, endsAt])
@@ -919,50 +1011,51 @@ model DiscountProduct {
 }
 
 model ShippingZone {
-  id        String         @id @default(uuid()) @db.Uuid
-  name      String
-  countriesJson Json       @map("countries_json")
-  active    Boolean        @default(true)
-  rates     ShippingRate[]
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  countriesJson Json           @map("countries_json")
+  active        Boolean        @default(true)
+  rates         ShippingRate[]
 
   @@map("shipping_zones")
 }
 
 model ShippingRate {
-  id                    String       @id @default(uuid()) @db.Uuid
-  zoneId                String       @map("zone_id") @db.Uuid
-  name                  String
-  priceMinor            Int          @map("price_minor")
-  currency              String       @default("AUD") @db.Char(3)
-  minimumSubtotalMinor  Int?         @map("minimum_subtotal_minor")
-  active                Boolean      @default(true)
-  zone                  ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  id                   String       @id @default(uuid()) @db.Uuid
+  zoneId               String       @map("zone_id") @db.Uuid
+  name                 String
+  priceMinor           Int          @map("price_minor")
+  currency             String       @default("AUD") @db.Char(3)
+  minimumSubtotalMinor Int?         @map("minimum_subtotal_minor")
+  active               Boolean      @default(true)
+  zone                 ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 
   @@index([zoneId, active])
   @@map("shipping_rates")
 }
 
 model Order {
-  id              String            @id @default(uuid()) @db.Uuid
-  orderNumber     String            @unique @map("order_number") @db.VarChar(40)
-  paymentStatus   PaymentStatus     @default(PENDING) @map("payment_status")
+  id                String            @id @default(uuid()) @db.Uuid
+  orderNumber       String            @unique @map("order_number") @db.VarChar(40)
+  paymentStatus     PaymentStatus     @default(PENDING) @map("payment_status")
   fulfillmentStatus FulfillmentStatus @default(UNFULFILLED) @map("fulfillment_status")
-  currency        String            @default("AUD") @db.Char(3)
-  customerEmail   String?           @map("customer_email") @db.VarChar(320)
-  clientReference String?           @unique @map("client_reference") @db.VarChar(80)
-  subtotalMinor   Int               @map("subtotal_minor")
-  discountMinor   Int               @default(0) @map("discount_minor")
-  shippingMinor   Int               @default(0) @map("shipping_minor")
-  taxMinor        Int               @default(0) @map("tax_minor")
-  totalMinor      Int               @map("total_minor")
-  discountId      String?           @map("discount_id") @db.Uuid
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-  discount        Discount?         @relation(fields: [discountId], references: [id], onDelete: SetNull)
-  items           OrderItem[]
-  checkoutSessions CheckoutSession[]
-  payments        Payment[]
-  notes           OrderNote[]
+  currency          String            @default("AUD") @db.Char(3)
+  customerEmail     String?           @map("customer_email") @db.VarChar(320)
+  clientReference   String?           @unique @map("client_reference") @db.VarChar(80)
+  subtotalMinor     Int               @map("subtotal_minor")
+  discountMinor     Int               @default(0) @map("discount_minor")
+  shippingMinor     Int               @default(0) @map("shipping_minor")
+  taxMinor          Int               @default(0) @map("tax_minor")
+  totalMinor        Int               @map("total_minor")
+  discountId        String?           @map("discount_id") @db.Uuid
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  discount          Discount?         @relation(fields: [discountId], references: [id], onDelete: SetNull)
+  items             OrderItem[]
+  checkoutSessions  CheckoutSession[]
+  payments          Payment[]
+  notes             OrderNote[]
+  checkoutIntent    CheckoutIntent?
 
   @@index([paymentStatus, createdAt])
   @@index([fulfillmentStatus, createdAt])
@@ -970,19 +1063,19 @@ model Order {
 }
 
 model OrderItem {
-  id                String          @id @default(uuid()) @db.Uuid
-  orderId           String          @map("order_id") @db.Uuid
-  productId         String?         @map("product_id") @db.Uuid
-  variantId         String?         @map("variant_id") @db.Uuid
-  titleSnapshot     String          @map("title_snapshot")
-  variantSnapshot   String?         @map("variant_snapshot")
-  imageUrlSnapshot  String?         @map("image_url_snapshot")
-  unitPriceMinor    Int             @map("unit_price_minor")
-  quantity          Int
-  lineTotalMinor    Int             @map("line_total_minor")
-  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product           Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
-  variant           ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  id               String          @id @default(uuid()) @db.Uuid
+  orderId          String          @map("order_id") @db.Uuid
+  productId        String?         @map("product_id") @db.Uuid
+  variantId        String?         @map("variant_id") @db.Uuid
+  titleSnapshot    String          @map("title_snapshot")
+  variantSnapshot  String?         @map("variant_snapshot")
+  imageUrlSnapshot String?         @map("image_url_snapshot")
+  unitPriceMinor   Int             @map("unit_price_minor")
+  quantity         Int
+  lineTotalMinor   Int             @map("line_total_minor")
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product          Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant          ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@map("order_items")
@@ -1003,21 +1096,247 @@ model CheckoutSession {
   @@map("checkout_sessions")
 }
 
+model CheckoutIntent {
+  id               String               @id @default(uuid()) @db.Uuid
+  kind             CheckoutIntentKind
+  status           CheckoutIntentStatus @default(OPEN)
+  amountMinor      Int                  @map("amount_minor")
+  currency         String               @db.Char(3)
+  customerEmail    String?              @map("customer_email") @db.VarChar(320)
+  clientReference  String?              @map("client_reference") @db.VarChar(80)
+  providerOrderId  String?              @map("provider_order_id")
+  orderId          String?              @unique @map("order_id") @db.Uuid
+  ticketPurchaseId String?              @unique @map("ticket_purchase_id") @db.Uuid
+  vipBookingId     String?              @unique @map("vip_booking_id") @db.Uuid
+  expiresAt        DateTime             @map("expires_at")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  order            Order?               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ticketPurchase   TicketPurchase?      @relation(fields: [ticketPurchaseId], references: [id], onDelete: Cascade)
+  vipBooking       VipBooking?          @relation(fields: [vipBookingId], references: [id], onDelete: Cascade)
+  attempts         PaymentAttempt[]
+  payments         Payment[]
+  outboxEvents     OutboxEvent[]
+
+  @@index([status, expiresAt])
+  @@index([kind, createdAt])
+  @@map("checkout_intents")
+}
+
 model Payment {
-  id                String        @id @default(uuid()) @db.Uuid
-  orderId           String        @map("order_id") @db.Uuid
+  id                String          @id @default(uuid()) @db.Uuid
+  orderId           String?         @map("order_id") @db.Uuid
+  checkoutIntentId  String?         @map("checkout_intent_id") @db.Uuid
+  ticketPurchaseId  String?         @map("ticket_purchase_id") @db.Uuid
+  vipBookingId      String?         @map("vip_booking_id") @db.Uuid
   provider          String
-  providerPaymentId String?       @map("provider_payment_id")
+  providerOrderId   String?         @map("provider_order_id")
+  providerPaymentId String?         @map("provider_payment_id")
+  idempotencyKey    String?         @unique @map("idempotency_key")
+  locationId        String?         @map("location_id")
   status            PaymentStatus
-  amountMinor       Int           @map("amount_minor")
-  currency          String        @db.Char(3)
-  paidAt            DateTime?     @map("paid_at")
-  createdAt         DateTime      @default(now()) @map("created_at")
-  order             Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  amountMinor       Int             @map("amount_minor")
+  currency          String          @db.Char(3)
+  paidAt            DateTime?       @map("paid_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  order             Order?          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  checkoutIntent    CheckoutIntent? @relation(fields: [checkoutIntentId], references: [id], onDelete: Restrict)
+  ticketPurchase    TicketPurchase? @relation(fields: [ticketPurchaseId], references: [id], onDelete: Restrict)
+  vipBooking        VipBooking?     @relation(fields: [vipBookingId], references: [id], onDelete: Restrict)
+  refunds           Refund[]
 
   @@index([orderId, createdAt])
+  @@index([checkoutIntentId, createdAt])
+  @@index([ticketPurchaseId, createdAt])
+  @@index([vipBookingId, createdAt])
   @@index([provider, providerPaymentId])
   @@map("payments")
+}
+
+model PaymentAttempt {
+  id                String               @id @default(uuid()) @db.Uuid
+  checkoutIntentId  String               @map("checkout_intent_id") @db.Uuid
+  idempotencyKey    String               @unique @map("idempotency_key")
+  provider          String
+  providerOrderId   String?              @map("provider_order_id")
+  providerPaymentId String?              @map("provider_payment_id")
+  status            PaymentAttemptStatus @default(CREATED)
+  errorCode         String?              @map("error_code")
+  errorMessage      String?              @map("error_message")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  checkoutIntent    CheckoutIntent       @relation(fields: [checkoutIntentId], references: [id], onDelete: Cascade)
+
+  @@index([checkoutIntentId, createdAt])
+  @@index([providerPaymentId])
+  @@map("payment_attempts")
+}
+
+model TicketPurchase {
+  id             String               @id @default(uuid()) @db.Uuid
+  eventId        String               @map("event_id") @db.Uuid
+  customerName   String               @map("customer_name")
+  customerEmail  String               @map("customer_email") @db.VarChar(320)
+  totalMinor     Int                  @map("total_minor")
+  currency       String               @db.Char(3)
+  status         TicketPurchaseStatus @default(PENDING_PAYMENT)
+  expiresAt      DateTime             @map("expires_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  event          Event                @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  items          TicketPurchaseItem[]
+  holds          TicketHold[]
+  issuedTickets  IssuedTicket[]
+  checkoutIntent CheckoutIntent?
+  payments       Payment[]
+
+  @@index([eventId, createdAt])
+  @@index([status, expiresAt])
+  @@map("ticket_purchases")
+}
+
+model TicketPurchaseItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  ticketPurchaseId String         @map("ticket_purchase_id") @db.Uuid
+  ticketTierId     String         @map("ticket_tier_id") @db.Uuid
+  quantity         Int
+  unitPriceMinor   Int            @map("unit_price_minor")
+  lineTotalMinor   Int            @map("line_total_minor")
+  ticketPurchase   TicketPurchase @relation(fields: [ticketPurchaseId], references: [id], onDelete: Cascade)
+  ticketTier       TicketTier     @relation(fields: [ticketTierId], references: [id], onDelete: Restrict)
+
+  @@index([ticketPurchaseId])
+  @@index([ticketTierId])
+  @@map("ticket_purchase_items")
+}
+
+model TicketHold {
+  id               String           @id @default(uuid()) @db.Uuid
+  ticketPurchaseId String           @map("ticket_purchase_id") @db.Uuid
+  ticketTierId     String           @map("ticket_tier_id") @db.Uuid
+  quantity         Int
+  status           TicketHoldStatus @default(ACTIVE)
+  expiresAt        DateTime         @map("expires_at")
+  consumedAt       DateTime?        @map("consumed_at")
+  releasedAt       DateTime?        @map("released_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  ticketPurchase   TicketPurchase   @relation(fields: [ticketPurchaseId], references: [id], onDelete: Cascade)
+  ticketTier       TicketTier       @relation(fields: [ticketTierId], references: [id], onDelete: Restrict)
+
+  @@index([ticketTierId, status, expiresAt])
+  @@index([ticketPurchaseId])
+  @@map("ticket_holds")
+}
+
+model IssuedTicket {
+  id               String               @id @default(uuid()) @db.Uuid
+  ticketPurchaseId String               @map("ticket_purchase_id") @db.Uuid
+  ticketTierId     String               @map("ticket_tier_id") @db.Uuid
+  ticketToken      String               @unique @map("ticket_token")
+  ticketCodeHash   String               @unique @map("ticket_code_hash")
+  status           TicketIssuanceStatus @default(ISSUED)
+  issuedAt         DateTime             @default(now()) @map("issued_at")
+  ticketPurchase   TicketPurchase       @relation(fields: [ticketPurchaseId], references: [id], onDelete: Cascade)
+  ticketTier       TicketTier           @relation(fields: [ticketTierId], references: [id], onDelete: Restrict)
+
+  @@index([ticketPurchaseId])
+  @@map("issued_tickets")
+}
+
+model VipBooking {
+  id             String           @id @default(uuid()) @db.Uuid
+  eventId        String           @map("event_id") @db.Uuid
+  vipPackageId   String           @map("vip_package_id") @db.Uuid
+  boothId        String?          @map("booth_id") @db.Uuid
+  customerName   String           @map("customer_name")
+  customerEmail  String           @map("customer_email") @db.VarChar(320)
+  phone          String?
+  groupSize      Int              @map("group_size")
+  totalMinor     Int              @map("total_minor")
+  amountDueMinor Int              @map("amount_due_minor")
+  currency       String           @db.Char(3)
+  status         VipBookingStatus @default(PENDING_PAYMENT)
+  expiresAt      DateTime         @map("expires_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  event          Event            @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  vipPackage     VipPackage       @relation(fields: [vipPackageId], references: [id], onDelete: Restrict)
+  booth          VipBooth?        @relation(fields: [boothId], references: [id], onDelete: SetNull)
+  hold           VipBoothHold?
+  checkoutIntent CheckoutIntent?
+  payments       Payment[]
+
+  @@index([eventId, createdAt])
+  @@index([status, expiresAt])
+  @@map("vip_bookings")
+}
+
+model VipBoothHold {
+  id         String             @id @default(uuid()) @db.Uuid
+  boothId    String             @map("booth_id") @db.Uuid
+  bookingId  String             @unique @map("booking_id") @db.Uuid
+  status     VipBoothHoldStatus @default(ACTIVE)
+  expiresAt  DateTime           @map("expires_at")
+  consumedAt DateTime?          @map("consumed_at")
+  releasedAt DateTime?          @map("released_at")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  booth      VipBooth           @relation(fields: [boothId], references: [id], onDelete: Restrict)
+  booking    VipBooking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([boothId, status, expiresAt])
+  @@map("vip_booth_holds")
+}
+
+model Refund {
+  id               String       @id @default(uuid()) @db.Uuid
+  paymentId        String       @map("payment_id") @db.Uuid
+  providerRefundId String?      @unique @map("provider_refund_id")
+  idempotencyKey   String       @unique @map("idempotency_key")
+  amountMinor      Int          @map("amount_minor")
+  currency         String       @db.Char(3)
+  status           RefundStatus @default(PENDING)
+  reason           String?
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  payment          Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId, createdAt])
+  @@map("refunds")
+}
+
+model SquareWebhookEvent {
+  id          String        @id @default(uuid()) @db.Uuid
+  eventId     String        @unique @map("event_id")
+  eventType   String        @map("event_type")
+  payloadHash String        @map("payload_hash")
+  payload     Json
+  status      WebhookStatus @default(RECEIVED)
+  processedAt DateTime?     @map("processed_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@index([status, createdAt])
+  @@map("square_webhook_events")
+}
+
+model OutboxEvent {
+  id               String          @id @default(uuid()) @db.Uuid
+  checkoutIntentId String?         @map("checkout_intent_id") @db.Uuid
+  type             String
+  aggregateId      String          @map("aggregate_id")
+  payload          Json
+  status           OutboxStatus    @default(PENDING)
+  attempts         Int             @default(0)
+  availableAt      DateTime        @default(now()) @map("available_at")
+  sentAt           DateTime?       @map("sent_at")
+  lastError        String?         @map("last_error")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  checkoutIntent   CheckoutIntent? @relation(fields: [checkoutIntentId], references: [id], onDelete: SetNull)
+
+  @@index([status, availableAt])
+  @@index([aggregateId, type])
+  @@map("outbox_events")
 }
 
 model OrderNote {
@@ -1048,93 +1367,93 @@ model WebhookEvent {
 }
 
 model FaqCategory {
-  id        String     @id @default(uuid()) @db.Uuid
-  key       String     @unique @db.VarChar(80)
+  id        String    @id @default(uuid()) @db.Uuid
+  key       String    @unique @db.VarChar(80)
   icon      String?
-  sortOrder Int        @default(0) @map("sort_order")
+  sortOrder Int       @default(0) @map("sort_order")
   items     FaqItem[]
 
   @@map("faq_categories")
 }
 
 model FaqItem {
-  id         String           @id @default(uuid()) @db.Uuid
-  categoryId String           @map("category_id") @db.Uuid
-  eventId    String?          @map("event_id") @db.Uuid
-  published  Boolean          @default(false)
-  answersConfirmed Boolean     @default(false) @map("answers_confirmed")
-  sortOrder  Int              @default(0) @map("sort_order")
-  createdAt  DateTime         @default(now()) @map("created_at")
-  updatedAt  DateTime         @updatedAt @map("updated_at")
-  category   FaqCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  event      Event?           @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  translations FaqTranslation[]
+  id               String           @id @default(uuid()) @db.Uuid
+  categoryId       String           @map("category_id") @db.Uuid
+  eventId          String?          @map("event_id") @db.Uuid
+  published        Boolean          @default(false)
+  answersConfirmed Boolean          @default(false) @map("answers_confirmed")
+  sortOrder        Int              @default(0) @map("sort_order")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  category         FaqCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  event            Event?           @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  translations     FaqTranslation[]
 
   @@index([published, sortOrder])
   @@map("faq_items")
 }
 
 model FaqTranslation {
-  id        String   @id @default(uuid()) @db.Uuid
-  faqId     String   @map("faq_id") @db.Uuid
-  locale    String   @db.VarChar(2)
-  question  String
-  answer    String
-  keywordsJson Json? @map("keywords_json")
-  faq       FaqItem  @relation(fields: [faqId], references: [id], onDelete: Cascade)
+  id           String  @id @default(uuid()) @db.Uuid
+  faqId        String  @map("faq_id") @db.Uuid
+  locale       String  @db.VarChar(2)
+  question     String
+  answer       String
+  keywordsJson Json?   @map("keywords_json")
+  faq          FaqItem @relation(fields: [faqId], references: [id], onDelete: Cascade)
 
   @@unique([faqId, locale])
   @@map("faq_translations")
 }
 
 model LegalDocument {
-  id            String             @id @default(uuid()) @db.Uuid
-  type          String             @unique @db.VarChar(40)
-  status        LegalStatus        @default(DRAFT)
-  seoTitle      String?            @map("seo_title")
-  seoDescription String?            @map("seo_description")
-  ogMediaId     String?            @map("og_media_id") @db.Uuid
-  canonicalOverride String?        @map("canonical_override")
-  indexable     Boolean            @default(true)
-  followLinks   Boolean            @default(true) @map("follow_links")
-  version       String             @default("1.0")
-  effectiveAt   DateTime?          @map("effective_at")
-  publishedAt   DateTime?          @map("published_at")
-  updatedAt     DateTime           @updatedAt @map("updated_at")
-  translations  LegalTranslation[]
+  id                String             @id @default(uuid()) @db.Uuid
+  type              String             @unique @db.VarChar(40)
+  status            LegalStatus        @default(DRAFT)
+  seoTitle          String?            @map("seo_title")
+  seoDescription    String?            @map("seo_description")
+  ogMediaId         String?            @map("og_media_id") @db.Uuid
+  canonicalOverride String?            @map("canonical_override")
+  indexable         Boolean            @default(true)
+  followLinks       Boolean            @default(true) @map("follow_links")
+  version           String             @default("1.0")
+  effectiveAt       DateTime?          @map("effective_at")
+  publishedAt       DateTime?          @map("published_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  translations      LegalTranslation[]
 
   @@map("legal_documents")
 }
 
 model LegalTranslation {
-  id              String         @id @default(uuid()) @db.Uuid
-  documentId      String         @map("document_id") @db.Uuid
-  locale          String         @db.VarChar(2)
-  title           String
-  intro           String?
-  sectionsJson    Json           @map("sections_json")
-  seoTitle        String?        @map("seo_title")
-  seoDescription  String?        @map("seo_description")
-  document        LegalDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  id             String        @id @default(uuid()) @db.Uuid
+  documentId     String        @map("document_id") @db.Uuid
+  locale         String        @db.VarChar(2)
+  title          String
+  intro          String?
+  sectionsJson   Json          @map("sections_json")
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @map("seo_description")
+  document       LegalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@unique([documentId, locale])
   @@map("legal_translations")
 }
 
 model Partner {
-  id           String              @id @default(uuid()) @db.Uuid
-  slug         String              @unique @db.VarChar(120)
-  type         String              @db.VarChar(80)
-  logoMediaId  String?             @map("logo_media_id") @db.Uuid
-  imageMediaId String?             @map("image_media_id") @db.Uuid
-  websiteUrl   String?             @map("website_url")
-  featured     Boolean             @default(false)
-  status       ContentStatus       @default(DRAFT)
-  sortOrder    Int                 @default(0) @map("sort_order")
-  createdAt    DateTime            @default(now()) @map("created_at")
-  updatedAt    DateTime            @updatedAt @map("updated_at")
-  logoMedia    MediaAsset?         @relation("partnerLogoMedia", fields: [logoMediaId], references: [id], onDelete: SetNull)
-  imageMedia   MediaAsset?         @relation("partnerImageMedia", fields: [imageMediaId], references: [id], onDelete: SetNull)
+  id           String               @id @default(uuid()) @db.Uuid
+  slug         String               @unique @db.VarChar(120)
+  type         String               @db.VarChar(80)
+  logoMediaId  String?              @map("logo_media_id") @db.Uuid
+  imageMediaId String?              @map("image_media_id") @db.Uuid
+  websiteUrl   String?              @map("website_url")
+  featured     Boolean              @default(false)
+  status       ContentStatus        @default(DRAFT)
+  sortOrder    Int                  @default(0) @map("sort_order")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  logoMedia    MediaAsset?          @relation("partnerLogoMedia", fields: [logoMediaId], references: [id], onDelete: SetNull)
+  imageMedia   MediaAsset?          @relation("partnerImageMedia", fields: [imageMediaId], references: [id], onDelete: SetNull)
   translations PartnerTranslation[]
 
   @@index([status, sortOrder])

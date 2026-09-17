@@ -19,7 +19,7 @@ const publicRoutes = [
   '/shop',
 ];
 
-const privateRoutes = ['/admin/login', '/admin', '/book-now', '/cart', '/checkout/result?session_id=seo-audit'];
+const privateRoutes = ['/admin/login', '/admin', '/book-now', '/cart', '/checkout/result?checkout_id=seo-audit'];
 
 function absolute(path) {
   return new URL(path, `${base}/`).toString();

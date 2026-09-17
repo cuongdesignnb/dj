@@ -87,6 +87,8 @@ export default function BookingRequestForm({
   const [errors, setErrors] = useState<BookingFieldErrors>({});
   const [limitMessage, setLimitMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [result, setResult] = useState<BookingRequestResult | null>(null);
 
   const selectedBooth = useMemo(
@@ -94,6 +96,18 @@ export default function BookingRequestForm({
     [data.booths, boothId],
   );
   const capacityWarning = groupSizeWarning(groupSize, data.package);
+
+  function currentCheckoutInput() {
+    return {
+      eventId: data.event.id,
+      vipPackageId: data.package.id,
+      customerName: fullName.trim(),
+      customerEmail: email.trim(),
+      phone: phone.trim() || null,
+      groupSize,
+      boothId,
+    };
+  }
 
   const handleToggleBottle = (id: string) => {
     const toggled = toggleBottle(bottleIds, id, data.package);
@@ -148,6 +162,46 @@ export default function BookingRequestForm({
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handlePaymentStart = async () => {
+    if (paymentSubmitting) return;
+    const input = currentCheckoutInput();
+    const validation = validateBookingRequest(
+      {
+        eventId: input.eventId,
+        packageId: input.vipPackageId,
+        experienceType: 'vip-table',
+        fullName: input.customerName,
+        email: input.customerEmail,
+        phone: input.phone ?? '',
+        groupSize: input.groupSize,
+        preferredBoothId: input.boothId,
+        bottleIds,
+        specialRequests: specialRequests.trim() || undefined,
+      },
+      data.package,
+    );
+    setErrors(validation.errors);
+    if (!validation.ok) return;
+
+    setPaymentSubmitting(true);
+    setPaymentError(null);
+    try {
+      const response = await fetch('/api/v1/checkout/vip-intent', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const payload = (await response.json().catch(() => null)) as { data?: { checkoutUrl?: string }; error?: { message?: string } } | null;
+      if (!response.ok || !payload?.data?.checkoutUrl || !/^\/checkout\/pay\/[0-9a-f-]{36}$/i.test(payload.data.checkoutUrl)) {
+        throw new Error(payload?.error?.message ?? 'The VIP checkout could not be started.');
+      }
+      window.location.assign(payload.data.checkoutUrl);
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'The VIP checkout could not be started.');
+      setPaymentSubmitting(false);
     }
   };
 
@@ -430,6 +484,28 @@ export default function BookingRequestForm({
                   />
                 </button>
               </div>
+
+              {data.package.paymentMode !== 'request-only' && (
+                <div className="mt-4 rounded-[14px] border border-rave-red/30 bg-rave-red/[0.06] p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-rave-muted">
+                      {data.package.paymentMode === 'deposit' && data.package.deposit
+                        ? <>Secure this table with a {formatMoney(data.package.deposit)} deposit.</>
+                        : <>This package can be paid securely online: {formatMoney(data.package.price)}.</>}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handlePaymentStart}
+                      disabled={paymentSubmitting}
+                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-[12px] border border-rave-red/60 bg-rave-red/10 px-4 py-3 font-heading text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-rave-red/20 disabled:cursor-wait disabled:opacity-70"
+                    >
+                      {paymentSubmitting ? 'Starting…' : 'Continue to payment'}
+                      <ArrowRight aria-hidden className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {paymentError && <p role="alert" className="mt-3 text-sm text-rave-red">{paymentError}</p>}
+                </div>
+              )}
 
               {!submissionConnected && (
                 <p className="mt-3 text-sm text-rave-muted/80">
