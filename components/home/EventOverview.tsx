@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { Calendar, Clock, AlertTriangle, Headphones, Users, Globe, Ticket } from 'lucide-react';
 import Container from '../ui/Container';
 import NeonButton from './NeonButton';
@@ -27,11 +28,13 @@ export default function EventOverview() {
             viewport={{ once: true, margin: '-80px' }}
             className="lg:col-span-5 relative group"
           >
-            <div className="relative rounded-2xl overflow-hidden neon-border">
-              <img
+            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden neon-border">
+              <Image
                 src="/assets/event-poster.jpg"
                 alt="Destiny Event Poster"
-                className="w-full h-auto object-cover aspect-[3/4] transition-transform duration-700 group-hover:scale-105"
+                fill
+                sizes="(max-width: 1024px) 100vw, 42vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-rave-black/75 via-transparent to-transparent pointer-events-none" />
             </div>

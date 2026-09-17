@@ -27,6 +27,7 @@ export interface FaqItem {
   keywords?: string[];
   sortOrder: number;
   published: boolean;
+  answersConfirmed: boolean;
 }
 
 export interface FaqCategoryItem {

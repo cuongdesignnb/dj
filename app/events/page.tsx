@@ -15,11 +15,13 @@ import type { EventsPageData } from '@/lib/events/listing-types';
 import { parseFilter } from '@/lib/events/listing-types';
 import EventsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getContentSeo } from '@/lib/seo/content';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const params = await searchParams;
   const hasFilter = Object.entries(params).some(([key, value]) => key !== 'locale' && value !== undefined && value !== '');
-  return buildMetadata({ title: 'Upcoming Events | Connection Rave', description: 'Discover published Connection Rave events and experiences.', path: '/events', indexable: !hasFilter });
+  const seo = await getContentSeo('events', { title: 'Upcoming Events | Connection Rave', description: 'Discover published Connection Rave events and experiences.' });
+  return buildMetadata({ ...seo, path: '/events', indexable: !hasFilter && seo.indexable });
 }
 
 /**

@@ -12,6 +12,7 @@ import { parseProductFilter } from '@/lib/shop/helpers';
 import type { ShopPageData } from '@/lib/shop/types';
 import ShopError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getContentSeo } from '@/lib/seo/content';
 
 async function loadShop(): Promise<{ data: ShopPageData } | { error: { message: string } }> {
   const selection = getShopRepository();
@@ -28,7 +29,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const filter = Array.isArray(params.category) ? params.category[0] : params.category;
   const result = await loadShop();
   const hasActive = 'data' in result && result.data.products.some((product) => product.status === 'active' && product.indexable !== false);
-  return buildMetadata({ title: 'Merchandise | Connection Rave', description: 'Explore published Connection Rave merchandise, apparel, accessories, posters and collectibles.', path: '/shop', indexable: !filter && hasActive });
+  const seo = await getContentSeo('shop', { title: 'Merchandise | Connection Rave', description: 'Explore published Connection Rave merchandise, apparel, accessories, posters and collectibles.' });
+  return buildMetadata({ ...seo, path: '/shop', indexable: !filter && hasActive && seo.indexable });
 }
 
 /** Server Component. Filters, featured Add to Cart and the cart are the islands. */

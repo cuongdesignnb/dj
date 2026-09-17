@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -21,6 +21,7 @@ import ShopError from '../error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
 import { jsonLd, productSchema } from '@/lib/seo/structured-data';
+import { getPublicSlugRedirect } from '@/server/services/slug-history';
 
 /**
  * Only the slugs generateStaticParams returns are routable; anything else is a
@@ -30,16 +31,6 @@ import { jsonLd, productSchema } from '@/lib/seo/structured-data';
  */
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
-
-export async function generateStaticParams() {
-  const selection = getShopRepository();
-  if (!selection.ok) return [];
-
-  const result = await selection.repository.getProducts();
-  if (!result.ok) return [];
-
-  return result.data.map((product) => ({ slug: product.slug }));
-}
 
 type Loaded =
   | { product: Product | null; page: ShopPageData; all: Product[] }
@@ -92,6 +83,8 @@ export default async function ProductPage({
     return <ShopError errorMessage={result.error.message} />;
   }
   if (!result.product) {
+    const redirectSlug = await getPublicSlugRedirect('product', slug);
+    if (redirectSlug) permanentRedirect(`/shop/${encodeURIComponent(redirectSlug)}`);
     notFound();
   }
 

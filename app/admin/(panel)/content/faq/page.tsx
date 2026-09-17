@@ -45,6 +45,7 @@ export default async function FaqAdminPage({ searchParams }: { searchParams: Pro
     answer: (r.answer ?? {}) as FaqItem['answer'],
     keywords: Array.isArray(r.keywords) ? r.keywords.map(String) : [],
     published: r.published === true,
+    answersConfirmed: r.answersConfirmed === true,
     sortOrder: Number(r.sortOrder ?? 0),
   }));
 

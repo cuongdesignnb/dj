@@ -19,6 +19,7 @@ export interface FaqItem {
   answer: { en?: string; vi?: string };
   keywords: string[];
   published: boolean;
+  answersConfirmed: boolean;
   sortOrder: number;
 }
 
@@ -31,6 +32,7 @@ const blank = (category: string, sortOrder: number): Draft => ({
   answer: { en: '', vi: '' },
   keywords: [],
   published: false,
+  answersConfirmed: false,
   sortOrder,
 });
 
@@ -206,6 +208,7 @@ export default function FaqManager({
                   <p className="mt-1 line-clamp-2 text-sm text-admin-muted">{item.answer.en}</p>
                   <p className="mt-2 flex flex-wrap items-center gap-2">
                     <StatusBadge value={item.published ? 'published' : 'draft'} label={item.published ? 'Published' : 'Hidden'} />
+                    {item.answersConfirmed && <StatusBadge value="confirmed" label="Confirmed" />}
                     {!item.question.vi && <StatusBadge value="missing" label="VI missing" />}
                   </p>
                 </div>
@@ -339,6 +342,13 @@ export default function FaqManager({
             <label className="flex items-center gap-2 text-sm text-white">
               <input type="checkbox" checked={draft.published} onChange={(e) => setDraft({ ...draft, published: e.target.checked })} className="h-4 w-4 accent-[#FF173D]" />
               Show on the FAQ page
+            </label>
+            <label className="flex items-start gap-2 text-sm text-white">
+              <input type="checkbox" checked={draft.answersConfirmed} onChange={(e) => setDraft({ ...draft, answersConfirmed: e.target.checked })} className="mt-0.5 h-4 w-4 accent-[#FF173D]" />
+              <span>
+                <span className="block">Answers confirmed by organiser</span>
+                <span className="mt-1 block text-xs text-admin-muted">Allows the visible answers to be used for FAQ rich results.</span>
+              </span>
             </label>
           </div>
         )}

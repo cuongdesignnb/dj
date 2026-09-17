@@ -12,7 +12,7 @@ export async function seedFaq({ db }: SeedContext, eventId: string) {
     const item = await db.faqItem.upsert({
       where: { id },
       update: { categoryId: category.id, eventId, published: true, sortOrder },
-      create: { id, categoryId: category.id, eventId, published: true, sortOrder },
+      create: { id, categoryId: category.id, eventId, published: true, answersConfirmed: false, sortOrder },
     });
     for (const locale of ['en', 'vi'] as const) {
       await db.faqTranslation.upsert({

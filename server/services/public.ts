@@ -216,7 +216,7 @@ export async function getPublicGallery(slug: string, locale: Locale) {
 
 export async function getPublicFaq(locale: Locale) {
   const rows = await db.faqItem.findMany({ where: { published: true }, orderBy: [{ category: { sortOrder: 'asc' } }, { sortOrder: 'asc' }], include: { translations: true, category: true } });
-  return rows.map((row) => { const translation = translated(row.translations, locale); return { id: row.id, category: row.category.key, question: translation?.question ?? '', answer: translation?.answer ?? '', keywords: Array.isArray(translation?.keywordsJson) ? translation.keywordsJson : [], sortOrder: row.sortOrder, published: row.published }; });
+  return rows.map((row) => { const translation = translated(row.translations, locale); return { id: row.id, category: row.category.key, question: translation?.question ?? '', answer: translation?.answer ?? '', keywords: Array.isArray(translation?.keywordsJson) ? translation.keywordsJson : [], sortOrder: row.sortOrder, published: row.published, answersConfirmed: row.answersConfirmed === true }; });
 }
 
 export async function getPublicLegal(type: string, locale: Locale) {

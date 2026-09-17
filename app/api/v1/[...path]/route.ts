@@ -39,6 +39,8 @@ import {
   checkoutSchema,
   contactSchema,
   eventMutationSchema,
+  faqMutationSchema,
+  galleryMutationSchema,
   loginSchema,
   newsletterSchema,
   paginationSchema,
@@ -70,6 +72,21 @@ function parse<T>(schema: import('zod').ZodType<T>, value: unknown): T {
 
 function jsonInput(value: unknown) {
   return value as Prisma.InputJsonValue;
+}
+
+async function rememberPublishedSlug(
+  tx: Prisma.TransactionClient,
+  entityType: string,
+  entityId: string,
+  before: { slug: string; status: string },
+  nextSlug: string,
+) {
+  if (before.status !== 'PUBLISHED' || before.slug === nextSlug) return;
+  await tx.slugHistory.upsert({
+    where: { entityType_oldSlug: { entityType, oldSlug: before.slug } },
+    update: { entityId },
+    create: { entityType, entityId, oldSlug: before.slug },
+  });
 }
 
 function ip(request: Request) {
@@ -262,7 +279,7 @@ function adminRecord(resource: string, row: any) {
     return { ...base, name: row.name, description: row.description ?? '', permissions: (row.rolePermissions ?? []).map((item: any) => item.permission.key), system: row.isSystem, updatedAt: iso(row.updatedAt) };
   }
   if (resource === 'faq') {
-    return { ...base, category: row.category?.key ?? '', question: { en: localized(row.translations, 'question') }, answer: { en: localized(row.translations, 'answer') }, keywords: row.translations?.[0]?.keywordsJson ?? [], updatedAt: iso(row.updatedAt) };
+    return { ...base, category: row.category?.key ?? '', question: localizedMap(row.translations, 'question'), answer: localizedMap(row.translations, 'answer'), keywords: row.translations?.[0]?.keywordsJson ?? [], published: row.published === true, answersConfirmed: row.answersConfirmed === true, sortOrder: row.sortOrder, updatedAt: iso(row.updatedAt) };
   }
   if (resource === 'legal') {
     const translation = row.translations?.find((item: any) => item.locale === 'en') ?? row.translations?.[0];
@@ -401,6 +418,17 @@ async function createAdminResource(resource: string, payload: unknown, requestId
     await writeAuditLog({ actorUserId: userId, action: 'create', entityType: 'partner', entityId: row?.id, after: row, requestId });
     return row;
   }
+  if (resource === 'faq') {
+    const input = parse(faqMutationSchema, payload);
+    const row = await db.$transaction(async (tx) => {
+      const category = await tx.faqCategory.upsert({ where: { key: input.category }, update: {}, create: { key: input.category, sortOrder: input.sortOrder } });
+      const item = await tx.faqItem.create({ data: { categoryId: category.id, published: input.published, answersConfirmed: input.answersConfirmed, sortOrder: input.sortOrder } });
+      await tx.faqTranslation.createMany({ data: input.translations.map((translation) => ({ faqId: item.id, locale: translation.locale, question: translation.question, answer: translation.answer, keywordsJson: jsonInput(translation.keywords) })) });
+      return tx.faqItem.findUnique({ where: { id: item.id }, include: { category: true, translations: true } });
+    });
+    await writeAuditLog({ actorUserId: userId, action: 'create', entityType: 'faq', entityId: row?.id, after: row, requestId });
+    return row;
+  }
   throw notFound('This admin resource cannot be created through the API yet.');
 }
 
@@ -411,6 +439,7 @@ async function updateAdminResource(resource: string, id: string, payload: unknow
     if (!before) throw notFound();
     const row = await db.$transaction(async (tx) => {
       await tx.event.update({ where: { id }, data: { slug: input.slug, status: input.status, lifecycleStatus: input.lifecycleStatus, dateStatus: input.dateStatus, scheduleStatus: input.scheduleStatus, startAt: input.startAt === undefined ? undefined : input.startAt ? new Date(input.startAt) : null, endAt: input.endAt === undefined ? undefined : input.endAt ? new Date(input.endAt) : null, venueName: input.venueName, city: input.city, region: input.region ?? null, country: input.country, address: input.address ?? null, mapUrl: input.mapUrl ?? null, featured: input.featured, publishedAt: input.status === 'PUBLISHED' ? (before.publishedAt ?? new Date()) : input.status ? null : undefined } });
+      await rememberPublishedSlug(tx, 'event', id, before, input.slug);
       await Promise.all(input.translations.map((translation) => tx.eventTranslation.upsert({ where: { eventId_locale: { eventId: id, locale: translation.locale } }, update: { title: translation.title, eyebrow: translation.eyebrow ?? null, shortDescription: translation.shortDescription ?? null, description: translation.description ?? null }, create: { eventId: id, locale: translation.locale, title: translation.title, eyebrow: translation.eyebrow ?? null, shortDescription: translation.shortDescription ?? null, description: translation.description ?? null } })));
       return tx.event.findUnique({ where: { id }, include: { translations: true, ticketTiers: true, vipPackages: true, vipBooths: true, eventArtists: true, heroMedia: true, posterMedia: true } });
     });
@@ -423,6 +452,7 @@ async function updateAdminResource(resource: string, id: string, payload: unknow
     if (!before) throw notFound();
     const row = await db.$transaction(async (tx) => {
       await tx.artist.update({ where: { id }, data: { slug: input.slug, country: input.country, yearLabel: input.yearLabel ?? null, status: input.status, featured: input.featured, portraitMediaId: input.portraitMediaId ?? null, heroMediaId: input.heroMediaId ?? null } });
+      await rememberPublishedSlug(tx, 'artist', id, before, input.slug);
       await Promise.all(input.translations.map((translation) => tx.artistTranslation.upsert({ where: { artistId_locale: { artistId: id, locale: translation.locale } }, update: { name: translation.name, bio: translation.bio ?? null, genresJson: jsonInput(translation.genres ?? []) }, create: { artistId: id, locale: translation.locale, name: translation.name, bio: translation.bio ?? null, genresJson: jsonInput(translation.genres ?? []) } })));
       return tx.artist.findUnique({ where: { id }, include: { translations: true, portraitMedia: true, heroMedia: true, links: true, media: true, eventArtists: true } });
     });
@@ -437,6 +467,7 @@ async function updateAdminResource(resource: string, id: string, payload: unknow
       const categoryId = input.categoryId ?? (input.categoryKey ? (await tx.productCategory.findUnique({ where: { key: input.categoryKey } }))?.id ?? null : null);
       if (input.categoryKey && !categoryId) throw validationError({ categoryKey: 'Product category not found.' });
       await tx.product.update({ where: { id }, data: { slug: input.slug, categoryId, status: input.status, basePriceMinor: input.basePriceMinor, currency: input.currency, badge: input.badge ?? null, featured: input.featured, stockTracking: input.stockTracking, publishedAt: input.status === 'PUBLISHED' ? (before.publishedAt ?? new Date()) : input.status ? null : undefined } });
+      await rememberPublishedSlug(tx, 'product', id, before, input.slug);
       await Promise.all(input.translations.map((translation) => tx.productTranslation.upsert({ where: { productId_locale: { productId: id, locale: translation.locale } }, update: { title: translation.title, excerpt: translation.excerpt ?? null, description: translation.description ?? null }, create: { productId: id, locale: translation.locale, title: translation.title, excerpt: translation.excerpt ?? null, description: translation.description ?? null } })));
       return tx.product.findUnique({ where: { id }, include: { translations: true, category: true, variants: true, images: { include: { media: true } } } });
     });
@@ -449,10 +480,24 @@ async function updateAdminResource(resource: string, id: string, payload: unknow
     if (!before) throw notFound();
     const row = await db.$transaction(async (tx) => {
       await tx.newsArticle.update({ where: { id }, data: { slug: input.slug, category: input.category, status: input.status, featured: input.featured, heroMediaId: input.heroMediaId ?? null, cardMediaId: input.cardMediaId ?? null, relatedEventId: input.relatedEventId ?? null, publishedAt: input.status === 'PUBLISHED' ? (before.publishedAt ?? new Date()) : input.status ? null : undefined } });
+      await rememberPublishedSlug(tx, 'news', id, before, input.slug);
       await Promise.all(input.translations.map((translation) => tx.newsTranslation.upsert({ where: { articleId_locale: { articleId: id, locale: translation.locale } }, update: { title: translation.title, excerpt: translation.excerpt ?? null, bodyBlocksJson: jsonInput(translation.bodyBlocks), quickSummaryJson: jsonInput(translation.quickSummary ?? []), readingTimeOverride: translation.readingTimeOverride ?? null }, create: { articleId: id, locale: translation.locale, title: translation.title, excerpt: translation.excerpt ?? null, bodyBlocksJson: jsonInput(translation.bodyBlocks), quickSummaryJson: jsonInput(translation.quickSummary ?? []), readingTimeOverride: translation.readingTimeOverride ?? null } })));
       return tx.newsArticle.findUnique({ where: { id }, include: { translations: true, heroMedia: true, cardMedia: true, tags: { include: { tag: true } } } });
     });
     await writeAuditLog({ actorUserId: userId, action: 'update', entityType: 'news', entityId: id, before, after: row, requestId });
+    return row;
+  }
+  if (resource === 'gallery') {
+    const input = parse(galleryMutationSchema, payload);
+    const before = await db.galleryAlbum.findUnique({ where: { id }, include: { translations: true } });
+    if (!before) throw notFound();
+    const row = await db.$transaction(async (tx) => {
+      await tx.galleryAlbum.update({ where: { id }, data: { slug: input.slug, status: input.status, venue: input.venue ?? null, eventId: input.eventId ?? null, featured: input.featured, coverMediaId: input.coverMediaId ?? null, heroMediaId: input.heroMediaId ?? null, publishedAt: input.status === 'PUBLISHED' ? (before.publishedAt ?? new Date()) : input.status ? null : undefined } });
+      await rememberPublishedSlug(tx, 'gallery', id, before, input.slug);
+      await tx.galleryTranslation.upsert({ where: { albumId_locale: { albumId: id, locale: 'en' } }, update: { title: input.title, subtitle: input.subtitle ?? null, description: input.description ?? null }, create: { albumId: id, locale: 'en', title: input.title, subtitle: input.subtitle ?? null, description: input.description ?? null } });
+      return tx.galleryAlbum.findUnique({ where: { id }, include: { translations: true, media: { include: { media: true } }, coverMedia: true, heroMedia: true } });
+    });
+    await writeAuditLog({ actorUserId: userId, action: 'update', entityType: 'gallery', entityId: id, before, after: row, requestId });
     return row;
   }
   if (resource === 'partners') {
@@ -465,6 +510,20 @@ async function updateAdminResource(resource: string, id: string, payload: unknow
       return tx.partner.findUnique({ where: { id }, include: { translations: true, logoMedia: true, imageMedia: true } });
     });
     await writeAuditLog({ actorUserId: userId, action: 'update', entityType: 'partner', entityId: id, before, after: row, requestId });
+    return row;
+  }
+  if (resource === 'faq') {
+    const input = parse(faqMutationSchema, payload);
+    const before = await db.faqItem.findUnique({ where: { id }, include: { translations: true } });
+    if (!before) throw notFound();
+    const answersChanged = input.translations.some((translation) => before.translations.find((item) => item.locale === translation.locale)?.answer !== translation.answer);
+    const row = await db.$transaction(async (tx) => {
+      const category = await tx.faqCategory.upsert({ where: { key: input.category }, update: {}, create: { key: input.category, sortOrder: input.sortOrder } });
+      await tx.faqItem.update({ where: { id }, data: { categoryId: category.id, published: input.published, answersConfirmed: answersChanged ? false : input.answersConfirmed, sortOrder: input.sortOrder } });
+      await Promise.all(input.translations.map((translation) => tx.faqTranslation.upsert({ where: { faqId_locale: { faqId: id, locale: translation.locale } }, update: { question: translation.question, answer: translation.answer, keywordsJson: jsonInput(translation.keywords) }, create: { faqId: id, locale: translation.locale, question: translation.question, answer: translation.answer, keywordsJson: jsonInput(translation.keywords) } })));
+      return tx.faqItem.findUnique({ where: { id }, include: { category: true, translations: true } });
+    });
+    await writeAuditLog({ actorUserId: userId, action: 'update', entityType: 'faq', entityId: id, before, after: row, requestId });
     return row;
   }
   throw notFound('This admin resource cannot be updated through the API yet.');

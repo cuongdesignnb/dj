@@ -15,6 +15,7 @@
     "db:seed:preview": "tsx prisma/seed.ts --preview",
     "db:seed:verify": "tsx prisma/seed-verify.ts",
     "seo:audit": "node scripts/seo-audit.mjs",
+    "seo:route-matrix": "node scripts/seo-route-matrix.mjs",
     "seo:sitemap:check": "node scripts/seo-sitemap-check.mjs",
     "seo:redirects:check": "node scripts/seo-redirects-check.mjs",
     "seo:runtime-audit": "node scripts/runtime-audit.mjs",

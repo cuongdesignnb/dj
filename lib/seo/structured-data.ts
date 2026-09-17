@@ -75,8 +75,8 @@ export function productSchema(input: { title: string; description?: string | nul
   return value;
 }
 
-export function faqSchema(items: Array<{ question: string; answer: string; published?: boolean }>) {
-  const eligible = items.filter((item) => item.published !== false && item.question.trim() && item.answer.trim());
+export function faqSchema(items: Array<{ question: string; answer: string; published?: boolean; answersConfirmed?: boolean }>) {
+  const eligible = items.filter((item) => item.published !== false && item.answersConfirmed === true && item.question.trim() && item.answer.trim());
   if (!eligible.length) return null;
   return { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: eligible.map((item) => ({ '@type': 'Question', name: item.question, acceptedAnswer: { '@type': 'Answer', text: item.answer } })) } satisfies JsonLd;
 }

@@ -84,6 +84,10 @@ async function checkPage(path, expectedPrivate) {
   assert(meta(html, 'name', 'description'), `${path}: missing meta description`);
   assert(meta(html, 'property', 'og:title'), `${path}: missing og:title`);
   assert(meta(html, 'property', 'og:description'), `${path}: missing og:description`);
+  const ogImage = meta(html, 'property', 'og:image');
+  assert(ogImage && /^https?:\/\//i.test(ogImage), `${path}: missing absolute og:image`);
+  const twitterImage = meta(html, 'name', 'twitter:image');
+  assert(twitterImage && /^https?:\/\//i.test(twitterImage), `${path}: missing absolute twitter:image`);
   const h1Tags = visibleHtml(html).match(/<h1\b[^>]*>/gi) || [];
   const uniqueH1Tags = new Set(h1Tags);
   assert(h1Tags.length > 0 && uniqueH1Tags.size === 1, `${path}: expected exactly one unique h1, found ${uniqueH1Tags.size}`);

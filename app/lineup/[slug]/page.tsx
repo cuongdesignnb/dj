@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -14,6 +14,7 @@ import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
 import { jsonLd } from '@/lib/seo/structured-data';
 import { isThinProfile } from '@/lib/seo/indexability';
 import LineupError from '../error';
+import { getPublicSlugRedirect } from '@/server/services/slug-history';
 
 /**
  * The lineup is a known, finite set, so only the slugs generateStaticParams
@@ -26,19 +27,6 @@ import LineupError from '../error';
  */
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
-
-/**
- * One dynamic route serves every artist — there are no per-artist page files.
- */
-export async function generateStaticParams() {
-  const selection = getArtistRepository();
-  if (!selection.ok) return [];
-
-  const result = await selection.repository.getArtists();
-  if (!result.ok) return [];
-
-  return result.data.map((artist) => ({ slug: artist.slug }));
-}
 
 async function loadArtist(
   slug: string,
@@ -85,6 +73,8 @@ export default async function ArtistPage({
     return <LineupError errorMessage={result.error.message} />;
   }
   if (!result.artist) {
+    const redirectSlug = await getPublicSlugRedirect('artist', slug);
+    if (redirectSlug) permanentRedirect(`/lineup/${encodeURIComponent(redirectSlug)}`);
     notFound();
   }
 

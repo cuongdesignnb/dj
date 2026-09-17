@@ -10,13 +10,15 @@ import { parseNewsFilter } from '@/lib/news/helpers';
 import type { NewsPageData } from '@/lib/news/types';
 import NewsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getContentSeo } from '@/lib/seo/content';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
   const filter = Array.isArray(params.category) ? params.category[0] : params.category;
   const result = await loadNews();
   const hasPublished = 'data' in result && result.data.articles.some((article) => article.status === 'published' && article.indexable !== false);
-  return buildMetadata({ title: 'News & Stories | Connection Rave', description: 'Read published Connection Rave announcements, event updates, artist stories and community features.', path: '/news', indexable: !filter && hasPublished });
+  const seo = await getContentSeo('news', { title: 'News & Stories | Connection Rave', description: 'Read published Connection Rave announcements, event updates, artist stories and community features.' });
+  return buildMetadata({ ...seo, path: '/news', indexable: !filter && hasPublished && seo.indexable });
 }
 
 async function loadNews(): Promise<

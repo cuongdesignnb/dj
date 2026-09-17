@@ -2,9 +2,10 @@
 
 import type { ReactElement } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
-import { navItems, siteNav } from '@/lib/data';
+import { footerLinks, siteNav } from '@/lib/data';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { EventsFooterData } from '@/lib/events/listing-types';
 
@@ -124,10 +125,13 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
                         &times;
                       </span>
                     )}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={partner.logo.src}
                       alt={partner.logo.alt || partner.name}
+                      width={160}
+                      height={32}
+                      sizes="160px"
+                      unoptimized={!partner.logo.src.startsWith('/')}
                       className="h-8 w-auto object-contain opacity-80 transition-opacity duration-300 hover:opacity-100"
                     />
                   </div>
@@ -141,7 +145,7 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
               Quick Links
             </h2>
             <ul className="flex flex-col gap-2.5">
-              {navItems.map((link) => (
+              {footerLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}

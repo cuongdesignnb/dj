@@ -2,15 +2,17 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { stableUnit } from '@/lib/stable-visual';
 
 interface DancingPersonProps {
   delay: number;
   x: number;
   scale?: number;
   flip?: boolean;
+  variant: number;
 }
 
-function DancingSilhouette({ delay, x, scale = 1, flip = false }: DancingPersonProps) {
+function DancingSilhouette({ delay, x, scale = 1, flip = false, variant }: DancingPersonProps) {
   // Different dance moves as keyframe variations
   const danceMoves = [
     { rotate: [-5, 5, -5], y: [0, -8, 0] },
@@ -20,7 +22,7 @@ function DancingSilhouette({ delay, x, scale = 1, flip = false }: DancingPersonP
     { x: [-5, 5, -5], y: [0, -6, 0] },
   ];
 
-  const moveIndex = Math.floor(Math.random() * danceMoves.length);
+  const moveIndex = Math.floor(stableUnit(variant) * danceMoves.length);
   const selectedMove = danceMoves[moveIndex];
 
   return (
@@ -29,7 +31,7 @@ function DancingSilhouette({ delay, x, scale = 1, flip = false }: DancingPersonP
       style={{ left: `${x}%`, transform: `scale(${scale}) ${flip ? 'scaleX(-1)' : ''}` }}
       animate={selectedMove}
       transition={{
-        duration: 0.4 + Math.random() * 0.3,
+        duration: 0.4 + stableUnit(variant + 100) * 0.3,
         repeat: Infinity,
         ease: 'easeInOut',
         delay,
@@ -124,9 +126,10 @@ interface HandsUpSilhouetteProps {
   delay: number;
   x: number;
   scale?: number;
+  variant: number;
 }
 
-function HandsUpSilhouette({ delay, x, scale = 1 }: HandsUpSilhouetteProps) {
+function HandsUpSilhouette({ delay, x, scale = 1, variant }: HandsUpSilhouetteProps) {
   return (
     <motion.div
       className="absolute bottom-0 pointer-events-none"
@@ -136,7 +139,7 @@ function HandsUpSilhouette({ delay, x, scale = 1 }: HandsUpSilhouetteProps) {
         rotate: [-3, 3, -3],
       }}
       transition={{
-        duration: 0.6 + Math.random() * 0.4,
+        duration: 0.6 + stableUnit(variant + 200) * 0.4,
         repeat: Infinity,
         ease: 'easeInOut',
         delay,
@@ -186,11 +189,12 @@ export default function DancingCrowd({ count = 25 }: { count?: number }) {
   const people = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      x: (i / count) * 100 + Math.random() * 5,
-      delay: Math.random() * 2,
-      scale: 0.5 + Math.random() * 0.6,
-      flip: Math.random() > 0.5,
-      type: Math.random() > 0.6 ? 'handsUp' : 'dancing',
+      x: (i / count) * 100 + stableUnit(i + 1) * 5,
+      delay: stableUnit(i + 21) * 2,
+      scale: 0.5 + stableUnit(i + 41) * 0.6,
+      flip: stableUnit(i + 61) > 0.5,
+      type: stableUnit(i + 81) > 0.6 ? 'handsUp' : 'dancing',
+      variant: i + 1,
     }));
   }, [count]);
 
@@ -203,6 +207,7 @@ export default function DancingCrowd({ count = 25 }: { count?: number }) {
             x={person.x}
             delay={person.delay}
             scale={person.scale}
+            variant={person.variant}
           />
         ) : (
           <DancingSilhouette
@@ -211,6 +216,7 @@ export default function DancingCrowd({ count = 25 }: { count?: number }) {
             delay={person.delay}
             scale={person.scale}
             flip={person.flip}
+            variant={person.variant}
           />
         )
       )}

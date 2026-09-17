@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -24,6 +24,7 @@ import NewsError from '../error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
 import { articleSchema, jsonLd } from '@/lib/seo/structured-data';
+import { getPublicSlugRedirect } from '@/server/services/slug-history';
 
 /**
  * Only the slugs generateStaticParams returns are routable; anything else is a
@@ -34,16 +35,6 @@ import { articleSchema, jsonLd } from '@/lib/seo/structured-data';
  */
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
-
-export async function generateStaticParams() {
-  const selection = getNewsRepository();
-  if (!selection.ok) return [];
-
-  const result = await selection.repository.getArticles();
-  if (!result.ok) return [];
-
-  return result.data.map((article) => ({ slug: article.slug }));
-}
 
 async function loadArticle(
   slug: string,
@@ -90,6 +81,8 @@ export default async function ArticlePage({
     return <NewsError errorMessage={result.error.message} />;
   }
   if (!result.article) {
+    const redirectSlug = await getPublicSlugRedirect('news', slug);
+    if (redirectSlug) permanentRedirect(`/news/${encodeURIComponent(redirectSlug)}`);
     notFound();
   }
 

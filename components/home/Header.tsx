@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -91,10 +92,13 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                 className="absolute inset-0 bg-rave-red/20 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{ margin: '-10px' }}
               />
-              <img
+              <Image
                 src="/assets/logo-connection.png"
                 alt="Connection Sound Meets Soul"
+                width={220}
+                height={58}
                 className="h-[52px] sm:h-[58px] w-auto object-contain relative z-10"
+                priority
               />
             </motion.div>
           </Link>

@@ -198,6 +198,20 @@ export default function EventFooter({ event, routes }: Props) {
                   </li>
                 );
               })}
+              <li>
+                <Link
+                  href="/partners"
+                  className="text-sm text-rave-muted hover:text-white transition-colors inline-flex"
+                >
+                  <motion.span
+                    className="inline-block"
+                    whileHover={reduced ? undefined : { x: 4 }}
+                    transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                  >
+                    Partners
+                  </motion.span>
+                </Link>
+              </li>
             </ul>
           </motion.div>
 

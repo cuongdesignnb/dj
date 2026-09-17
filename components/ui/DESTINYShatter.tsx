@@ -389,7 +389,9 @@ export default function DESTINYShatter({
     dustCount,
     pauseOffscreen,
   });
-  settingsRef.current = { cycleMs, beamWidth, fractureRadius, dustCount, pauseOffscreen };
+  useEffect(() => {
+    settingsRef.current = { cycleMs, beamWidth, fractureRadius, dustCount, pauseOffscreen };
+  }, [beamWidth, cycleMs, dustCount, fractureRadius, pauseOffscreen]);
 
   useEffect(() => {
     const container = containerRef.current;

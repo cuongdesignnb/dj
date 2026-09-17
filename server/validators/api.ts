@@ -97,6 +97,19 @@ export const articleMutationSchema = z.object({
   translations: z.array(z.object({ locale: z.enum(['en', 'vi']), title: z.string().trim().min(1).max(240), excerpt: z.string().trim().max(1000).nullable().optional(), bodyBlocks: z.array(z.unknown()).max(200), quickSummary: z.array(z.string().max(500)).max(20).optional(), readingTimeOverride: z.number().int().positive().nullable().optional() }).strict()).min(1).max(2),
 }).strict();
 
+export const galleryMutationSchema = z.object({
+  slug: z.string().trim().min(2).max(160),
+  status: z.enum(['DRAFT', 'PREVIEW', 'PUBLISHED', 'ARCHIVED']).optional(),
+  title: z.string().trim().min(1).max(200),
+  subtitle: z.string().trim().max(500).nullable().optional(),
+  description: z.string().trim().max(10000).nullable().optional(),
+  venue: z.string().trim().max(200).nullable().optional(),
+  eventId: uuid.nullable().optional(),
+  featured: z.boolean().optional(),
+  coverMediaId: uuid.nullable().optional(),
+  heroMediaId: uuid.nullable().optional(),
+}).strict();
+
 export const partnerMutationSchema = z.object({
   slug: z.string().trim().min(2).max(120),
   type: z.string().trim().min(1).max(80),
@@ -111,6 +124,19 @@ export const partnerMutationSchema = z.object({
     name: z.string().trim().min(1).max(160),
     tagline: z.string().trim().max(200).nullable().optional(),
     description: z.string().trim().max(10000).nullable().optional(),
+  }).strict()).min(1).max(2),
+}).strict();
+
+export const faqMutationSchema = z.object({
+  category: z.string().trim().min(1).max(80),
+  published: z.boolean().default(false),
+  answersConfirmed: z.boolean().default(false),
+  sortOrder: z.number().int().nonnegative().default(0),
+  translations: z.array(z.object({
+    locale: z.enum(['en', 'vi']),
+    question: z.string().trim().min(1).max(160),
+    answer: z.string().trim().min(1).max(10000),
+    keywords: z.array(z.string().trim().max(80)).max(20).default([]),
   }).strict()).min(1).max(2),
 }).strict();
 

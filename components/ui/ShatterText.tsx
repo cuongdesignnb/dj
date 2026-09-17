@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { stableSigned, stableUnit } from '@/lib/stable-visual';
 
 interface Fragment {
   id: number;
@@ -22,18 +23,19 @@ function generateFragments(charCount: number): Fragment[] {
 
   for (let i = 0; i < charCount; i++) {
     // Create multiple fragments per character
-    const fragCount = 3 + Math.floor(Math.random() * 3);
+    const fragCount = 3 + Math.floor(stableUnit((i + 1) * 17) * 3);
     for (let j = 0; j < fragCount; j++) {
+      const seed = (i + 1) * 97 + (j + 1) * 13;
       fragments.push({
         id: id++,
-        x: (i / charCount) * 100 + Math.random() * 10 - 5,
-        y: Math.random() * 100,
-        rotation: (Math.random() - 0.5) * 60,
-        scale: 0.3 + Math.random() * 0.7,
+        x: (i / charCount) * 100 + stableSigned(seed, 5),
+        y: stableUnit(seed + 1) * 100,
+        rotation: stableSigned(seed + 2, 30),
+        scale: 0.3 + stableUnit(seed + 3) * 0.7,
         opacity: 1,
         delay: i * 0.05 + j * 0.02,
-        skewX: (Math.random() - 0.5) * 20,
-        skewY: (Math.random() - 0.5) * 20,
+        skewX: stableSigned(seed + 4, 10),
+        skewY: stableSigned(seed + 5, 10),
       });
     }
   }
@@ -69,7 +71,7 @@ export default function ShatterText({
   }, []);
 
   // Auto shatter effect
-  useState(() => {
+  useEffect(() => {
     if (autoShatter && !shatterOnHover) {
       intervalRef.current = setInterval(triggerShatter, shatterInterval);
       return () => {
@@ -141,9 +143,9 @@ export default function ShatterText({
                 animate={{
                   opacity: [1, 1, 0],
                   x: frag.x * 5,
-                  y: frag.y * 3 + Math.random() * 100,
-                  rotate: frag.rotation + (Math.random() - 0.5) * 180,
-                  scale: frag.scale * (0.5 + Math.random() * 0.5),
+                  y: frag.y * 3 + stableUnit(frag.id + 500) * 100,
+                  rotate: frag.rotation + stableSigned(frag.id + 600, 90),
+                  scale: frag.scale * (0.5 + stableUnit(frag.id + 700) * 0.5),
                   skewX: frag.skewX,
                   skewY: frag.skewY,
                 }}
@@ -208,9 +210,9 @@ export function SimpleShatterText({
                 top: `${Math.floor(i / 4) * 33}%`,
               }}
               animate={{
-                x: (Math.random() - 0.5) * 200,
-                y: Math.random() * 300 + 50,
-                rotate: (Math.random() - 0.5) * 720,
+                x: stableSigned(i + 800, 100),
+                y: stableUnit(i + 900) * 300 + 50,
+                rotate: stableSigned(i + 1000, 360),
                 opacity: [1, 1, 0],
                 scale: [1, 0.5, 0],
               }}
@@ -340,9 +342,9 @@ export function GlitchShatterText({
               initial={{ opacity: 1, y: 0, rotate: 0 }}
               animate={{
                 opacity: [1, 1, 0],
-                y: Math.random() * 400 + 200,
-                x: (Math.random() - 0.5) * 200,
-                rotate: (Math.random() - 0.5) * 360,
+                y: stableUnit(i + 1100) * 400 + 200,
+                x: stableSigned(i + 1200, 100),
+                rotate: stableSigned(i + 1300, 180),
               }}
               transition={{ duration: 1.5, delay: i * 0.05 }}
             >

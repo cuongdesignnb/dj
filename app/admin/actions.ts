@@ -274,6 +274,21 @@ function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Reco
     };
   }
 
+  if (resource === 'gallery') {
+    return {
+      slug: textValue(input.slug),
+      status: enumValue(input.status),
+      title: textValue(input.title),
+      subtitle: nullableText(input.subtitle),
+      description: nullableText(input.description),
+      venue: nullableText(input.venue),
+      eventId: nullableText(input.eventId),
+      featured: Boolean(input.featured),
+      coverMediaId: mediaId(input.cover),
+      heroMediaId: mediaId(input.hero),
+    };
+  }
+
   if (resource === 'partners') {
     return {
       slug: textValue(input.slug),
@@ -285,6 +300,22 @@ function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Reco
       featured: Boolean(input.featured),
       sortOrder: typeof input.sortOrder === 'number' ? input.sortOrder : 0,
       translations: [{ locale: 'en', name: textValue(input.name), tagline: nullableText(input.tagline), description: nullableText(input.description) }],
+    };
+  }
+
+  if (resource === 'faq') {
+    const question = isRecord(input.question) ? input.question : {};
+    const answer = isRecord(input.answer) ? input.answer : {};
+    const keywords = Array.isArray(input.keywords) ? input.keywords.map(String) : [];
+    const translations = (['en', 'vi'] as const)
+      .filter((locale) => localizedValue(question, locale) && localizedValue(answer, locale))
+      .map((locale) => ({ locale, question: localizedValue(question, locale), answer: localizedValue(answer, locale), keywords }));
+    return {
+      category: textValue(input.category),
+      published: Boolean(input.published),
+      answersConfirmed: Boolean(input.answersConfirmed),
+      sortOrder: typeof input.sortOrder === 'number' ? input.sortOrder : 0,
+      translations: translations.length ? translations : [{ locale: 'en', question: localizedValue(question, 'en'), answer: localizedValue(answer, 'en'), keywords }],
     };
   }
 

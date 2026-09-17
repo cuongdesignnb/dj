@@ -14,6 +14,7 @@ export interface AdminFaq {
   answer: LocalizedString;
   keywords: string[];
   published: boolean;
+  answersConfirmed: boolean;
   sortOrder: number;
   updatedAt: string;
   [key: string]: unknown;
@@ -53,7 +54,7 @@ export const faqDefinition: ResourceDefinition<AdminFaq> = {
   actions: ['edit', 'duplicate', 'delete'],
   hasDetail: false,
   empty: { title: 'No questions in this category.', description: 'Add the first question.' },
-  newRecord: () => ({ category: 'tickets', question: { en: '' }, answer: { en: '' }, keywords: [], published: false, sortOrder: 10 }),
+  newRecord: () => ({ category: 'tickets', question: { en: '' }, answer: { en: '' }, keywords: [], published: false, answersConfirmed: false, sortOrder: 10 }),
   form: {
     titleKey: 'question',
     seo: false,
@@ -66,6 +67,7 @@ export const faqDefinition: ResourceDefinition<AdminFaq> = {
         f.locArea('answer', 'Answer', { required: true, help: 'Plain text. State only confirmed information.' }),
         f.tags('keywords', 'Search keywords'),
         f.toggle('published', 'Published'),
+        f.toggle('answersConfirmed', 'Answers confirmed by organiser', { help: 'Only enable this when every visible answer is final and eligible for FAQ rich results.' }),
       ]),
     ],
   },

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { stableUnit } from '@/lib/stable-visual';
 
 interface AudioBarsProps {
   count?: number;
@@ -24,14 +25,14 @@ export default function AudioBars({
   maxHeight = 1,
   className = '',
 }: AudioBarsProps) {
-  // Generate random heights for each bar
+  // Keep the animation varied without making the server/client render diverge.
   const bars = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      minH: minHeight + Math.random() * 0.3,
-      maxH: Math.min(maxHeight, minHeight + 0.5 + Math.random() * 0.5),
+      minH: minHeight + stableUnit(i + 1) * 0.3,
+      maxH: Math.min(maxHeight, minHeight + 0.5 + stableUnit(i + 101) * 0.5),
       delay: i * 0.1,
-      duration: 0.4 + Math.random() * 0.4,
+      duration: 0.4 + stableUnit(i + 201) * 0.4,
     }));
   }, [count, minHeight, maxHeight]);
 
@@ -78,10 +79,10 @@ export function LargeAudioBars({ className = '' }: LargeAudioBarsProps) {
           className="w-1 bg-gradient-to-t from-rave-red to-rave-magenta rounded-full"
           style={{ height: '40px' }}
           animate={{
-            height: ['20px', `${30 + Math.random() * 20}px`, '20px'],
+            height: ['20px', `${30 + stableUnit(i + 301) * 20}px`, '20px'],
           }}
           transition={{
-            duration: 0.3 + Math.random() * 0.4,
+            duration: 0.3 + stableUnit(i + 401) * 0.4,
             repeat: Infinity,
             ease: 'easeInOut',
             delay: i * 0.05,

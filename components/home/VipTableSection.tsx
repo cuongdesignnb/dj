@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import Image from 'next/image';
 import { Crown, Wine, Users } from 'lucide-react';
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
@@ -100,9 +101,9 @@ export default function VipTableSection() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
                 >
-                  <img src="/assets/logo-mcq.png" alt="MCQ" className="h-8 w-auto object-contain" />
+                  <Image src="/assets/logo-mcq.png" alt="MCQ" width={116} height={32} className="h-8 w-auto object-contain" />
                   <div className="w-px h-6 bg-white/15" />
-                  <img src="/assets/logo-connection.png" alt="Connection" className="h-[36px] w-auto object-contain" />
+                  <Image src="/assets/logo-connection.png" alt="Connection" width={150} height={36} className="h-[36px] w-auto object-contain" />
                 </motion.div>
 
                 <motion.span

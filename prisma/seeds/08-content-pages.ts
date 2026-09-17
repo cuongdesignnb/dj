@@ -22,6 +22,55 @@ const PAGES = [
     seoDescription: 'Contact Connection Rave about events, partnerships, VIP table requests and published updates.',
     content: { sections: ['hero', 'contactForm', 'cta'] },
   },
+  {
+    slug: 'partners',
+    title: 'Partners & Sponsors',
+    seoTitle: 'Partners & Sponsors | Connection Rave',
+    seoDescription: 'Explore partnership and sponsorship opportunities with Connection Rave.',
+    content: { sections: ['hero', 'partners', 'benefits', 'cta'] },
+  },
+  {
+    slug: 'events',
+    title: 'Upcoming Events',
+    seoTitle: 'Upcoming Events | Connection Rave',
+    seoDescription: 'Discover published Connection Rave events and experiences.',
+    content: { sections: ['hero', 'events', 'benefits', 'cta'] },
+  },
+  {
+    slug: 'lineup',
+    title: 'Artist Lineup',
+    seoTitle: 'Artist Lineup | Connection Rave',
+    seoDescription: 'Meet the published artists connected to Connection Rave events.',
+    content: { sections: ['hero', 'artists', 'story', 'cta'] },
+  },
+  {
+    slug: 'faq',
+    title: 'FAQ',
+    seoTitle: 'FAQ | Connection Rave',
+    seoDescription: 'Find published answers about Connection Rave tickets, entry, VIP table requests, venue information and event updates.',
+    content: { sections: ['hero', 'questions', 'cta'] },
+  },
+  {
+    slug: 'news',
+    title: 'News & Stories',
+    seoTitle: 'News & Stories | Connection Rave',
+    seoDescription: 'Read published Connection Rave announcements, event updates, artist stories and community features.',
+    content: { sections: ['hero', 'stories', 'cta'] },
+  },
+  {
+    slug: 'gallery',
+    title: 'Gallery',
+    seoTitle: 'Gallery | Connection Rave',
+    seoDescription: 'Explore published Connection Rave visual collections, artist moments, venue visuals and event atmosphere.',
+    content: { sections: ['hero', 'collections', 'cta'] },
+  },
+  {
+    slug: 'shop',
+    title: 'Merchandise',
+    seoTitle: 'Merchandise | Connection Rave',
+    seoDescription: 'Explore published Connection Rave merchandise, apparel, accessories, posters and collectibles.',
+    content: { sections: ['hero', 'catalog', 'benefits', 'cta'] },
+  },
 ] as const;
 
 export async function seedContentPages({ db }: SeedContext) {

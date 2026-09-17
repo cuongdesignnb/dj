@@ -9,11 +9,13 @@ import { getFaqRepository } from '@/lib/support/faq-repository';
 import FaqError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { faqSchema, jsonLd } from '@/lib/seo/structured-data';
+import { getContentSeo } from '@/lib/seo/content';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
   const query = Array.isArray(params.q) ? params.q[0] : params.q;
-  return buildMetadata({ title: 'FAQ | Connection Rave', description: 'Find published answers about Connection Rave tickets, entry, VIP table requests, venue information and event updates.', path: '/faq', indexable: !query?.trim() });
+  const seo = await getContentSeo('faq', { title: 'FAQ | Connection Rave', description: 'Find published answers about Connection Rave tickets, entry, VIP table requests, venue information and event updates.' });
+  return buildMetadata({ ...seo, path: '/faq', indexable: !query?.trim() && seo.indexable });
 }
 
 /** Server Component. Search, categories and the accordion are the client island. */

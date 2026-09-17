@@ -14,13 +14,21 @@ export async function getSitemapEntries(): Promise<MetadataRoute.Sitemap> {
     db.newsArticle.findMany({ where: { status: 'PUBLISHED', deletedAt: null, indexable: true, publishedAt: { not: null } }, select: { slug: true, updatedAt: true, publishedAt: true } }),
     db.galleryAlbum.findMany({ where: { status: 'PUBLISHED', deletedAt: null, indexable: true, publishedAt: { not: null } }, select: { slug: true, updatedAt: true, publishedAt: true } }),
     db.product.findMany({ where: { status: 'PUBLISHED', deletedAt: null, indexable: true, publishedAt: { not: null } }, select: { slug: true, updatedAt: true, publishedAt: true } }),
-    db.contentPage.findMany({ where: { status: 'PUBLISHED', indexable: true, slug: { in: ['home', 'about', 'contact'] } }, select: { slug: true, updatedAt: true, publishedAt: true } }),
+    db.contentPage.findMany({ where: { status: 'PUBLISHED', indexable: true }, select: { slug: true, updatedAt: true, publishedAt: true } }),
   ]);
 
-  const staticPaths = ['/partners', '/events', '/tickets', '/tables', '/lineup', '/faq'];
+  const contentPaths = new Set(pages.map((page) => `/${page.slug}`));
+  const staticPaths = [
+    ...['/partners', '/events', '/lineup', '/faq'].filter((path) => contentPaths.has(path)),
+    ...(events.length ? ['/tickets', '/tables'] : []),
+    ...(articles.length ? ['/news'] : []),
+    ...(albums.length ? ['/gallery'] : []),
+    ...(products.length ? ['/shop'] : []),
+  ];
+  const staticPageEntries = pages.filter((page) => page.slug === 'home' || staticPaths.includes(`/${page.slug}`));
   const entries: MetadataRoute.Sitemap = [
-    { url: canonicalUrl('/'), lastModified: pages.find((page) => page.slug === 'home')?.updatedAt ?? new Date(0), changeFrequency: 'weekly', priority: 1 },
-    ...pages.filter((page) => page.slug !== 'home').map((page) => ({ url: canonicalUrl(`/${page.slug}`), lastModified: page.updatedAt, changeFrequency: 'monthly' as const, priority: 0.7 })),
+    ...staticPageEntries.filter((page) => page.slug === 'home').map((page) => ({ url: canonicalUrl('/'), lastModified: page.updatedAt, changeFrequency: 'weekly' as const, priority: 1 })),
+    ...staticPageEntries.filter((page) => page.slug !== 'home').map((page) => ({ url: canonicalUrl(`/${page.slug}`), lastModified: page.updatedAt, changeFrequency: 'monthly' as const, priority: 0.7 })),
     ...staticPaths.map((path) => ({ url: canonicalUrl(path), changeFrequency: 'weekly' as const, priority: 0.6 })),
     ...events.map((row) => ({ url: canonicalUrl(`/events/${row.slug}`), lastModified: row.updatedAt, changeFrequency: 'weekly' as const, priority: 0.8 })),
     ...artists.map((row) => ({ url: canonicalUrl(`/lineup/${row.slug}`), lastModified: row.updatedAt, changeFrequency: 'monthly' as const, priority: 0.5 })),

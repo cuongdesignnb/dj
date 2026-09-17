@@ -13,11 +13,13 @@ import { parseCountryFilter } from '@/lib/artists/helpers';
 import type { LineupPageData } from '@/lib/artists/types';
 import LineupError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getContentSeo } from '@/lib/seo/content';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const params = await searchParams;
   const hasFilter = params.country !== undefined;
-  return buildMetadata({ title: 'Artist Lineup | Connection Rave', description: 'Meet the published artists connected to Connection Rave events.', path: '/lineup', indexable: !hasFilter });
+  const seo = await getContentSeo('lineup', { title: 'Artist Lineup | Connection Rave', description: 'Meet the published artists connected to Connection Rave events.' });
+  return buildMetadata({ ...seo, path: '/lineup', indexable: !hasFilter && seo.indexable });
 }
 
 async function loadLineup(): Promise<

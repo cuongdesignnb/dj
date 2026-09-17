@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import Header from '@/components/home/Header';
 import Breadcrumb from '@/components/event/Breadcrumb';
@@ -17,6 +17,7 @@ import { buildMetadata } from '@/lib/seo/metadata';
 import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
 import { eventSchema, jsonLd } from '@/lib/seo/structured-data';
 import type { EventPageData, FrontendRoutes } from '@/lib/events/types';
+import { getPublicSlugRedirect } from '@/server/services/slug-history';
 
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
@@ -39,10 +40,6 @@ async function loadEvent(slug: string): Promise<EventPageData | null> {
   return result.data;
 }
 
-export async function generateStaticParams() {
-  return [{ slug: 'destiny' }];
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const data = await loadEvent(slug);
@@ -53,7 +50,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function EventDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const data = await loadEvent(slug);
-  if (!data) notFound();
+  if (!data) {
+    const redirectSlug = await getPublicSlugRedirect('event', slug);
+    if (redirectSlug) permanentRedirect(`/events/${encodeURIComponent(redirectSlug)}`);
+    notFound();
+  }
   const event = data.event;
   const eventJsonLd = eventSchema({ name: event.name, path: `/events/${event.slug}`, image: event.poster?.src ?? null, description: event.intro, startDate: event.startsAt, endDate: event.endsAt, venue: event.venue });
   const breadcrumbs = breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Events', path: '/events' }, { name: event.title, path: `/events/${event.slug}` }]);

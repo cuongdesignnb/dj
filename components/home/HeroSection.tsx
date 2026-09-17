@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Ticket, Disc3 } from 'lucide-react';
+import Image from 'next/image';
 import NeonButton from './NeonButton';
 import Container from '../ui/Container';
 import { fadeUp, staggerContainer, bounceIn, staggerFast } from '@/lib/animations';
@@ -10,6 +11,7 @@ import GlitchText from '../ui/GlitchText';
 import AudioBars from '../ui/AudioBars';
 import DancingCrowd, { LaserLights, DiscoBall } from '../ui/DancingCrowd';
 import DESTINYShatter from '../ui/DESTINYShatter';
+import { stableUnit, stableSigned } from '@/lib/stable-visual';
 
 interface Particle {
   width: number;
@@ -27,21 +29,21 @@ function FloatingParticles() {
   const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
-    const list: Particle[] = Array.from({ length: 30 }).map(() => ({
-      width: Math.random() * 4 + 1,
-      height: Math.random() * 4 + 1,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
+    const list: Particle[] = Array.from({ length: 30 }).map((_, index) => ({
+      width: stableUnit(index + 1) * 4 + 1,
+      height: stableUnit(index + 31) * 4 + 1,
+      left: `${stableUnit(index + 61) * 100}%`,
+      top: `${stableUnit(index + 91) * 100}%`,
       background: [
         'rgba(255,23,61,0.6)',
         'rgba(139,44,255,0.5)',
         'rgba(46,107,255,0.5)',
         'rgba(255,10,120,0.5)',
-      ][Math.floor(Math.random() * 4)],
-      yMove: -30 - Math.random() * 40,
-      xMove: Math.random() * 20 - 10,
-      duration: 4 + Math.random() * 4,
-      delay: Math.random() * 3,
+      ][Math.floor(stableUnit(index + 121) * 4)],
+      yMove: -30 - stableUnit(index + 151) * 40,
+      xMove: stableSigned(index + 181, 10),
+      duration: 4 + stableUnit(index + 211) * 4,
+      delay: stableUnit(index + 241) * 3,
     }));
 
     const timer = setTimeout(() => {
@@ -403,7 +405,7 @@ export default function HeroSection() {
             >
               <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-semibold">Powered by</span>
               <div className="h-[44px] sm:h-[50px] flex items-center select-none">
-                <img src="/assets/logo-mcq.png" alt="MCQ Supermarket" className="h-full w-auto object-contain" />
+                <Image src="/assets/logo-mcq.png" alt="MCQ Supermarket" width={180} height={50} className="h-full w-auto object-contain" />
               </div>
               <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rave-red font-heading font-extrabold mt-1">POWERED BY MCQ SUPERMARKET</span>
             </motion.div>
@@ -423,7 +425,7 @@ export default function HeroSection() {
             >
               <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-semibold">Presented by</span>
               <div className="h-[44px] sm:h-[50px] flex items-center select-none">
-                <img src="/assets/logo-bihi.png" alt="BIHI Entertainment" className="h-full w-auto object-contain" />
+                <Image src="/assets/logo-bihi.png" alt="BIHI Entertainment" width={180} height={50} className="h-full w-auto object-contain" />
               </div>
               <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rave-red font-heading font-extrabold mt-1">PRESENTED BY BIHI ENTERTAINMENT</span>
             </motion.div>

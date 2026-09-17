@@ -28,6 +28,7 @@ export function normalizeFaqItems(raw: unknown): FaqItem[] {
           : [],
         sortOrder: typeof item.sortOrder === 'number' ? item.sortOrder : index,
         published: true,
+        answersConfirmed: item.answersConfirmed === true,
       },
     ];
   });

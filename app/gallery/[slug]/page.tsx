@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -16,6 +16,7 @@ import GalleryError from '../error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
 import { jsonLd } from '@/lib/seo/structured-data';
+import { getPublicSlugRedirect } from '@/server/services/slug-history';
 
 /**
  * Collections are a known, finite set, so only the slugs generateStaticParams
@@ -25,16 +26,6 @@ import { jsonLd } from '@/lib/seo/structured-data';
  */
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
-
-export async function generateStaticParams() {
-  const selection = getGalleryRepository();
-  if (!selection.ok) return [];
-
-  const result = await selection.repository.getCollections();
-  if (!result.ok) return [];
-
-  return result.data.map((collection) => ({ slug: collection.slug }));
-}
 
 async function loadCollection(
   slug: string,
@@ -90,6 +81,8 @@ export default async function GalleryCollectionPage({
     return <GalleryError errorMessage={result.error.message} />;
   }
   if (!result.collection) {
+    const redirectSlug = await getPublicSlugRedirect('gallery', slug);
+    if (redirectSlug) permanentRedirect(`/gallery/${encodeURIComponent(redirectSlug)}`);
     notFound();
   }
 

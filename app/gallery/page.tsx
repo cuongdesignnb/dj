@@ -11,13 +11,15 @@ import type { GalleryCategoryFilter, GalleryPageData } from '@/lib/gallery/types
 import { availableCategories } from '@/lib/gallery/helpers';
 import GalleryError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { getContentSeo } from '@/lib/seo/content';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
   const filter = Array.isArray(params.category) ? params.category[0] : params.category;
   const result = await loadGallery();
   const hasPublished = 'data' in result && result.data.collections.some((collection) => collection.status === 'published' && collection.indexable !== false);
-  return buildMetadata({ title: 'Gallery | Connection Rave', description: 'Explore published Connection Rave visual collections, artist moments, venue visuals and event atmosphere.', path: '/gallery', indexable: !filter && hasPublished });
+  const seo = await getContentSeo('gallery', { title: 'Gallery | Connection Rave', description: 'Explore published Connection Rave visual collections, artist moments, venue visuals and event atmosphere.' });
+  return buildMetadata({ ...seo, path: '/gallery', indexable: !filter && hasPublished && seo.indexable });
 }
 
 async function loadGallery(): Promise<

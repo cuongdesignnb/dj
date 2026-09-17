@@ -4,6 +4,17 @@ import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, robotsFor, type Indexability } from
 
 export type SeoImage = { url: string; alt?: string | null; width?: number | null; height?: number | null };
 
+/**
+ * A crawlable page must still have a share image when its editor has not
+ * selected a page-specific asset yet. This is a real local asset, not a
+ * generated placeholder or business claim.
+ */
+export const DEFAULT_OG_IMAGE = '/assets/event-poster.jpg';
+
+function absoluteImageUrl(url: string) {
+  return /^https?:\/\//i.test(url) ? url : canonicalUrl(url);
+}
+
 export function buildMetadata(input: {
   title?: string | null;
   description?: string | null;
@@ -16,16 +27,17 @@ export function buildMetadata(input: {
 }): Metadata {
   const title = input.title?.trim() || DEFAULT_TITLE;
   const description = input.description?.trim() || DEFAULT_DESCRIPTION;
-  const images = input.image?.url
-    ? [
-        {
-          url: input.image.url,
-          ...(input.image.alt ? { alt: input.image.alt } : {}),
-          ...(input.image.width != null ? { width: input.image.width } : {}),
-          ...(input.image.height != null ? { height: input.image.height } : {}),
-        },
-      ]
-    : [];
+  const selectedImage = input.image?.url
+    ? input.image
+    : { url: DEFAULT_OG_IMAGE, alt: 'Connection Rave event poster', width: 1200, height: 800 };
+  const images = [
+    {
+      url: absoluteImageUrl(selectedImage.url),
+      ...(selectedImage.alt ? { alt: selectedImage.alt } : {}),
+      ...(selectedImage.width != null ? { width: selectedImage.width } : {}),
+      ...(selectedImage.height != null ? { height: selectedImage.height } : {}),
+    },
+  ];
   return {
     title,
     description,
