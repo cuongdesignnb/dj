@@ -42,7 +42,7 @@ export const homeContentDefinition: SingletonDefinition = {
   apiPath: 'content/home',
   permission: 'content',
   seed: () => ({
-    hero: { ...sectionSeed(1, '', '', '', 'Get Tickets', '/tickets'), media: null },
+    hero: { ...sectionSeed(1, '', '', '', 'Get Tickets', '/tickets'), media: null, animation: null },
     overview: { ...sectionSeed(2, '', ''), media: null },
     lineup: sectionSeed(3, 'Lineup / Music', 'The Artists', '', 'View Lineup', '/lineup'),
     tickets: sectionSeed(4, 'Tickets & Pricing', 'Get Your Tickets', 'Choose your tier. Lock it in. Be part of the night.', 'Get Tickets', '/tickets'),
@@ -56,7 +56,7 @@ export const homeContentDefinition: SingletonDefinition = {
     publish: null,
     tabs: ['Hero', 'Event Overview', 'Lineup Preview', 'Tickets', 'VIP Tables', 'Partners', 'Footer CTA'],
     sections: [
-      block('hero', 'Hero', [f.media('hero.media', 'Hero image')]),
+      block('hero', 'Hero', [f.media('hero.media', 'Hero image'), f.svgMedia('hero.animation', 'DESTINY SVG animation', { help: 'Upload or choose the animated SVG used for the homepage wordmark.' })]),
       block('overview', 'Event Overview', [f.media('overview.media', 'Section image')]),
       block('lineup', 'Lineup Preview', [], 'Artists come from Artist Management.'),
       block('tickets', 'Tickets', [], 'Tiers come from the event’s ticket settings.'),

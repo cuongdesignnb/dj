@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import Image from 'next/image';
 import { Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/admin/ui/Toast';
+import { MediaPicker } from '@/components/admin/form/MediaPicker';
+import type { MediaChoice } from '@/components/admin/form/MediaPicker';
 
 type JsonRecord = Record<string, unknown>;
 type FieldType =
@@ -44,7 +47,7 @@ function fieldsFor(key: string): Field[] {
       ? [textField('hero.titleLine1', 'Hero title line 1'), textField('hero.titleLine2', 'Hero title line 2')]
       : []),
     textField('hero.description', 'Hero description', 'textarea'),
-    textField('hero.image', 'Hero image', 'media', { wide: true, help: 'Set the image URL and accessible alt text.' }),
+    textField('hero.image', 'Hero image', 'media', { wide: true, help: 'Choose an asset from the shared Media Library or upload a new one.' }),
     textField('hero.sideNotes', 'Hero side notes', 'string-list', { wide: true }),
     textField('hero.footNotes', 'Hero foot notes', 'string-list', { wide: true }),
   ];
@@ -139,7 +142,7 @@ function fieldsFor(key: string): Field[] {
     textField('hero.titleLine1', 'Hero title line 1'),
     textField('hero.titleLine2', 'Hero title line 2'),
     textField('hero.description', 'Hero description', 'textarea'),
-    textField('hero.image', 'Hero image', 'media', { wide: true }),
+    textField('hero.image', 'Hero image', 'media', { wide: true, help: 'Choose an asset from the shared Media Library or upload a new one.' }),
     textField('hero.sideNotes', 'Hero side notes', 'string-list', { wide: true }),
     textField('hero.footNotes', 'Hero foot notes', 'string-list', { wide: true }),
     textField('hero.primary', 'Hero primary CTA', 'action'),
@@ -202,17 +205,45 @@ function SmallLabel({ children }: { children: ReactNode }) {
   return <span className="mb-1 block text-xs font-medium text-admin-muted">{children}</span>;
 }
 
-function MediaEditor({ value, onChange }: { value: unknown; onChange: (value: unknown) => void }) {
-  const media = asRecord(value);
+function MediaEditor({ value, onChange, media }: { value: unknown; onChange: (value: unknown) => void; media: MediaChoice[] }) {
+  const [open, setOpen] = useState(false);
+  const record = asRecord(value);
+  const src = stringValue(record.src);
   return (
     <div className={`${cardClass} space-y-3`}>
-      <div className="grid gap-3 md:grid-cols-2">
-        <label><SmallLabel>Image URL</SmallLabel><TextInput value={media.src} onChange={(next) => onChange(updateRecord(media, 'src', next))} placeholder="/assets/hero.jpg" /></label>
-        <label><SmallLabel>Alt text</SmallLabel><TextInput value={media.alt} onChange={(next) => onChange(updateRecord(media, 'alt', next))} placeholder="Describe the image" /></label>
-        <label><SmallLabel>Width (optional)</SmallLabel><TextInput value={media.width} type="number" onChange={(next) => onChange(updateRecord(media, 'width', next ? Number(next) : undefined))} /></label>
-        <label><SmallLabel>Height (optional)</SmallLabel><TextInput value={media.height} type="number" onChange={(next) => onChange(updateRecord(media, 'height', next ? Number(next) : undefined))} /></label>
+      <div className="flex flex-wrap items-start gap-3">
+        {src ? (
+          <span className="relative block h-24 w-36 shrink-0 overflow-hidden rounded-[8px] border border-admin-border bg-[#15161c]">
+            <Image src={src} alt="" fill unoptimized sizes="144px" className="object-contain p-2" />
+          </span>
+        ) : (
+          <span className="grid h-24 w-36 shrink-0 place-items-center rounded-[8px] border border-dashed border-admin-border text-admin-muted">No image selected</span>
+        )}
+        <div className="flex min-w-[220px] flex-1 flex-col gap-2">
+          <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-[42px] w-fit items-center rounded-[8px] border border-admin-border px-3 text-sm text-white hover:border-rave-red/70">
+            {src ? 'Replace from Media Library' : 'Choose from Media Library'}
+          </button>
+          {src && <p className="truncate text-xs text-admin-muted">{src}</p>}
+        </div>
       </div>
-      <button type="button" onClick={() => onChange(null)} className="text-xs text-admin-muted underline hover:text-white">Clear image</button>
+      <div className="grid gap-3 md:grid-cols-2">
+        <label><SmallLabel>Alt text</SmallLabel><TextInput value={record.alt} onChange={(next) => onChange(updateRecord(record, 'alt', next))} placeholder="Describe the image" /></label>
+        <label><SmallLabel>Width (optional)</SmallLabel><TextInput value={record.width} type="number" onChange={(next) => onChange(updateRecord(record, 'width', next ? Number(next) : undefined))} /></label>
+        <label><SmallLabel>Height (optional)</SmallLabel><TextInput value={record.height} type="number" onChange={(next) => onChange(updateRecord(record, 'height', next ? Number(next) : undefined))} /></label>
+      </div>
+      <div className="flex flex-wrap gap-3">
+        {src && <button type="button" onClick={() => onChange(null)} className="text-xs text-admin-muted underline hover:text-white">Clear image</button>}
+      </div>
+      <MediaPicker
+        open={open}
+        onClose={() => setOpen(false)}
+        media={media}
+        filter="image"
+        onPick={(choice) => {
+          onChange({ ...record, mediaId: choice.id ?? null, src: choice.src, alt: stringValue(record.alt) || choice.alt, width: record.width ?? choice.width ?? undefined, height: record.height ?? choice.height ?? undefined });
+          setOpen(false);
+        }}
+      />
     </div>
   );
 }
@@ -320,13 +351,13 @@ function SectionsEditor({ value, onChange }: { value: unknown; onChange: (value:
   </div>;
 }
 
-function CtaEditor({ value, onChange }: { value: unknown; onChange: (value: unknown) => void }) {
+function CtaEditor({ value, onChange, media }: { value: unknown; onChange: (value: unknown) => void; media: MediaChoice[] }) {
   const cta = asRecord(value);
   return <div className="space-y-3">
     <label><SmallLabel>Title</SmallLabel><TextInput value={cta.title} onChange={(next) => onChange(updateRecord(cta, 'title', next))} /></label>
     <label><SmallLabel>Subtitle</SmallLabel><TextInput value={cta.subtitle} multiline onChange={(next) => onChange(updateRecord(cta, 'subtitle', next))} /></label>
     <div className="grid gap-3 md:grid-cols-2"><div><SmallLabel>Primary action</SmallLabel><ActionEditor value={cta.primary} onChange={(next) => onChange(updateRecord(cta, 'primary', next))} /></div><div><SmallLabel>Secondary action</SmallLabel><ActionEditor value={cta.secondary} onChange={(next) => onChange(updateRecord(cta, 'secondary', next))} /></div></div>
-    <div><SmallLabel>Background image</SmallLabel><MediaEditor value={cta.background} onChange={(next) => onChange(updateRecord(cta, 'background', next))} /></div>
+    <div><SmallLabel>Background image</SmallLabel><MediaEditor value={cta.background} media={media} onChange={(next) => onChange(updateRecord(cta, 'background', next))} /></div>
   </div>;
 }
 
@@ -335,14 +366,14 @@ function EmptyStateEditor({ value, onChange }: { value: unknown; onChange: (valu
   return <div className="space-y-3"><label><SmallLabel>Title</SmallLabel><TextInput value={state.title} onChange={(next) => onChange(updateRecord(state, 'title', next))} /></label><label><SmallLabel>Description</SmallLabel><TextInput value={state.description} multiline onChange={(next) => onChange(updateRecord(state, 'description', next))} /></label><div><SmallLabel>Optional call to action</SmallLabel><ActionEditor value={state.cta} onChange={(next) => onChange(updateRecord(state, 'cta', next))} /></div></div>;
 }
 
-function SeoEditor({ value, onChange }: { value: unknown; onChange: (value: unknown) => void }) {
+function SeoEditor({ value, onChange, media }: { value: unknown; onChange: (value: unknown) => void; media: MediaChoice[] }) {
   const seo = asRecord(value);
-  return <div className="space-y-3"><div className="grid gap-3 md:grid-cols-2"><label><SmallLabel>SEO title</SmallLabel><TextInput value={seo.title} onChange={(next) => onChange(updateRecord(seo, 'title', next))} /></label><label><SmallLabel>SEO description</SmallLabel><TextInput value={seo.description} multiline onChange={(next) => onChange(updateRecord(seo, 'description', next))} /></label></div><div className="flex flex-wrap gap-5 text-sm text-admin-muted"><label className="flex items-center gap-2"><input type="checkbox" checked={seo.index !== false} onChange={(event) => onChange(updateRecord(seo, 'index', event.target.checked))} className="h-4 w-4 accent-rave-red" /> Index this page</label><label className="flex items-center gap-2"><input type="checkbox" checked={seo.follow !== false} onChange={(event) => onChange(updateRecord(seo, 'follow', event.target.checked))} className="h-4 w-4 accent-rave-red" /> Follow links</label></div><div><SmallLabel>Social preview image</SmallLabel><MediaEditor value={seo.ogImage} onChange={(next) => onChange(updateRecord(seo, 'ogImage', next))} /></div></div>;
+  return <div className="space-y-3"><div className="grid gap-3 md:grid-cols-2"><label><SmallLabel>SEO title</SmallLabel><TextInput value={seo.title} onChange={(next) => onChange(updateRecord(seo, 'title', next))} /></label><label><SmallLabel>SEO description</SmallLabel><TextInput value={seo.description} multiline onChange={(next) => onChange(updateRecord(seo, 'description', next))} /></label></div><div className="flex flex-wrap gap-5 text-sm text-admin-muted"><label className="flex items-center gap-2"><input type="checkbox" checked={seo.index !== false} onChange={(event) => onChange(updateRecord(seo, 'index', event.target.checked))} className="h-4 w-4 accent-rave-red" /> Index this page</label><label className="flex items-center gap-2"><input type="checkbox" checked={seo.follow !== false} onChange={(event) => onChange(updateRecord(seo, 'follow', event.target.checked))} className="h-4 w-4 accent-rave-red" /> Follow links</label></div><div><SmallLabel>Social preview image</SmallLabel><MediaEditor value={seo.ogImage} media={media} onChange={(next) => onChange(updateRecord(seo, 'ogImage', next))} /></div></div>;
 }
 
-function StructuredField({ type, value, onChange }: { type: FieldType; value: unknown; onChange: (value: unknown) => void }) {
+function StructuredField({ type, value, onChange, media }: { type: FieldType; value: unknown; onChange: (value: unknown) => void; media: MediaChoice[] }) {
   switch (type) {
-    case 'media': return <MediaEditor value={value} onChange={onChange} />;
+    case 'media': return <MediaEditor value={value} media={media} onChange={onChange} />;
     case 'string-list': return <StringListEditor value={value} onChange={onChange} />;
     case 'info-list': return <InfoListEditor value={value} onChange={onChange} />;
     case 'faq-list': return <FaqListEditor value={value} onChange={onChange} />;
@@ -350,14 +381,14 @@ function StructuredField({ type, value, onChange }: { type: FieldType; value: un
     case 'filters': return <FiltersEditor value={value} onChange={onChange} />;
     case 'sections': return <SectionsEditor value={value} onChange={onChange} />;
     case 'action': return <ActionEditor value={value} onChange={onChange} />;
-    case 'cta': return <CtaEditor value={value} onChange={onChange} />;
+    case 'cta': return <CtaEditor value={value} media={media} onChange={onChange} />;
     case 'empty-state': return <EmptyStateEditor value={value} onChange={onChange} />;
-    case 'seo': return <SeoEditor value={value} onChange={onChange} />;
+    case 'seo': return <SeoEditor value={value} media={media} onChange={onChange} />;
     default: return null;
   }
 }
 
-export default function CmsEditor({ contentKey, title, description }: { contentKey: string; title: string; description?: string }) {
+export default function CmsEditor({ contentKey, title, description, media = [] }: { contentKey: string; title: string; description?: string; media?: MediaChoice[] }) {
   const toast = useToast();
   const [draft, setDraft] = useState<JsonRecord | null>(null);
   const [status, setStatus] = useState('DRAFT');
@@ -410,7 +441,7 @@ export default function CmsEditor({ contentKey, title, description }: { contentK
       const update = (next: unknown) => setDraft(setPath(draft, field.path, next));
       return <div key={field.path} className={`${field.wide || !['text', 'textarea', 'number', 'boolean'].includes(type) ? 'xl:col-span-2' : ''} rounded-[12px] border border-admin-border bg-admin-panel/80 p-4`}>
         <label htmlFor={id} className="mb-2 block text-sm font-medium text-white">{field.label}</label>
-        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} onChange={update} /> : <TextInput value={value} multiline={type === 'textarea'} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
+        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} media={media} onChange={update} /> : <TextInput value={value} multiline={type === 'textarea'} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
         {field.help && <span className="mt-2 block text-xs text-admin-muted">{field.help}</span>}
       </div>;
     })}</div>

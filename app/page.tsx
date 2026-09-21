@@ -8,7 +8,7 @@ import LineupPreview from '@/components/home/LineupPreview';
 import TicketsSection from '@/components/home/TicketsSection';
 import VipTableSection from '@/components/home/VipTableSection';
 import PartnersFooter from '@/components/home/PartnersFooter';
-import type { HomeArtist, HomeBoothPackage, HomeEvent, HomeFooterData, HomePartner, HomeTicketTier, HomeTrustItem } from '@/components/home/types';
+import type { HomeArtist, HomeBoothPackage, HomeEvent, HomeFooterData, HomeMedia, HomePartner, HomeTicketTier, HomeTrustItem } from '@/components/home/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,10 +29,12 @@ async function readPublic<T>(path: string): Promise<T | null> {
   return result.ok ? result.data : null;
 }
 
-function media(value: unknown): { src: string; alt: string } | null {
+function media(value: unknown): HomeMedia | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const raw = value as ApiRecord;
-  return typeof raw.src === 'string' && raw.src ? { src: raw.src, alt: typeof raw.alt === 'string' ? raw.alt : '' } : null;
+  return typeof raw.src === 'string' && raw.src
+    ? { src: raw.src, alt: typeof raw.alt === 'string' ? raw.alt : '', width: typeof raw.width === 'number' ? raw.width : null, height: typeof raw.height === 'number' ? raw.height : null }
+    : null;
 }
 
 function text(value: unknown, fallback = '') {
@@ -51,6 +53,7 @@ function safeExternalUrl(value: unknown) {
 
 interface HomeData {
   event: HomeEvent;
+  heroAnimation: HomeMedia | null;
   artists: HomeArtist[];
   ticketTiers: HomeTicketTier[];
   trustItems: HomeTrustItem[];
@@ -69,6 +72,10 @@ async function loadHomeData(): Promise<HomeData | null> {
   ]);
 
   if (!event) return null;
+
+  const homePage = Array.isArray(bootstrap?.pages) ? bootstrap.pages.find((page: ApiRecord) => page.slug === 'home') : null;
+  const homeContent = homePage && typeof homePage.content === 'object' && !Array.isArray(homePage.content) ? homePage.content as ApiRecord : {};
+  const heroAnimation = media((homeContent.hero as ApiRecord | undefined)?.animation);
 
   const eventData: HomeEvent = {
     title: text(event.title, text(event.slug, 'Connection Rave')),
@@ -149,7 +156,7 @@ async function loadHomeData(): Promise<HomeData | null> {
     { icon: 'Users', title: 'Need help?', description: 'Contact the team for event and VIP questions.' },
   ];
 
-  return { event: eventData, artists, ticketTiers, trustItems, boothPackage, footer };
+  return { event: eventData, heroAnimation, artists, ticketTiers, trustItems, boothPackage, footer };
 }
 
 export default async function HomePage() {
@@ -170,7 +177,7 @@ export default async function HomePage() {
   return (
     <main className="relative min-h-screen bg-rave-black text-white noise-overlay">
       <Header />
-      <HeroSection event={data.event} />
+      <HeroSection event={data.event} animation={data.heroAnimation} />
       <EventOverview event={data.event} />
       <LineupPreview artists={data.artists} />
       <TicketsSection ticketTiers={data.ticketTiers} trustItems={data.trustItems} />

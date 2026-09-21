@@ -72,7 +72,16 @@ export async function loadMediaChoices(): Promise<MediaChoice[]> {
   const records = await allRecords('media');
   return records
     .filter((r) => r.kind !== 'document' && typeof r.url === 'string')
-    .map((r) => ({ src: String(r.url), label: String(r.name ?? r.url), alt: String(r.alt ?? '') }));
+    .map((r) => ({
+      id: typeof r.id === 'string' ? r.id : null,
+      src: String(r.url),
+      label: String(r.name ?? r.url),
+      alt: String(r.alt ?? ''),
+      kind: typeof r.kind === 'string' ? r.kind : undefined,
+      mimeType: typeof r.mimeType === 'string' ? r.mimeType : undefined,
+      width: typeof r.width === 'number' ? r.width : null,
+      height: typeof r.height === 'number' ? r.height : null,
+    }));
 }
 
 export function optionSourcesOf(definition: { form?: { sections: { fields: { optionSource?: OptionSource; itemFields?: { optionSource?: OptionSource }[] }[] }[] } }): OptionSource[] {

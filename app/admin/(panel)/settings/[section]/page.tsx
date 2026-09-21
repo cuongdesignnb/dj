@@ -4,6 +4,7 @@ import SingletonScreen from '@/components/admin/modules/SingletonScreen';
 import type { SingletonKey } from '@/lib/admin/common/resource';
 import { SINGLETONS } from '@/lib/admin/registry';
 import CmsEditor from '@/components/admin/cms/CmsEditor';
+import { loadMediaChoices } from '@/lib/admin/page-data';
 
 type Props = { params: Promise<{ section: string }> };
 
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SettingsPage({ params }: Props) {
   const section = (await params).section;
-  if (section === 'global-content') return <CmsEditor contentKey="global-content" title="Global Content" description="Only truly global copy belongs here; page-specific content stays with its page." />;
+  if (section === 'global-content') return <CmsEditor contentKey="global-content" title="Global Content" description="Only truly global copy belongs here; page-specific content stays with its page." media={await loadMediaChoices()} />;
   const key = SECTIONS[section];
   if (!key) notFound();
   return <SingletonScreen settingKey={key} />;

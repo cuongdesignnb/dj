@@ -1,8 +1,8 @@
 import { f, opts, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
 
-// The library indexes files that already ship with the site. Uploading needs
-// a storage backend; until then the upload control says it is unavailable.
+// The library indexes both shipped assets and files uploaded through the
+// configured local/S3 storage backend.
 
 export type MediaKind = 'image' | 'video-thumbnail' | 'logo' | 'document';
 

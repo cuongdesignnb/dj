@@ -19,7 +19,7 @@ export type PageContentKey = (typeof PAGE_CONTENT_KEYS)[number] | `tickets:${str
 
 const text = z.string().max(20_000);
 const url = z.string().max(2_000).refine((value) => value === '' || value.startsWith('/') || /^https?:\/\//i.test(value) || /^(mailto|tel):/i.test(value), 'Use a relative, http(s), mailto or tel URL.');
-const media = z.object({ src: text, alt: text, width: z.number().int().nonnegative().optional(), height: z.number().int().nonnegative().optional() }).nullable();
+const media = z.object({ mediaId: text.nullable().optional(), src: text, alt: text, width: z.number().int().nonnegative().optional(), height: z.number().int().nonnegative().optional() }).nullable();
 const action = z.object({ label: text, href: url });
 const cta = z.object({ title: text, subtitle: text.optional(), primary: action, secondary: action.optional(), background: media.optional() });
 const seo = z.object({ title: text, description: text, ogImage: media.optional(), index: z.boolean(), follow: z.boolean() });

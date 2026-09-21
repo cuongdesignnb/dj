@@ -14,19 +14,16 @@ import {
   Plus,
   Quote,
   Trash2,
-  Upload,
   X,
 } from 'lucide-react';
 import { PERMISSION_ACTIONS, PERMISSION_MODULES } from '@/lib/admin/auth/permissions';
 import { getPath, setPath, slugify } from '@/lib/admin/common/paths';
 import type { FieldConfig, Option } from '@/lib/admin/common/schema';
-import { ConfirmDialog, Modal, buttonClass } from '../ui/Dialog';
+import { ConfirmDialog, buttonClass } from '../ui/Dialog';
+import { MediaPicker } from './MediaPicker';
+import type { MediaChoice, MediaPickerFilter } from './MediaPicker';
 
-export interface MediaChoice {
-  src: string;
-  label: string;
-  alt: string;
-}
+export type { MediaChoice } from './MediaPicker';
 
 export interface FieldContext {
   language: 'en' | 'vi';
@@ -120,50 +117,7 @@ function describedBy(id: string, field: FieldConfig, error?: string) {
 // Media
 // ---------------------------------------------------------------------------
 
-export function MediaPicker({
-  open,
-  onClose,
-  onPick,
-  media,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onPick: (choice: MediaChoice) => void;
-  media: MediaChoice[];
-}) {
-  const [query, setQuery] = useState('');
-  const shown = media.filter((m) => m.label.toLowerCase().includes(query.toLowerCase()));
-  return (
-    <Modal open={open} onClose={onClose} title="Choose from media library" description="Only files already in the library can be selected." size="lg">
-      <label className="mb-4 block">
-        <span className="sr-only">Search media</span>
-        <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search files..." className={inputClass} />
-      </label>
-      {shown.length === 0 ? (
-        <p className="py-8 text-center text-sm text-admin-muted">No files match.</p>
-      ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {shown.map((m) => (
-            <li key={m.src}>
-              <button
-                type="button"
-                onClick={() => onPick(m)}
-                className="group block w-full overflow-hidden rounded-[10px] border border-admin-border bg-admin-deep text-left hover:border-rave-red/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
-              >
-                <span className="relative block aspect-[4/3]">
-                  <Image src={m.src} alt="" fill sizes="200px" className="object-cover" />
-                </span>
-                <span className="block truncate px-2 py-1.5 text-xs text-white/85">{m.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Modal>
-  );
-}
-
-function MediaField({ id, field, value, onChange, ctx, error }: FieldProps) {
+function MediaField({ id, field, value, onChange, ctx, error, allow = 'image' }: FieldProps & { allow?: MediaPickerFilter }) {
   const [open, setOpen] = useState(false);
   const ref = isRecord(value) ? (value as { src?: string; alt?: string; mediaId?: string | null }) : null;
   return (
@@ -171,8 +125,8 @@ function MediaField({ id, field, value, onChange, ctx, error }: FieldProps) {
       <div className="rounded-[10px] border border-admin-border bg-admin-deep p-3">
         {ref?.src ? (
           <div className="flex gap-3">
-            <span className="relative block h-20 w-28 shrink-0 overflow-hidden rounded-[6px] border border-admin-border">
-              <Image src={ref.src} alt="" fill sizes="112px" className="object-cover" />
+              <span className="relative block h-20 w-28 shrink-0 overflow-hidden rounded-[6px] border border-admin-border">
+              <Image src={ref.src} alt="" fill unoptimized sizes="112px" className={allow === 'svg' ? 'object-contain p-2' : 'object-cover'} />
             </span>
             <div className="min-w-0 flex-1 space-y-2">
               <p className="truncate text-xs text-admin-muted">{ref.src}</p>
@@ -200,9 +154,6 @@ function MediaField({ id, field, value, onChange, ctx, error }: FieldProps) {
             <button type="button" onClick={() => setOpen(true)} className={buttonClass.secondary}>
               <ImageIcon aria-hidden className="h-4 w-4" /> {ref?.src ? 'Replace' : 'Choose image'}
             </button>
-            <button type="button" disabled title="Uploading needs the media service" className={buttonClass.ghost}>
-              <Upload aria-hidden className="h-4 w-4" /> Upload unavailable
-            </button>
             {ref?.src && (
               <button type="button" onClick={() => onChange(null)} className={buttonClass.ghost}>
                 <X aria-hidden className="h-4 w-4" /> Remove
@@ -215,8 +166,9 @@ function MediaField({ id, field, value, onChange, ctx, error }: FieldProps) {
         open={open}
         onClose={() => setOpen(false)}
         media={ctx.media}
+        filter={allow}
         onPick={(m) => {
-          onChange({ mediaId: null, src: m.src, alt: ref?.alt || m.alt });
+          onChange({ mediaId: m.id ?? null, src: m.src, alt: ref?.alt || m.alt });
           setOpen(false);
         }}
       />
@@ -532,13 +484,13 @@ function BlocksField({ id, field, value, onChange, ctx, error }: FieldProps) {
 
 function BlockImage({ block, label, ctx, onChange }: { block: Block; label: string; ctx: FieldContext; onChange: (image: Json) => void }) {
   const [open, setOpen] = useState(false);
-  const image = (isRecord(block.image) ? block.image : { src: '', alt: '', caption: '' }) as { src: string; alt: string; caption?: string };
+  const image = (isRecord(block.image) ? block.image : { src: '', alt: '', caption: '' }) as { src: string; alt: string; caption?: string; mediaId?: string | null };
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
         {image.src ? (
           <span className="relative block h-16 w-24 shrink-0 overflow-hidden rounded-[6px] border border-admin-border">
-            <Image src={image.src} alt="" fill sizes="96px" className="object-cover" />
+            <Image src={image.src} alt="" fill unoptimized sizes="96px" className="object-cover" />
           </span>
         ) : (
           <span className="grid h-16 w-24 shrink-0 place-items-center rounded-[6px] border border-dashed border-admin-border text-admin-muted">
@@ -558,7 +510,7 @@ function BlockImage({ block, label, ctx, onChange }: { block: Block; label: stri
         onClose={() => setOpen(false)}
         media={ctx.media}
         onPick={(m) => {
-          onChange({ ...image, src: m.src, alt: image.alt || m.alt });
+          onChange({ ...image, mediaId: m.id ?? null, src: m.src, alt: image.alt || m.alt });
           setOpen(false);
         }}
       />
@@ -589,7 +541,7 @@ function blankRow(fields: FieldConfig[]): Json {
   let row: Json = {};
   for (const sub of fields) {
     const empty =
-      sub.type === 'toggle' ? false : sub.type === 'tags' || sub.type === 'multiselect' || sub.type === 'repeater' ? [] : sub.type === 'media' || sub.type === 'money' || sub.type === 'number' ? null : '';
+      sub.type === 'toggle' ? false : sub.type === 'tags' || sub.type === 'multiselect' || sub.type === 'repeater' ? [] : sub.type === 'media' || sub.type === 'svgMedia' || sub.type === 'money' || sub.type === 'number' ? null : '';
     row = setPath(row, sub.key, empty);
   }
   return row;
@@ -908,6 +860,8 @@ export default function FieldInput({
     case 'media':
     case 'mediaList':
       return <MediaField {...props} />;
+    case 'svgMedia':
+      return <MediaField {...props} allow="svg" />;
     case 'tags':
       return <TagsField {...props} />;
     case 'blocks':

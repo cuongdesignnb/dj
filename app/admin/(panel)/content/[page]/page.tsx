@@ -4,6 +4,8 @@ import SingletonScreen from '@/components/admin/modules/SingletonScreen';
 import type { SingletonKey } from '@/lib/admin/common/resource';
 import { SINGLETONS } from '@/lib/admin/registry';
 import CmsEditor from '@/components/admin/cms/CmsEditor';
+import { gate, loadMediaChoices } from '@/lib/admin/page-data';
+import type { Permission } from '@/lib/admin/auth/permissions';
 
 type Props = { params: Promise<{ page: string }> };
 
@@ -31,7 +33,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ContentPage({ params }: Props) {
   const page = (await params).page;
   const key = PAGES[page];
-  if (CMS_PAGES[page]) return <CmsEditor contentKey={CMS_PAGES[page]} title={`${page.replace('-', ' ')} page content`} description="Route-specific content is stored in the Page Content CMS." />;
+  if (CMS_PAGES[page]) {
+    const { allowed } = await gate('content.view' as Permission);
+    if (!allowed) return <CmsEditor contentKey={CMS_PAGES[page]} title={`${page.replace('-', ' ')} page content`} description="Route-specific content is stored in the Page Content CMS." media={[]} />;
+    const media = await loadMediaChoices();
+    return <CmsEditor contentKey={CMS_PAGES[page]} title={`${page.replace('-', ' ')} page content`} description="Route-specific content is stored in the Page Content CMS." media={media} />;
+  }
   if (!key) notFound();
   return <SingletonScreen settingKey={key} />;
 }

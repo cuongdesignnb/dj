@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useId, useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Check, ChevronLeft, ChevronRight, Copy, LayoutGrid, List, Search, Trash2, Upload } from 'lucide-react';
 import { deleteRecords, saveRecord } from '@/app/admin/actions';
 import type { FilterConfig } from '@/lib/admin/common/schema';
 import { inputClass } from '../form/FieldInput';
+import { uploadMediaFile } from '../form/MediaPicker';
 import { ConfirmDialog, Drawer, buttonClass } from '../ui/Dialog';
 import { EmptyState, ErrorState } from '../ui/States';
 import StatusBadge from '../ui/StatusBadge';
@@ -65,6 +66,11 @@ export default function MediaLibrary({
   const [deleting, setDeleting] = useState<MediaItem | null>(null);
   const [busyDelete, setBusyDelete] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadAlt, setUploadAlt] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const view = query.view === 'list' ? 'list' : 'grid';
 
@@ -135,6 +141,27 @@ export default function MediaLibrary({
   const control = 'min-h-[40px] rounded-[8px] border border-admin-border bg-admin-deep px-3 text-sm text-white focus:border-rave-red focus:outline-none';
   const dirty = !!selected && (draft.name !== selected.name || draft.alt !== selected.alt);
 
+  const upload = async () => {
+    if (!uploadFile) {
+      setUploadError('Choose a file first.');
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      await uploadMediaFile(uploadFile, uploadAlt);
+      toast('success', 'Uploaded to the media library.');
+      setUploadOpen(false);
+      setUploadFile(null);
+      setUploadAlt('');
+      start(() => router.refresh());
+    } catch (reason: unknown) {
+      setUploadError(reason instanceof Error ? reason.message : 'Could not upload this file.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="rounded-[12px] border border-admin-border bg-admin-panel/90">
       <div role="search" aria-label="Filter media" className="flex flex-col gap-3 border-b border-admin-border p-3 sm:p-4 lg:flex-row lg:items-center">
@@ -197,7 +224,7 @@ export default function MediaLibrary({
                   className="group block w-full overflow-hidden rounded-[10px] border border-admin-border bg-admin-deep text-left transition-colors hover:border-rave-red/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
                 >
                   <span className={`relative block aspect-[4/3] ${item.kind === 'logo' ? 'bg-[#15161c]' : ''}`}>
-                    <Image src={item.url} alt="" fill sizes="(min-width: 1536px) 16vw, (min-width: 1024px) 22vw, 45vw" className={item.kind === 'logo' ? 'object-contain p-4' : 'object-cover'} />
+                  <Image src={item.url} alt="" fill unoptimized sizes="(min-width: 1536px) 16vw, (min-width: 1024px) 22vw, 45vw" className={item.kind === 'logo' ? 'object-contain p-4' : 'object-cover'} />
                   </span>
                   <span className="block px-2.5 py-2">
                     <span className="block truncate text-sm text-white">{item.name}</span>
@@ -230,7 +257,7 @@ export default function MediaLibrary({
                   <tr key={item.id} className="border-b border-admin-border/60 last:border-0">
                     <td className="py-2 pr-3">
                       <span className="relative block h-10 w-14 overflow-hidden rounded-[6px] border border-admin-border">
-                        <Image src={item.url} alt="" fill sizes="56px" className={item.kind === 'logo' ? 'object-contain p-1' : 'object-cover'} />
+                        <Image src={item.url} alt="" fill unoptimized sizes="56px" className={item.kind === 'logo' ? 'object-contain p-1' : 'object-cover'} />
                       </span>
                     </td>
                     <td className="py-2 pr-3">
@@ -301,7 +328,7 @@ export default function MediaLibrary({
         {selected && (
           <div className="space-y-4">
             <div className={`relative aspect-[4/3] overflow-hidden rounded-[10px] border border-admin-border ${selected.kind === 'logo' ? 'bg-[#15161c]' : 'bg-admin-deep'}`}>
-              <Image src={selected.url} alt={selected.alt} fill sizes="440px" className={selected.kind === 'logo' ? 'object-contain p-6' : 'object-cover'} />
+              <Image src={selected.url} alt={selected.alt} fill unoptimized sizes="440px" className={selected.kind === 'logo' ? 'object-contain p-6' : 'object-cover'} />
             </div>
             <button type="button" onClick={() => copy(selected)} className={`${buttonClass.secondary} w-full`}>
               {copied === selected.id ? <Check aria-hidden className="h-4 w-4" /> : <Copy aria-hidden className="h-4 w-4" />}
@@ -335,16 +362,21 @@ export default function MediaLibrary({
         )}
       </Drawer>
 
-      <Drawer open={uploadOpen} onClose={() => setUploadOpen(false)} title="Upload media" footer={<button type="button" onClick={() => setUploadOpen(false)} className={buttonClass.secondary}>Close</button>}>
-        <div className="flex flex-col items-center rounded-[12px] border border-dashed border-white/20 px-6 py-12 text-center">
-          <Upload aria-hidden className="h-9 w-9 text-admin-muted" strokeWidth={1.5} />
-          <p className="mt-3 font-heading text-lg uppercase tracking-wide text-white">Upload unavailable</p>
-          <p className="mt-1 max-w-xs text-sm text-admin-muted">
-            Uploading needs file storage on the backend, which is not connected yet. Nothing can be uploaded from this build.
-          </p>
-          <button type="button" disabled className={`${buttonClass.secondary} mt-5`}>
-            Choose files
-          </button>
+      <Drawer open={uploadOpen} onClose={uploading ? () => {} : () => setUploadOpen(false)} title="Upload media" footer={<><button type="button" disabled={uploading} onClick={() => setUploadOpen(false)} className={buttonClass.secondary}>Close</button><button type="button" disabled={uploading || !uploadFile} onClick={() => void upload()} className={buttonClass.primary}>{uploading ? 'Uploading…' : 'Upload to library'}</button></>}>
+        <div className="space-y-4">
+          <div className="rounded-[12px] border border-dashed border-white/20 px-6 py-10 text-center">
+            <Upload aria-hidden className="mx-auto h-9 w-9 text-admin-muted" strokeWidth={1.5} />
+            <p className="mt-3 font-heading text-lg uppercase tracking-wide text-white">Add an asset to the shared library</p>
+            <p className="mt-1 text-sm text-admin-muted">Images, SVG animation, video and PDF files up to 20 MB.</p>
+            <input ref={uploadInputRef} type="file" accept="image/*,video/*,application/pdf" className="sr-only" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} />
+            <button type="button" disabled={uploading} onClick={() => uploadInputRef.current?.click()} className={`${buttonClass.secondary} mt-5`}>{uploadFile ? 'Choose another file' : 'Choose file'}</button>
+            {uploadFile && <p className="mt-3 truncate text-sm text-white/85">{uploadFile.name}</p>}
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-white/90">Alt text (optional)</span>
+            <textarea rows={3} value={uploadAlt} disabled={uploading} onChange={(event) => setUploadAlt(event.target.value)} placeholder="Describe the image for screen readers" className={inputClass} />
+          </label>
+          {uploadError && <p role="alert" className="rounded-[8px] border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{uploadError}</p>}
         </div>
       </Drawer>
 

@@ -1,6 +1,8 @@
 export interface HomeMedia {
   src: string;
   alt: string;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface HomeEvent {

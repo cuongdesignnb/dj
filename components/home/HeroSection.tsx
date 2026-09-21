@@ -11,7 +11,7 @@ import AudioBars from '../ui/AudioBars';
 import DancingCrowd, { LaserLights, DiscoBall } from '../ui/DancingCrowd';
 import DESTINYShatter from '../ui/DESTINYShatter';
 import { stableUnit, stableSigned } from '@/lib/stable-visual';
-import type { HomeEvent } from './types';
+import type { HomeEvent, HomeMedia } from './types';
 
 interface Particle {
   width: number;
@@ -297,7 +297,7 @@ function HeroBackground({ image }: { image: string }) {
   );
 }
 
-function DestinyTitle({ text }: { text: string }) {
+function DestinyTitle({ text, animation }: { text: string; animation: HomeMedia | null }) {
   return (
     <motion.div
       variants={fadeUp}
@@ -326,12 +326,31 @@ function DestinyTitle({ text }: { text: string }) {
         />
       ))}
 
-      {/* DESTINY Light Sweep & Shatter */}
-      <DESTINYShatter
-        text={text}
-        fontSize={200}
-        className="font-heading text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] font-black uppercase leading-[0.8] tracking-wider text-white italic"
-      />
+      {/* The CMS-selected SVG takes over when present; the canvas effect remains the safe fallback. */}
+      {animation?.src ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="relative z-10 flex w-[min(94vw,960px)] items-center justify-center"
+        >
+          <Image
+            src={animation.src}
+            alt=""
+            width={animation.width ?? 1200}
+            height={animation.height ?? 360}
+            unoptimized
+            priority
+            className="h-auto max-h-[230px] w-full object-contain"
+          />
+        </motion.div>
+      ) : (
+        <DESTINYShatter
+          text={text}
+          fontSize={200}
+          className="font-heading text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] font-black uppercase leading-[0.8] tracking-wider text-white italic"
+        />
+      )}
     </motion.div>
   );
 }
@@ -357,7 +376,7 @@ function AudioVisualizer() {
   );
 }
 
-export default function HeroSection({ event }: { event: HomeEvent }) {
+export default function HeroSection({ event, animation = null }: { event: HomeEvent; animation?: HomeMedia | null }) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[84px]">
       {/* Background layers */}
@@ -442,7 +461,7 @@ export default function HeroSection({ event }: { event: HomeEvent }) {
           </motion.p>
 
           {/* DESTINY wordmark with pulsing subwoofer circles */}
-          <DestinyTitle text={event.title} />
+          <DestinyTitle text={event.title} animation={animation} />
 
           {/* Audio Visualizer */}
           <AudioVisualizer />
