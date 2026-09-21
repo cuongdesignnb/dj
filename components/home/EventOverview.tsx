@@ -5,9 +5,10 @@ import Image from 'next/image';
 import { Calendar, Clock, AlertTriangle, Headphones, Users, Globe, Ticket } from 'lucide-react';
 import Container from '../ui/Container';
 import NeonButton from './NeonButton';
+import type { HomeEvent } from './types';
 import { fadeUp, slideLeft, staggerContainer } from '@/lib/animations';
 
-export default function EventOverview() {
+export default function EventOverview({ event }: { event: HomeEvent }) {
   return (
     <section className="relative py-20 md:py-28 overflow-hidden bg-rave-black">
       {/* Background Grid - blending perfectly with black background */}
@@ -30,8 +31,8 @@ export default function EventOverview() {
           >
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden neon-border">
               <Image
-                src="/assets/event-poster.jpg"
-                alt="Destiny Event Poster"
+                src={event.poster?.src || '/assets/event-poster.jpg'}
+                alt={event.poster?.alt || `${event.title} event poster`}
                 fill
                 sizes="(max-width: 1024px) 100vw, 42vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -56,7 +57,7 @@ export default function EventOverview() {
                 EVENT DETAILS
               </span>
               <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[1.1] text-white">
-                THE CONNECTION EXPERIENCE
+                {event.title}
               </h2>
             </motion.div>
 
@@ -68,18 +69,9 @@ export default function EventOverview() {
 
             {/* Description Paragraphs */}
             <motion.div variants={fadeUp} className="flex flex-col gap-4 mb-6">
-              <p className="text-white text-sm sm:text-base font-semibold leading-relaxed">
-                Destiny is more than a party — it&apos;s a full-scale nightlife experience.
-              </p>
-              <p className="text-white/80 text-sm sm:text-base leading-relaxed">
-                Bringing together international and local DJs, high-energy sound, and a multi-cultural crowd, this is where music, energy, and people become one.
-              </p>
-              <p className="text-white/80 text-sm sm:text-base leading-relaxed">
-                From EDM to Hardstyle, Techno to Vinahouse — every moment is designed to move you.
-              </p>
-              <p className="text-rave-red font-heading uppercase tracking-wider text-sm sm:text-base font-bold">
-                This isn&apos;t just a night out. This is where connection happens.
-              </p>
+              {event.shortDescription && <p className="text-white text-sm sm:text-base font-semibold leading-relaxed">{event.shortDescription}</p>}
+              {event.description && <p className="text-white/80 text-sm sm:text-base leading-relaxed">{event.description}</p>}
+              {!event.shortDescription && !event.description && <p className="text-white/80 text-sm sm:text-base leading-relaxed">Event details will be published here when confirmed.</p>}
             </motion.div>
 
             {/* Features Row - Slide 3 Badges */}
@@ -89,7 +81,7 @@ export default function EventOverview() {
                   <Headphones className="w-4.5 h-4.5 text-rave-red" />
                 </div>
                 <span className="font-heading text-xs tracking-wider text-white font-semibold uppercase leading-tight">
-                  INTERNATIONAL & LOCAL DJS
+                  {event.title} event
                 </span>
               </div>
               
@@ -98,7 +90,7 @@ export default function EventOverview() {
                   <Users className="w-4.5 h-4.5 text-rave-red" />
                 </div>
                 <span className="font-heading text-xs tracking-wider text-white font-semibold uppercase leading-tight">
-                  1000+ CROWD ENERGY
+                  {event.venue.name || 'Venue to be confirmed'}
                 </span>
               </div>
               
@@ -107,7 +99,7 @@ export default function EventOverview() {
                   <Globe className="w-4.5 h-4.5 text-rave-red" />
                 </div>
                 <span className="font-heading text-xs tracking-wider text-white font-semibold uppercase leading-tight">
-                  MULTI-CULTURAL EXP
+                  {event.venue.city || 'Location to be confirmed'}
                 </span>
               </div>
             </motion.div>
@@ -117,21 +109,21 @@ export default function EventOverview() {
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-rave-red" />
                 <span className="font-heading tracking-widest text-sm sm:text-base text-white uppercase font-bold">
-                  DATE TO BE ANNOUNCED
+                  {event.dateStatus.toUpperCase() === 'CONFIRMED' && event.startAt ? event.startAt.slice(0, 10) : 'DATE TO BE ANNOUNCED'}
                 </span>
               </div>
               
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-rave-red" />
                 <span className="font-heading tracking-widest text-sm sm:text-base text-white uppercase font-bold">
-                  SCHEDULE TO BE CONFIRMED
+                  {event.scheduleStatus.toUpperCase() === 'CONFIRMED' && event.startAt ? event.startAt.slice(11, 16) : 'SCHEDULE TO BE CONFIRMED'}
                 </span>
               </div>
 
               <div className="flex items-center gap-3 mt-1">
                 <AlertTriangle className="w-5 h-5 text-rave-red animate-pulse" />
                 <span className="font-heading tracking-wider text-xs sm:text-sm text-rave-red font-black uppercase text-neon-red">
-                  ⚠️ TICKET AVAILABILITY TO BE CONFIRMED
+                  TICKET INFORMATION SHOWN BELOW
                 </span>
               </div>
             </motion.div>

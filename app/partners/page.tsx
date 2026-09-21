@@ -13,6 +13,8 @@ import { getPartnersRepository } from '@/lib/partners/repository';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getContentSeo('partners', { title: 'Partners & Sponsors | Connection Rave', description: 'Explore partnership and sponsorship opportunities with Connection Rave.' });
   return buildMetadata({ ...seo, path: '/partners' });

@@ -6,6 +6,8 @@ import { isDraft } from '@/lib/legal/types';
 import LegalError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 
+export const dynamic = 'force-dynamic';
+
 const FALLBACK_TITLE = 'Terms & Conditions | Connection Rave';
 const FALLBACK_DESCRIPTION =
   'Review the current draft terms and conditions for Connection Rave website, tickets, entry and VIP enquiries.';

@@ -12,6 +12,7 @@ import AudioBars from '../ui/AudioBars';
 import DancingCrowd, { LaserLights, DiscoBall } from '../ui/DancingCrowd';
 import DESTINYShatter from '../ui/DESTINYShatter';
 import { stableUnit, stableSigned } from '@/lib/stable-visual';
+import type { HomeEvent } from './types';
 
 interface Particle {
   width: number;
@@ -170,7 +171,7 @@ function EnhancedLaserBeams() {
   );
 }
 
-function HeroBackground() {
+function HeroBackground({ image }: { image: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -188,7 +189,8 @@ function HeroBackground() {
     >
       {/* Hero background image with pulse */}
       <motion.div
-        className="absolute inset-0 bg-[url('/assets/hero-crowd.jpg')] bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${image})` }}
         animate={{
           scale: [1, 1.02, 1],
         }}
@@ -296,7 +298,7 @@ function HeroBackground() {
   );
 }
 
-function DestinyTitle() {
+function DestinyTitle({ text }: { text: string }) {
   return (
     <motion.div
       variants={fadeUp}
@@ -326,7 +328,7 @@ function DestinyTitle() {
 
       {/* DESTINY Light Sweep & Shatter */}
       <DESTINYShatter
-        text="DESTINY"
+        text={text}
         fontSize={200}
         className="font-heading text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] font-black uppercase leading-[0.8] tracking-wider text-white italic"
       />
@@ -355,11 +357,11 @@ function AudioVisualizer() {
   );
 }
 
-export default function HeroSection() {
+export default function HeroSection({ event }: { event: HomeEvent }) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[84px]">
       {/* Background layers */}
-      <HeroBackground />
+      <HeroBackground image={event.hero?.src || '/assets/hero-crowd.jpg'} />
 
       {/* Lasers */}
       <EnhancedLaserBeams />
@@ -436,11 +438,11 @@ export default function HeroSection() {
             variants={fadeUp}
             className="font-heading uppercase tracking-[0.25em] text-xs sm:text-sm text-white/90 font-medium mb-1"
           >
-            Perth&apos;s next high-energy rave experience
+            {event.eyebrow || event.shortDescription || 'EVENT DETAILS'}
           </motion.p>
 
           {/* DESTINY wordmark with pulsing subwoofer circles */}
-          <DestinyTitle />
+          <DestinyTitle text={event.title} />
 
           {/* Audio Visualizer */}
           <AudioVisualizer />
@@ -448,9 +450,7 @@ export default function HeroSection() {
           {/* Paragraph description */}
           <motion.div variants={fadeUp} className="max-w-2xl mt-2 flex flex-col gap-1">
             <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed font-body font-medium">
-              In a world full of noise, we come together as one.<br />
-              Music is the language. Energy is the connection.<br />
-              Welcome to Connection Rave.
+              {event.description || event.shortDescription || 'Event details will be published here when confirmed.'}
             </p>
           </motion.div>
 
@@ -467,7 +467,7 @@ export default function HeroSection() {
               ⚠️
             </motion.span>
             <span className="font-heading uppercase tracking-[0.15em] text-xs sm:text-sm text-rave-red font-bold">
-              FINAL TICKETS SELLING FAST – DON&apos;T MISS OUT
+              {event.dateStatus.toUpperCase() === 'CONFIRMED' ? 'EVENT DETAILS CONFIRMED' : 'EVENT DETAILS TO BE CONFIRMED'}
             </span>
           </motion.div>
 
@@ -493,14 +493,14 @@ export default function HeroSection() {
               }
               className="!px-10 !py-4.5 !rounded-full !text-base sm:!text-lg border border-white/15 hover:border-rave-red shadow-[0_0_30px_rgba(255,23,61,0.65)] hover:shadow-[0_0_40px_rgba(255,23,61,0.85)]"
             >
-              Get Your Ticket
+              View Ticket Details
             </NeonButton>
             <motion.span
               className="font-heading uppercase tracking-[0.2em] text-[10px] sm:text-xs text-rave-muted font-bold"
               animate={{ opacity: [0.7, 1, 0.7] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              ONLY LIMITED TICKETS REMAINING
+              {event.scheduleStatus.toUpperCase() === 'CONFIRMED' ? 'SCHEDULE CONFIRMED' : 'SCHEDULE TO BE CONFIRMED'}
             </motion.span>
           </motion.div>
         </motion.div>

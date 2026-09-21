@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Ticket, Zap, Flame, Clock, ShieldCheck, BadgeCheck, Users, ChevronRight } from 'lucide-react';
+import { Ticket, Zap, Flame, Clock, ShieldCheck, BadgeCheck, Users } from 'lucide-react';
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
-import { ticketTiers, trustItems } from '@/lib/data';
+import type { HomeTicketTier, HomeTrustItem } from './types';
 import { fadeUp, staggerContainer, bounceIn } from '@/lib/animations';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -20,7 +20,10 @@ const featureIcons = [Ticket, Flame, Clock];
 
 // Animated counter component
 function AnimatedCounter({ value, duration = 2000 }: { value: number; duration?: number }) {
-  const [count, setCount] = useState(0);
+  // Keep the server-backed value visible before the card enters the viewport.
+  // The previous zero state made valid prices appear as "$ 0" to users and
+  // accessibility tools until the scroll animation started.
+  const [count, setCount] = useState<number | null>(null);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
   const hasAnimated = useRef(false);
@@ -30,7 +33,8 @@ function AnimatedCounter({ value, duration = 2000 }: { value: number; duration?:
       hasAnimated.current = true;
       let start = 0;
       const end = value;
-      const incrementTime = (duration / end) * 0.8;
+      if (end <= 0) return;
+      const incrementTime = Math.max(16, (duration / end) * 0.8);
 
       const timer = setInterval(() => {
         start += 1;
@@ -42,7 +46,7 @@ function AnimatedCounter({ value, duration = 2000 }: { value: number; duration?:
     }
   }, [isInView, value, duration]);
 
-  return <span ref={ref}>{count}</span>;
+  return <span ref={ref}>{count ?? value}</span>;
 }
 
 // Price with counter animation
@@ -63,7 +67,7 @@ function AnimatedPrice({ price, isNeon = false }: { price: string; isNeon?: bool
   );
 }
 
-export default function TicketsSection() {
+export default function TicketsSection({ ticketTiers, trustItems }: { ticketTiers: HomeTicketTier[]; trustItems: HomeTrustItem[] }) {
   return (
     <section className="relative py-20 md:py-28 overflow-hidden bg-rave-black">
       {/* Background Grid */}
@@ -118,7 +122,7 @@ export default function TicketsSection() {
               ⚡
             </motion.span>
             <span className="font-heading uppercase tracking-[0.12em] text-xs sm:text-sm text-rave-red font-bold">
-              Final Release Selling Fast — Limited Spots Remaining
+              Availability shown from the published event data
             </span>
             <motion.span
               animate={{ rotate: [15, -15, 15] }}
@@ -142,8 +146,6 @@ export default function TicketsSection() {
             const CardIcon = cardIcons[index % cardIcons.length];
             const isStudent = index === 0;
             const isFinalRelease = index === 1;
-            const isAtDoor = index === 2;
-
             return (
               <motion.div
                 key={tier.name}
@@ -234,31 +236,29 @@ export default function TicketsSection() {
                 </div>
 
                 {/* CTA Button */}
-                {isStudent ? (
+                {tier.purchasableOnline ? (
                   <NeonButton
                     href="/tickets"
                     hideChevron={true}
                     intense={true}
                     className="w-full justify-center !bg-white !text-[#D10A24] hover:!bg-white/95 !rounded-full !py-4 shadow-[0_0_20px_rgba(255,255,255,0.35)] font-bold"
                   >
-                    ↳ Lock In Student&apos;s Deal
+                    View online ticket options
                   </NeonButton>
-                ) : isFinalRelease ? (
-                  <NeonButton
-                    href="/tickets"
-                    hideChevron={true}
-                    intense={true}
-                    rightIcon={<span className="text-white font-extrabold tracking-tighter ml-1 transition-transform duration-300 group-hover:translate-x-1 inline-block">»</span>}
-                    className="w-full justify-center !rounded-full !py-4 shadow-[0_0_25px_rgba(255,23,61,0.5)] hover:shadow-[0_0_35px_rgba(255,23,61,0.7)]"
-                  >
-                    ↳ Secure your tickets
-                  </NeonButton>
-                ) : (
+                ) : tier.purchasableAtDoor ? (
                   <div className="h-[52px] flex items-center justify-center rounded-full border border-white/5 bg-white/[0.01]">
                     <span className="text-xs text-rave-muted font-heading uppercase tracking-widest font-semibold">
-                      Purchasable at the Entrance
+                      Purchasable at the entrance
                     </span>
                   </div>
+                ) : (
+                  <NeonButton
+                    href="/tickets"
+                    variant="ghost"
+                    className="w-full justify-center !rounded-full !py-4"
+                  >
+                    View ticket details
+                  </NeonButton>
                 )}
               </motion.div>
             );

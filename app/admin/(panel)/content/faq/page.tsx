@@ -18,7 +18,7 @@ export default async function FaqAdminPage({ searchParams }: { searchParams: Pro
 
   const requested = (await searchParams).category;
   const category = typeof requested === 'string' && FAQ_CATEGORY_OPTIONS.some((c) => c.value === requested) ? requested : FAQ_CATEGORY_OPTIONS[0]?.value ?? '';
-  const result = await (await getRepository('faq')).list({ page: 1, pageSize: 500 });
+  const result = await (await getRepository('faq')).list({ page: 1, pageSize: 100 });
 
   const header = (
     <AdminPageHeader

@@ -4,7 +4,7 @@ import type { ReactElement } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
-import { footerLinks, siteNav } from '@/lib/data';
+import { footerLinks, siteNav } from '@/lib/navigation';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { PartnersFooterContact } from '@/lib/partners/types';
 

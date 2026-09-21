@@ -7,10 +7,10 @@ import { Crown, Wine, Users } from 'lucide-react';
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
-import { boothPackage } from '@/lib/data';
+import type { HomeBoothPackage } from './types';
 import { fadeUp, staggerContainer, parallaxDown } from '@/lib/animations';
 
-export default function VipTableSection() {
+export default function VipTableSection({ boothPackage }: { boothPackage: HomeBoothPackage | null }) {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -113,7 +113,7 @@ export default function VipTableSection() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 }}
                 >
-                  {boothPackage.name}
+                  {boothPackage?.name ?? 'VIP details not published'}
                 </motion.span>
 
                 {/* Animated price */}
@@ -125,7 +125,7 @@ export default function VipTableSection() {
                   transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.4 }}
                 >
                   <span className="font-heading text-5xl sm:text-6xl lg:text-7xl font-bold text-neon-red animate-neon-glow-pulse">
-                    {boothPackage.price}
+                    {boothPackage?.price ?? '—'}
                   </span>
                 </motion.div>
 
@@ -142,14 +142,14 @@ export default function VipTableSection() {
                     whileHover={{ scale: 1.05 }}
                   >
                     <Users className="w-4 h-4 text-rave-red" />
-                    <span className="font-heading uppercase tracking-wider text-sm text-white">{boothPackage.people}</span>
+                    <span className="font-heading uppercase tracking-wider text-sm text-white">{boothPackage?.people ?? 'Details to be confirmed'}</span>
                   </motion.div>
                   <motion.div
                     className="flex items-center gap-2"
                     whileHover={{ scale: 1.05 }}
                   >
                     <Wine className="w-4 h-4 text-rave-red" />
-                    <span className="font-heading uppercase tracking-wider text-sm text-white">{boothPackage.bottles}</span>
+                    <span className="font-heading uppercase tracking-wider text-sm text-white">{boothPackage?.bottles ?? 'Details to be confirmed'}</span>
                   </motion.div>
                 </motion.div>
 
@@ -161,7 +161,7 @@ export default function VipTableSection() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.6 }}
                 >
-                  {boothPackage.choices.map((bottle, i) => (
+                  {(boothPackage?.choices ?? []).map((bottle, i) => (
                     <motion.div
                       key={i}
                       className="flex items-center gap-2"
@@ -175,6 +175,7 @@ export default function VipTableSection() {
                       <span className="text-sm text-white/70">{bottle}</span>
                     </motion.div>
                   ))}
+                  {!boothPackage?.choices.length && <p className="col-span-2 text-sm text-white/60">Bottle options will be shown when confirmed.</p>}
                 </motion.div>
 
                 <motion.div

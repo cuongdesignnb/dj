@@ -139,7 +139,8 @@ export function normalizeArtist(value: unknown): Artist | null {
 }
 
 export function normalizeArtists(raw: unknown): Artist[] {
-  const source = isRecord(raw) && Array.isArray(raw.artists) ? raw.artists : raw;
+  const envelope = isRecord(raw) && 'data' in raw ? raw.data : raw;
+  const source = isRecord(envelope) && Array.isArray(envelope.artists) ? envelope.artists : envelope;
   if (!Array.isArray(source)) return [];
   return source.flatMap((item) => {
     const parsed = normalizeArtist(item);

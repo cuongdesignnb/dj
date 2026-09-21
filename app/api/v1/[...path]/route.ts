@@ -67,6 +67,9 @@ import {
   vipCheckoutSchema,
   zodFieldErrors,
 } from '@/server/validators/api';
+import type { SingletonKey } from '@/lib/admin/common/resource';
+import { aboutContentDefinition, contactContentDefinition, homeContentDefinition } from '@/lib/admin/content/definitions';
+import { integrationsDefinition, languageSettingsDefinition, shippingDefinition, siteSettingsDefinition, socialSettingsDefinition } from '@/lib/admin/settings/definitions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -129,8 +132,277 @@ function isUuid(value: string) {
 }
 
 function adminResourcePermission(resource: string, action: 'view' | 'create' | 'edit' | 'delete' | 'publish') {
-  const normalized = resource === 'orders' || resource === 'payments' || resource === 'ticket-purchases' || resource === 'vip-bookings' ? 'orders' : resource === 'staff' ? 'staff' : resource === 'roles' ? 'roles' : resource === 'settings' || resource === 'audit' || resource === 'tasks' ? 'settings' : resource === 'faq' || resource === 'legal' || resource === 'booking-requests' || resource === 'contact-messages' ? 'support' : resource;
+  const normalized = resource === 'orders' || resource === 'payments' || resource === 'ticket-purchases' || resource === 'vip-bookings' ? 'orders' : resource === 'staff' ? 'staff' : resource === 'roles' ? 'roles' : resource === 'settings' || resource === 'audit' || resource === 'tasks' ? 'settings' : resource === 'faq' || resource === 'legal' ? 'content' : resource === 'booking-requests' || resource === 'contact-messages' ? 'support' : resource;
   return `${normalized}.${action}`;
+}
+
+type JsonRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function stringValue(value: unknown, fallback = '') {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function booleanValue(value: unknown, fallback = false) {
+  return typeof value === 'boolean' ? value : fallback;
+}
+
+function jsonValue(value: unknown) {
+  return value === null ? Prisma.JsonNull : (value as Prisma.InputJsonValue);
+}
+
+function safePublicUrl(value: unknown) {
+  return typeof value === 'string' && (value === '' || value.startsWith('/') || value.startsWith('https://') || value.startsWith('http://'));
+}
+
+/** Keep singleton writes JSON-only and prevent unsafe URLs from reaching public rendering. */
+function cleanSingletonInput(value: unknown): JsonRecord {
+  if (!isRecord(value)) throw validationError({ body: 'Request body must be an object.' });
+  const serialized = JSON.stringify(value);
+  if (serialized.length > 500_000) throw validationError({ body: 'Request body is too large.' });
+
+  const clean = (input: unknown, key = ''): unknown => {
+    if (Array.isArray(input)) return input.slice(0, 500).map((item) => clean(item, key));
+    if (isRecord(input)) {
+      const output: JsonRecord = {};
+      for (const [childKey, childValue] of Object.entries(input)) {
+        if (childKey === '__proto__' || childKey === 'constructor' || childKey === 'prototype') continue;
+        output[childKey] = clean(childValue, childKey);
+      }
+      return output;
+    }
+    if (typeof input === 'string') {
+      if (/(?:href|url|src)$/i.test(key) && !safePublicUrl(input)) return '';
+      return input.slice(0, 20_000);
+    }
+    return input;
+  };
+
+  return clean(value) as JsonRecord;
+}
+
+const singletonRoutes: Record<string, { key: SingletonKey; permission: 'content' | 'settings' | 'products'; pageSlug?: string }> = {
+  'content/home': { key: 'content-home', permission: 'content', pageSlug: 'home' },
+  'content/about': { key: 'content-about', permission: 'content', pageSlug: 'about' },
+  'content/contact': { key: 'content-contact', permission: 'content', pageSlug: 'contact' },
+  'settings/site': { key: 'settings-site', permission: 'settings' },
+  'settings/social': { key: 'settings-social', permission: 'settings' },
+  'settings/languages': { key: 'settings-languages', permission: 'settings' },
+  'settings/integrations': { key: 'settings-integrations', permission: 'settings' },
+  shipping: { key: 'shipping', permission: 'products' },
+};
+
+function singletonRoute(second?: string, third?: string) {
+  if (!second) return null;
+  return singletonRoutes[third ? `${second}/${third}` : second] ?? null;
+}
+
+function singletonDefaults(key: SingletonKey): JsonRecord {
+  if (key === 'content-home') return homeContentDefinition.seed() as JsonRecord;
+  if (key === 'content-about') return aboutContentDefinition.seed() as JsonRecord;
+  if (key === 'content-contact') return contactContentDefinition.seed() as JsonRecord;
+  if (key === 'settings-site') return siteSettingsDefinition.seed() as JsonRecord;
+  if (key === 'settings-social') return socialSettingsDefinition.seed() as JsonRecord;
+  if (key === 'settings-languages') return languageSettingsDefinition.seed() as JsonRecord;
+  if (key === 'settings-integrations') return integrationsDefinition.seed() as JsonRecord;
+  return shippingDefinition.seed() as JsonRecord;
+}
+
+async function settingMap(keys: string[]) {
+  const rows = await db.siteSetting.findMany({ where: { key: { in: keys } } });
+  return new Map(rows.map((row) => [row.key, row.valueJson as unknown]));
+}
+
+function settingValue(values: Map<string, unknown>, key: string, fallback: unknown) {
+  const value = values.get(key);
+  return value === undefined || value === null ? fallback : value;
+}
+
+function mediaSetting(values: Map<string, unknown>, key: string, fallback: unknown = null) {
+  const value = settingValue(values, key, fallback);
+  return isRecord(value) ? value : fallback;
+}
+
+async function readContentSingleton(slug: string, key: SingletonKey) {
+  const page = await db.contentPage.findUnique({ where: { slug }, include: { translations: true } });
+  if (!page) throw notFound(`Content page ${slug} not found.`);
+  const translation = page.translations.find((row) => row.locale === 'en') ?? page.translations[0];
+  const content = isRecord(translation?.contentJson) ? translation.contentJson : {};
+  return { ...singletonDefaults(key), ...content };
+}
+
+async function readSiteSingleton() {
+  const defaults = singletonDefaults('settings-site');
+  const values = await settingMap(['site.name', 'site.tagline', 'site.logo', 'site.favicon', 'seo.default_title', 'seo.default_description', 'seo.default_og_image', 'site.default_event_id', 'site.footer_tagline', 'legal.terms_path', 'legal.privacy_path', 'site.maintenance', 'site.maintenance_message']);
+  return {
+    ...defaults,
+    siteName: settingValue(values, 'site.name', defaults.siteName),
+    tagline: settingValue(values, 'site.tagline', defaults.tagline),
+    logo: mediaSetting(values, 'site.logo', defaults.logo),
+    favicon: mediaSetting(values, 'site.favicon', defaults.favicon),
+    defaultTitle: settingValue(values, 'seo.default_title', defaults.defaultTitle),
+    defaultDescription: settingValue(values, 'seo.default_description', defaults.defaultDescription),
+    ogImage: mediaSetting(values, 'seo.default_og_image', defaults.ogImage),
+    defaultEventId: settingValue(values, 'site.default_event_id', defaults.defaultEventId),
+    footerTagline: settingValue(values, 'site.footer_tagline', defaults.footerTagline),
+    termsPath: settingValue(values, 'legal.terms_path', defaults.termsPath),
+    privacyPath: settingValue(values, 'legal.privacy_path', defaults.privacyPath),
+    maintenance: booleanValue(settingValue(values, 'site.maintenance', defaults.maintenance), Boolean(defaults.maintenance)),
+    maintenanceMessage: settingValue(values, 'site.maintenance_message', defaults.maintenanceMessage),
+  };
+}
+
+async function readSocialSingleton() {
+  const defaults = singletonDefaults('settings-social');
+  const values = await settingMap(['contact.email', 'contact.phone', 'contact.address', 'social.instagram', 'social.facebook', 'social.youtube', 'social.tiktok', 'social.spotify']);
+  return {
+    ...defaults,
+    email: settingValue(values, 'contact.email', defaults.email),
+    phone: settingValue(values, 'contact.phone', defaults.phone),
+    address: settingValue(values, 'contact.address', defaults.address),
+    instagram: settingValue(values, 'social.instagram', defaults.instagram),
+    facebook: settingValue(values, 'social.facebook', defaults.facebook),
+    youtube: settingValue(values, 'social.youtube', defaults.youtube),
+    tiktok: settingValue(values, 'social.tiktok', defaults.tiktok),
+    spotify: settingValue(values, 'social.spotify', defaults.spotify),
+  };
+}
+
+async function readLanguageSingleton() {
+  const defaults = singletonDefaults('settings-languages');
+  const values = await settingMap(['site.default_locale', 'site.enabled_locales', 'content.translation_status']);
+  const enabled = settingValue(values, 'site.enabled_locales', defaults.enabled);
+  return {
+    ...defaults,
+    defaultLanguage: settingValue(values, 'site.default_locale', defaults.defaultLanguage),
+    enabled: Array.isArray(enabled) ? enabled : defaults.enabled,
+    translations: settingValue(values, 'content.translation_status', defaults.translations),
+  };
+}
+
+const INTEGRATION_ITEMS = [
+  { id: 'ticket-provider', provider: 'ticket-provider', name: 'Ticket Provider', description: 'Hosted ticket sales for events.', endpoint: '' },
+  { id: 'square', provider: 'square', name: 'Square', description: 'Card payments, orders, refunds and webhooks.', endpoint: '/api/v1/webhooks/square' },
+  { id: 'mailchimp', provider: 'mailchimp', name: 'Mailchimp', description: 'Newsletter audience.', endpoint: '' },
+  { id: 'brevo', provider: 'brevo', name: 'Brevo', description: 'Transactional and newsletter email.', endpoint: '' },
+  { id: 'social', provider: 'social', name: 'Social Links', description: 'Public profile links (Social / Contact).', endpoint: '' },
+  { id: 'analytics', provider: 'analytics', name: 'Analytics', description: 'Site analytics.', endpoint: '' },
+] as const;
+
+function integrationConfigured(id: string) {
+  if (id === 'square') return Boolean(env('SQUARE_ACCESS_TOKEN') && env('SQUARE_LOCATION_ID'));
+  if (id === 'mailchimp') return Boolean(env('MAILCHIMP_API_KEY'));
+  if (id === 'brevo') return Boolean(env('BREVO_API_KEY'));
+  if (id === 'social') return false;
+  return false;
+}
+
+async function readIntegrationsSingleton() {
+  const rows = await db.integrationSetting.findMany({ where: { provider: { in: INTEGRATION_ITEMS.map((item) => item.provider) } } });
+  const byProvider = new Map(rows.map((row) => [row.provider, row]));
+  const social = await readSocialSingleton();
+  return {
+    items: INTEGRATION_ITEMS.map((item) => {
+      const row = byProvider.get(item.provider);
+      const config = isRecord(row?.publicConfig) ? row.publicConfig : {};
+      const endpoint = typeof config.endpoint === 'string' ? config.endpoint : item.endpoint;
+      const configured = item.id === 'social' ? Object.values(social).some((value) => typeof value === 'string' && value.length > 0) : integrationConfigured(item.id);
+      const state = row?.status === 'ERROR' ? 'error' : configured ? 'configured' : 'not-connected';
+      return { id: item.id, name: item.name, description: item.description, state, keyConfigured: false, newKey: '', endpoint };
+    }),
+  };
+}
+
+async function readShippingSingleton() {
+  const defaults = singletonDefaults('shipping');
+  const values = await settingMap(['shipping.config']);
+  const stored = values.get('shipping.config');
+  return { ...defaults, ...(isRecord(stored) ? stored : {}) };
+}
+
+async function readAdminSingleton(route: { key: SingletonKey; pageSlug?: string }) {
+  if (route.pageSlug) return readContentSingleton(route.pageSlug, route.key);
+  if (route.key === 'settings-site') return readSiteSingleton();
+  if (route.key === 'settings-social') return readSocialSingleton();
+  if (route.key === 'settings-languages') return readLanguageSingleton();
+  if (route.key === 'settings-integrations') return readIntegrationsSingleton();
+  return readShippingSingleton();
+}
+
+async function writeSettings(values: JsonRecord, mappings: Record<string, string>, isPublic = true) {
+  const writes = Object.entries(mappings)
+    .filter(([field]) => field in values)
+    .map(([field, key]) => db.siteSetting.upsert({
+      where: { key },
+      update: { valueJson: jsonValue(values[field]), isPublic },
+      create: { key, valueJson: jsonValue(values[field]), isPublic },
+    }));
+  if (writes.length) await db.$transaction(writes);
+}
+
+async function writeContentSingleton(slug: string, key: SingletonKey, values: JsonRecord, requestId: string, actorUserId: string) {
+  const before = await db.contentPage.findUnique({ where: { slug }, include: { translations: true } });
+  if (!before) throw notFound(`Content page ${slug} not found.`);
+  const oldTranslation = before.translations.find((row) => row.locale === 'en') ?? before.translations[0];
+  const oldContent = isRecord(oldTranslation?.contentJson) ? oldTranslation.contentJson : {};
+  const contentJson = { ...singletonDefaults(key), ...oldContent, ...values };
+  const titleValue = contentJson.title;
+  const title = isRecord(titleValue) ? stringValue(titleValue.en, before.slug) : stringValue(titleValue, before.slug);
+  await db.$transaction(async (tx) => {
+    await tx.contentPage.update({ where: { id: before.id }, data: { updatedAt: new Date() } });
+    for (const locale of ['en', 'vi'] as const) {
+      await tx.contentPageTranslation.upsert({
+        where: { pageId_locale: { pageId: before.id, locale } },
+        update: { title: title || before.slug, contentJson: jsonValue(contentJson) },
+        create: { pageId: before.id, locale, title: title || before.slug, contentJson: jsonValue(contentJson) },
+      });
+    }
+  });
+  const after = await db.contentPage.findUnique({ where: { id: before.id }, include: { translations: true } });
+  await writeAuditLog({ actorUserId, action: 'update', entityType: 'content_page', entityId: before.id, before, after, requestId });
+  return contentJson;
+}
+
+async function writeIntegrationsSingleton(values: JsonRecord) {
+  const incoming = Array.isArray(values.items) ? values.items.filter(isRecord) : [];
+  for (const item of incoming) {
+    const key = stringValue(item.newKey).trim();
+    if (key) throw validationError({ items: 'Integration secrets cannot be stored until a server-side secret store is configured.' });
+    const id = stringValue(item.id);
+    const definition = INTEGRATION_ITEMS.find((candidate) => candidate.id === id);
+    if (!definition) continue;
+    const endpoint = stringValue(item.endpoint).trim();
+    if (!safePublicUrl(endpoint)) throw validationError({ items: `${definition.name} endpoint must be an http(s) or local path URL.` });
+    await db.integrationSetting.upsert({
+      where: { provider: definition.provider },
+      update: { publicConfig: jsonValue(endpoint ? { endpoint } : {}) },
+      create: { provider: definition.provider, status: 'NOT_CONFIGURED', publicConfig: jsonValue(endpoint ? { endpoint } : {}) },
+    });
+  }
+  return readIntegrationsSingleton();
+}
+
+async function writeAdminSingleton(route: { key: SingletonKey; pageSlug?: string }, values: JsonRecord, requestId: string, actorUserId: string) {
+  if (route.pageSlug) return writeContentSingleton(route.pageSlug, route.key, values, requestId, actorUserId);
+  if (route.key === 'settings-site') {
+    await writeSettings(values, { siteName: 'site.name', tagline: 'site.tagline', logo: 'site.logo', favicon: 'site.favicon', defaultTitle: 'seo.default_title', defaultDescription: 'seo.default_description', ogImage: 'seo.default_og_image', defaultEventId: 'site.default_event_id', footerTagline: 'site.footer_tagline', termsPath: 'legal.terms_path', privacyPath: 'legal.privacy_path', maintenance: 'site.maintenance', maintenanceMessage: 'site.maintenance_message' });
+    return readSiteSingleton();
+  }
+  if (route.key === 'settings-social') {
+    await writeSettings(values, { email: 'contact.email', phone: 'contact.phone', address: 'contact.address', instagram: 'social.instagram', facebook: 'social.facebook', youtube: 'social.youtube', tiktok: 'social.tiktok', spotify: 'social.spotify' });
+    return readSocialSingleton();
+  }
+  if (route.key === 'settings-languages') {
+    await writeSettings(values, { defaultLanguage: 'site.default_locale', enabled: 'site.enabled_locales' });
+    await writeSettings(values, { translations: 'content.translation_status' }, false);
+    return readLanguageSingleton();
+  }
+  if (route.key === 'settings-integrations') return writeIntegrationsSingleton(values);
+  await writeSettings({ 'shipping.config': values }, { 'shipping.config': 'shipping.config' }, false);
+  return readShippingSingleton();
 }
 
 function jsonAdminRecord(row: any) {
@@ -849,6 +1121,17 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       const row = await storeMedia(file as File, altText, session.user.id);
       await writeAuditLog({ actorUserId: session.user.id, action: 'upload', entityType: 'media', entityId: row.id, after: row, requestId });
       return dataResponse(adminRecord('media', row), { status: 201 });
+    }
+    const singleton = singletonRoute(second, third);
+    if (singleton && request.method === 'GET') {
+      await requirePermission(request, `${singleton.permission}.view`);
+      return dataResponse(await readAdminSingleton(singleton));
+    }
+    if (singleton && request.method === 'PUT') {
+      assertSameOrigin(request);
+      const session = await requirePermission(request, `${singleton.permission}.edit`, true);
+      const values = cleanSingletonInput(await body(request));
+      return dataResponse(await writeAdminSingleton(singleton, values, requestId, session.user.id));
     }
     const resource = second;
     const resourceId = third;

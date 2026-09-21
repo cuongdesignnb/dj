@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { navItems, siteNav } from '@/lib/data';
+import { navItems, siteNav } from '@/lib/navigation';
 
 interface HeaderProps {
   ctaHref?: string;

@@ -7,11 +7,11 @@ import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
-import { artists } from '@/lib/data';
+import type { HomeArtist } from './types';
 import { fadeUp, staggerContainer, scaleIn } from '@/lib/animations';
 
 interface ArtistCardProps {
-  artist: typeof artists[number];
+  artist: HomeArtist;
   index: number;
 }
 
@@ -154,10 +154,10 @@ function ArtistCard({ artist, index }: ArtistCardProps) {
   );
 }
 
-export default function LineupPreview() {
+export default function LineupPreview({ artists }: { artists: HomeArtist[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(artists.length > 1);
 
   const checkScroll = () => {
     if (!scrollRef.current) return;
@@ -282,9 +282,13 @@ export default function LineupPreview() {
             className="flex gap-5 overflow-x-auto scrollbar-hide pb-6 px-1 snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {artists.map((artist, index) => (
-              <ArtistCard key={artist.name} artist={artist} index={index} />
-            ))}
+            {artists.length > 0 ? (
+              artists.map((artist, index) => <ArtistCard key={artist.href} artist={artist} index={index} />)
+            ) : (
+              <p className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.03] px-6 py-10 text-center text-sm text-rave-muted">
+                Artist details will be published here when confirmed.
+              </p>
+            )}
           </motion.div>
         </div>
       </Container>

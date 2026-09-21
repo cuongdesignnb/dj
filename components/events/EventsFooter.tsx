@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
-import { footerLinks, siteNav } from '@/lib/data';
+import { footerLinks, siteNav } from '@/lib/navigation';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { EventsFooterData } from '@/lib/events/listing-types';
 

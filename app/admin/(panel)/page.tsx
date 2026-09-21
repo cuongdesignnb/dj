@@ -34,7 +34,7 @@ import { RESOURCES, getRepository, getSingletonRepository } from '@/lib/admin/re
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
-async function records(key: ResourceKey, pageSize = 200): Promise<AdminRecord[] | null> {
+async function records(key: ResourceKey, pageSize = 100): Promise<AdminRecord[] | null> {
   const result = await (await getRepository(key)).list({ page: 1, pageSize });
   return result.ok ? result.data.items : null;
 }

@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Container from '../ui/Container';
-import { footerLinks } from '@/lib/data';
+import { footerLinks } from '@/lib/navigation';
+import type { HomeFooterData, HomePartner } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -42,20 +45,17 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-const partners = [
-  { label: 'Partners to be announced', type: 'text' },
-];
-
-const socialLinks = [
-  { icon: FacebookIcon, href: '#', label: 'Facebook' },
-  { icon: InstagramIcon, href: '#', label: 'Instagram' },
-  { icon: TikTokIcon, href: '#', label: 'TikTok' },
-  { icon: YoutubeIcon, href: '#', label: 'YouTube' },
-];
+const socialIconMap = {
+  facebook: FacebookIcon,
+  instagram: InstagramIcon,
+  tiktok: TikTokIcon,
+  youtube: YoutubeIcon,
+};
 
 // Marquee animation for partner logos
-function MarqueeStrip() {
-  const doubledPartners = [...partners, ...partners, ...partners];
+function MarqueeStrip({ partners }: { partners: HomePartner[] }) {
+  const source = partners.length ? partners : [{ id: 'pending', label: 'Partners to be announced', href: null }];
+  const doubledPartners = [...source, ...source, ...source];
 
   return (
     <div className="relative overflow-hidden py-4 bg-rave-panel/30">
@@ -67,7 +67,7 @@ function MarqueeStrip() {
       <div className="flex animate-marquee whitespace-nowrap">
         {doubledPartners.map((p, i) => (
           <motion.span
-            key={i}
+            key={`${p.id}-${i}`}
             className="font-heading text-sm tracking-wider text-white/40 hover:text-white transition-colors duration-300 mx-8 cursor-default"
             whileHover={{ scale: 1.1, color: '#ff173d' }}
           >
@@ -79,12 +79,31 @@ function MarqueeStrip() {
   );
 }
 
-export default function PartnersFooter() {
+export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
+  const [email, setEmail] = useState('');
+  const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+
+  const submitNewsletter = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setNewsletterState('sending');
+    try {
+      const response = await fetch('/api/v1/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setNewsletterState(response.ok ? 'success' : 'error');
+      if (response.ok) setEmail('');
+    } catch {
+      setNewsletterState('error');
+    }
+  };
+
   return (
     <footer className="relative overflow-hidden">
       {/* Partner Strip with Marquee */}
       <div className="relative border-t border-white/[0.06] bg-rave-deep">
-        <MarqueeStrip />
+        <MarqueeStrip partners={footer.partners} />
 
         <Container>
           <motion.div
@@ -147,9 +166,9 @@ export default function PartnersFooter() {
               <motion.div variants={fadeUp} className="flex flex-col items-center gap-2">
                 <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading">Official Partners</span>
                 <div className="flex items-center gap-4 md:gap-6">
-                  {partners.map((p, i) => (
+                  {(footer.partners.length ? footer.partners : [{ id: 'pending', label: 'Partners to be announced', href: null }]).map((p) => (
                     <motion.span
-                      key={p.label}
+                      key={p.id}
                       className="font-heading text-sm tracking-wider text-white/60 hover:text-white transition-colors uppercase cursor-default"
                       whileHover={{ scale: 1.1, color: '#ff173d' }}
                       transition={{ type: 'spring', stiffness: 400 }}
@@ -194,11 +213,15 @@ export default function PartnersFooter() {
                   Uniting music, energy and people for unforgettable experiences.
                 </p>
                 <div className="flex items-center gap-3">
-                  {socialLinks.map((social, i) => (
+                  {footer.socials.map((social, i) => {
+                    const Icon = socialIconMap[social.platform];
+                    return (
                     <motion.a
-                      key={social.label}
+                      key={social.platform}
                       href={social.href}
-                      aria-label={social.label}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={social.platform}
                       className="w-9 h-9 rounded-xl bg-white/5 border border-white/[0.08] flex items-center justify-center text-rave-muted hover:text-rave-red hover:border-rave-red/30 hover:bg-rave-red/10 transition-all duration-300"
                       whileHover={{ scale: 1.15, rotate: 5 }}
                       whileTap={{ scale: 0.95 }}
@@ -207,9 +230,10 @@ export default function PartnersFooter() {
                       viewport={{ once: true }}
                       transition={{ delay: 0.2 + i * 0.05 }}
                     >
-                      <social.icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4" />
                     </motion.a>
-                  ))}
+                    );
+                  })}
                 </div>
               </motion.div>
 
@@ -275,14 +299,13 @@ export default function PartnersFooter() {
                 <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">Contact</h4>
                 <ul className="flex flex-col gap-2.5 text-sm text-rave-muted">
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    VIP & Tables: details to be confirmed
+                    {footer.address || 'VIP & table details to be confirmed'}
                   </motion.li>
                   <li>
                     <Link href="/contact" className="hover:text-white transition-colors">Send an enquiry</Link>
                   </li>
-                  <li>
-                    Contact details to be confirmed
-                  </li>
+                  {footer.email ? <li><a href={`mailto:${footer.email}`} className="hover:text-white transition-colors">{footer.email}</a></li> : <li>Contact details to be confirmed</li>}
+                  {footer.phone && <li><a href={`tel:${footer.phone}`} className="hover:text-white transition-colors">{footer.phone}</a></li>}
                 </ul>
               </motion.div>
 
@@ -295,10 +318,13 @@ export default function PartnersFooter() {
               >
                 <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">Newsletter</h4>
                 <p className="text-sm text-rave-muted mb-4">Stay updated on events & exclusive offers.</p>
-                <form className="flex" onSubmit={(e) => e.preventDefault()}>
+                <form className="flex" onSubmit={submitNewsletter}>
                   <motion.input
                     type="email"
                     placeholder="Enter your email"
+                    required
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     className="flex-1 min-w-0 bg-rave-panel border border-white/[0.08] rounded-l-xl px-4 py-2.5 text-sm text-white placeholder:text-rave-muted/50 focus:outline-none transition-colors"
                     aria-label="Email for newsletter"
                     whileFocus={{
@@ -308,6 +334,7 @@ export default function PartnersFooter() {
                   />
                   <motion.button
                     type="submit"
+                    disabled={newsletterState === 'sending'}
                     className="px-4 py-2.5 bg-rave-red hover:bg-rave-red2 rounded-r-xl transition-colors flex items-center justify-center"
                     aria-label="Subscribe to newsletter"
                     whileHover={{ scale: 1.05 }}
@@ -316,6 +343,8 @@ export default function PartnersFooter() {
                     <ArrowRight className="w-4 h-4 text-white" />
                   </motion.button>
                 </form>
+                {newsletterState === 'success' && <p className="mt-2 text-xs text-emerald-300">You&apos;re subscribed.</p>}
+                {newsletterState === 'error' && <p className="mt-2 text-xs text-rave-red">Could not subscribe. Please try again.</p>}
               </motion.div>
             </div>
           </div>

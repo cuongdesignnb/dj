@@ -12,6 +12,8 @@ import { getAboutRepository } from '@/lib/about/repository';
 import { getContentSeo } from '@/lib/seo/content';
 import { buildMetadata } from '@/lib/seo/metadata';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getContentSeo('about', { title: 'About Connection Rave', description: 'Learn about Connection Rave, its music, people and culture.' });
   return buildMetadata({ ...seo, path: '/about' });

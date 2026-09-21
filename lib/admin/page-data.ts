@@ -42,7 +42,7 @@ export function resourceOr404(key: string): ResourceDefinition<AdminRecord> {
 
 async function allRecords(key: ResourceKey): Promise<AdminRecord[]> {
   const repo = await getRepository(key);
-  const result = await repo.list({ page: 1, pageSize: 200 });
+  const result = await repo.list({ page: 1, pageSize: 100 });
   return result.ok ? result.data.items : [];
 }
 

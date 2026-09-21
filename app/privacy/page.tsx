@@ -6,6 +6,8 @@ import { isDraft } from '@/lib/legal/types';
 import LegalError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 
+export const dynamic = 'force-dynamic';
+
 const FALLBACK_TITLE = 'Privacy Policy | Connection Rave';
 const FALLBACK_DESCRIPTION =
   'Review the current privacy policy draft for Connection Rave website enquiries, booking requests and communications.';

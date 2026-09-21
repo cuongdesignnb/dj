@@ -14,6 +14,8 @@ import type { TicketsPageData } from '@/lib/tickets/types';
 import TicketsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 
+export const dynamic = 'force-dynamic';
+
 // No Offer/Event structured data: the event date is unconfirmed and payment is
 // handled elsewhere, so there is nothing here that can be represented honestly.
 
