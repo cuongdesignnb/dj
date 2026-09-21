@@ -1,11 +1,11 @@
 'use client';
 
 import type { ReactElement } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
-import { footerLinks, siteNav } from '@/lib/navigation';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { EventsFooterData } from '@/lib/events/listing-types';
 
@@ -59,6 +59,23 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
   const year = new Date().getFullYear();
   const socials = footer.socials.filter((social) => social.url);
   const partners = footer.partners ?? [];
+  const [quickLinks, setQuickLinks] = useState<Array<{ id: string; labelEn: string; href: string | null }>>([]);
+  const [legalLinks, setLegalLinks] = useState<Array<{ id: string; labelEn: string; href: string | null }>>([]);
+  const [secondaryLinks, setSecondaryLinks] = useState<Array<{ id: string; labelEn: string; href: string | null }>>([]);
+  const [global, setGlobal] = useState<{ tagline?: string; footerDescription?: string; copyright?: string }>({});
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/v1/navigation/FOOTER_QUICK').then((response) => response.json()),
+      fetch('/api/v1/navigation/FOOTER_LEGAL').then((response) => response.json()),
+      fetch('/api/v1/navigation/FOOTER_SECONDARY').then((response) => response.json()),
+      fetch('/api/v1/page-content/global-content').then((response) => response.json()),
+    ]).then(([quick, legal, secondary, content]) => {
+      setQuickLinks((quick?.data?.items ?? []) as Array<{ id: string; labelEn: string; href: string | null }>);
+      setLegalLinks((legal?.data?.items ?? []) as Array<{ id: string; labelEn: string; href: string | null }>);
+      setSecondaryLinks((secondary?.data?.items ?? []) as Array<{ id: string; labelEn: string; href: string | null }>);
+      setGlobal(content?.data?.data ?? {});
+    }).catch(() => undefined);
+  }, []);
 
   return (
     <footer className="relative border-t border-white/[0.06] bg-rave-black">
@@ -79,15 +96,15 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
               </div>
               <div className="flex flex-col">
                 <span className="font-heading font-bold leading-tight tracking-wider text-white">
-                  {siteNav.brandName}
+                  CONNECTION
                 </span>
                 <span className="text-[9px] uppercase tracking-[0.3em] text-rave-muted">
-                  {siteNav.tagline}
+                  {global.tagline}
                 </span>
               </div>
             </div>
             <p className="mb-5 text-sm leading-relaxed text-rave-muted">
-              Uniting music, energy and people for unforgettable experiences.
+              {global.footerDescription}
             </p>
             {socials.length > 0 && (
               <div className="flex items-center gap-3" aria-label="Social links">
@@ -140,18 +157,29 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
             </motion.div>
           )}
 
+          {secondaryLinks.length > 0 && (
+            <motion.div variants={fadeUp}>
+              <h2 className="mb-4 font-heading text-sm font-semibold uppercase tracking-[0.2em] text-white">
+                More
+              </h2>
+              <ul className="flex flex-col gap-2.5">
+                {secondaryLinks.map((link) => link.href && <li key={link.id}><Link href={link.href} className="inline-block text-sm text-rave-muted transition-colors duration-300 hover:text-white">{link.labelEn}</Link></li>)}
+              </ul>
+            </motion.div>
+          )}
+
           <motion.div variants={fadeUp}>
             <h2 className="mb-4 font-heading text-sm font-semibold uppercase tracking-[0.2em] text-white">
               Quick Links
             </h2>
             <ul className="flex flex-col gap-2.5">
-              {footerLinks.map((link) => (
-                <li key={link.href}>
+              {quickLinks.map((link) => link.href && (
+                <li key={link.id}>
                   <Link
                     href={link.href}
                     className="inline-block text-sm text-rave-muted transition-colors duration-300 hover:text-white"
                   >
-                    {link.label}
+                    {link.labelEn}
                   </Link>
                 </li>
               ))}
@@ -189,37 +217,10 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
 
         <div className="flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] py-6 sm:flex-row">
           <p className="text-xs text-rave-muted/60">
-            &copy; {year} Connection. All rights reserved.
+            {global.copyright || `© ${year}`}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/faq"
-              className="text-xs text-rave-muted/60 transition-colors hover:text-white"
-            >
-              FAQ
-            </Link>
-            <span aria-hidden className="text-rave-muted/30">|</span>
-            {footer.legalTermsHref ? (
-              <Link
-                href={footer.legalTermsHref}
-                className="text-xs text-rave-muted/60 transition-colors hover:text-white"
-              >
-                Terms &amp; Conditions
-              </Link>
-            ) : (
-              <span className="text-xs text-rave-muted/40">Terms &amp; Conditions</span>
-            )}
-            <span aria-hidden className="text-rave-muted/30">|</span>
-            {footer.legalPrivacyHref ? (
-              <Link
-                href={footer.legalPrivacyHref}
-                className="text-xs text-rave-muted/60 transition-colors hover:text-white"
-              >
-                Privacy Policy
-              </Link>
-            ) : (
-              <span className="text-xs text-rave-muted/40">Privacy Policy</span>
-            )}
+            {legalLinks.map((link, index) => link.href && <span key={link.id} className="flex items-center gap-4"><Link href={link.href} className="text-xs text-rave-muted/60 transition-colors hover:text-white">{link.labelEn}</Link>{index < legalLinks.length - 1 && <span aria-hidden className="text-rave-muted/30">|</span>}</span>)}
           </div>
         </div>
       </Container>

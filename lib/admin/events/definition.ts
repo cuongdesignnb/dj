@@ -128,7 +128,7 @@ export const eventsDefinition: ResourceDefinition<AdminEvent> = {
   }),
   form: {
     titleKey: 'name',
-    tabs: ['Overview', 'Schedule', 'Venue', 'Tickets', 'VIP Tables', 'Artists', 'Gallery', 'FAQ'],
+    tabs: ['Overview', 'Schedule', 'Venue', 'Artists', 'Gallery', 'FAQ'],
     seo: true,
     publish: { statuses: PUBLISH_OPTIONS, statusKey: 'status' },
     sections: [
@@ -160,34 +160,6 @@ export const eventsDefinition: ResourceDefinition<AdminEvent> = {
         f.textarea('venue.address', 'Address'),
         f.media('venue.image', 'Venue image'),
       ], { tab: 'Venue' }),
-      section('tickets', 'Tickets', [
-        f.select('tickets.providerMode', 'Ticket provider', opts(['none', 'Not connected'], ['external', 'External provider'])),
-        f.url('tickets.providerUrl', 'Provider URL', { width: 'half', required: true, showWhen: { key: 'tickets.providerMode', in: ['external'] } }),
-        f.repeater('tickets.tiers', 'Ticket tiers', [
-          f.text('name', 'Tier name', { required: true, width: 'half' }),
-          f.money('price', 'Price'),
-          f.text('badge', 'Badge', { width: 'half' }),
-          f.number('sortOrder', 'Sort order', { min: 0 }),
-          f.toggle('online', 'Purchasable online'),
-          f.toggle('door', 'Purchasable at door'),
-        ], { itemLabelKey: 'name', itemNoun: 'Tier' }),
-      ], { tab: 'Tickets', description: 'Sales happen on the provider; no ticket inventory is managed here.' }),
-      section('vip', 'VIP tables', [
-        f.toggle('vip.enabled', 'Enable VIP requests'),
-        f.select('vip.availabilityMode', 'Availability', opts(['on-request', 'On request'], ['managed', 'Managed by backend'])),
-        f.text('vip.packageName', 'Package name', { width: 'half', showWhen: { key: 'vip.enabled', in: [true] } }),
-        f.money('vip.price', 'Package price', { showWhen: { key: 'vip.enabled', in: [true] } }),
-        f.number('vip.capacity', 'Guests per booth', { min: 1, showWhen: { key: 'vip.enabled', in: [true] } }),
-        f.number('vip.includedBottles', 'Included bottles', { min: 0, showWhen: { key: 'vip.enabled', in: [true] } }),
-        f.repeater('vip.booths', 'Booths', [
-          f.text('code', 'Booth code', { required: true, width: 'half' }),
-          f.text('zone', 'Zone', { width: 'half' }),
-        ], { itemLabelKey: 'code', itemNoun: 'Booth', showWhen: { key: 'vip.enabled', in: [true] } }),
-        f.repeater('vip.bottles', 'Bottle options', [
-          f.text('name', 'Bottle', { required: true, width: 'half' }),
-          f.toggle('enabled', 'Offered'),
-        ], { itemLabelKey: 'name', itemNoun: 'Bottle', showWhen: { key: 'vip.enabled', in: [true] } }),
-      ], { tab: 'VIP Tables' }),
       section('artists', 'Artists', [f.multi('artistIds', 'Lineup', { optionSource: 'artists' })], { tab: 'Artists' }),
       section('gallery', 'Gallery', [f.multi('albumIds', 'Related albums', { optionSource: 'gallery' })], { tab: 'Gallery' }),
       section('faq', 'Event FAQ', [

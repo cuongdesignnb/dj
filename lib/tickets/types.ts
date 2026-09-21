@@ -108,6 +108,25 @@ export interface TicketsFinalCta {
   background?: MediaAsset;
 }
 
+export interface TicketsHeroContent {
+  breadcrumb: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  image?: MediaAsset | null;
+  sideNotes: string[];
+  footNotes: string[];
+}
+
+export interface TicketSelectorContent {
+  eyebrow: string;
+  title: string;
+  description: string;
+  aside?: string;
+  emptyTitle: string;
+  emptyDescription: string;
+}
+
 export interface TicketsFooterPartner {
   id: string;
   name: string;
@@ -129,6 +148,8 @@ export interface TicketsFooterData {
 
 export interface TicketsPageData {
   event: TicketEventInfo;
+  hero: TicketsHeroContent;
+  selector: TicketSelectorContent;
   tiers: TicketTier[];
   provider: TicketProviderAction;
   trustItems: TicketTrustItem[];

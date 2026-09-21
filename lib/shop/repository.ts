@@ -8,6 +8,7 @@ import { normalizeProduct, normalizeProducts } from './http';
 import { sortProducts } from './helpers';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
+import { fetchPublicListingContent, listingAction, listingImage, listingTitleLines } from '@/lib/cms/public-page';
 
 export interface ShopRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -33,13 +34,13 @@ function pageFor(products: Product[]): ShopPageData {
   const visual = products[0]?.images[0]?.image ?? { src: '', alt: '' };
   const featured = products.find((product) => product.featured) ?? products[0] ?? null;
   return {
-    hero: { eyebrow: 'MERCHANDISE', titleLines: ['WEAR THE', 'CONNECTION'], description: 'Published merchandise from the Connection collection.', primaryCta: { label: 'Shop the collection', href: '#catalogue' }, secondaryCta: featured ? { label: 'View featured product', href: `/shop/${featured.slug}` } : { label: 'Explore events', href: '/events' }, visual, composition: products.flatMap((product) => product.images.slice(0, 1).map((item) => item.image)), sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'] },
+    hero: { eyebrow: '', titleLines: [], description: '', primaryCta: { label: '', href: '' }, secondaryCta: { label: '', href: '' }, visual, composition: products.flatMap((product) => product.images.slice(0, 1).map((item) => item.image)), sideNotes: [] },
     featuredProduct: featured,
     featuredHighlights: featured?.featureLabels.map((label) => ({ label, icon: 'star' as const })) ?? [],
     products,
     benefits: [],
     productBenefits: [],
-    finalCta: { title: 'STAY CONNECTED', description: 'Explore the next published event.', primary: { label: 'View events', href: '/events' }, secondary: { label: 'View lineup', href: '/lineup' }, background: visual },
+    finalCta: { title: '', description: undefined, primary: { label: '', href: '' }, secondary: undefined, background: visual },
     footer: { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
   };
 }
@@ -106,26 +107,30 @@ export class HttpShopRepository implements ShopRepository {
     return { ok: true, data: sortProducts(normalizeProducts(result.raw).filter(isListed)) };
   }
 
-  /**
-   * Page copy is not something the products endpoint owns, so the hero, benefits
-   * and CTA keep their local wording while products come from the API. An empty
-   * API catalogue stays empty — local products are never mixed in.
-   */
   async getShopPage(): Promise<RepositoryResult<ShopPageData>> {
     const result = await this.getProducts();
     if (!result.ok) return result;
+    const content = await fetchPublicListingContent(this.baseUrl, 'shop-list', this.revalidateSeconds);
+    if (!content) return { ok: false, error: { kind: 'invalid', message: 'The shop page content is unavailable.' } };
 
     const page = pageFor(result.data);
+    const visual = listingImage(content.hero, page.hero.visual);
     return {
       ok: true,
       data: {
+        content,
         ...page,
         hero: {
           ...page.hero,
-          secondaryCta: page.featuredProduct
-            ? { label: 'View Featured Product', href: `/shop/${page.featuredProduct.slug}` }
-            : { label: 'Explore Event', href: '/event' },
+          eyebrow: content.hero?.eyebrow ?? '',
+          titleLines: listingTitleLines(content.hero, []),
+          description: content.hero?.description ?? '',
+          primaryCta: listingAction(content.hero?.primary, page.hero.primaryCta),
+          secondaryCta: listingAction(content.hero?.secondary, page.hero.secondaryCta),
+          visual,
+          sideNotes: content.hero?.sideNotes ?? [],
         },
+        finalCta: { ...page.finalCta, title: content.finalCta?.title ?? '', description: content.finalCta?.description ?? content.finalCta?.subtitle, primary: listingAction(content.finalCta?.primary, page.finalCta.primary), secondary: content.finalCta?.secondary ? listingAction(content.finalCta.secondary, page.finalCta.secondary ?? page.finalCta.primary) : undefined, background: content.finalCta?.background ?? visual },
       },
     };
   }

@@ -45,7 +45,13 @@ function eventDto(event: any, locale: Locale) {
     genres: event.genres.map((item: any) => item.genre),
     lineup: event.eventArtists.map((item: any) => ({ id: item.artist.id, slug: item.artist.slug, name: translated(item.artist.translations, locale)?.name ?? item.artist.slug, country: item.artist.country, portrait: mediaDto(item.artist.portraitMedia), sortOrder: item.sortOrder })),
     tickets: (event.ticketTiers ?? []).map((tier: any) => ({ id: tier.id, name: tier.name, priceMinor: tier.priceMinor, currency: tier.currency, badge: tier.badge, purchasableOnline: tier.purchasableOnline, purchasableAtDoor: tier.purchasableAtDoor, availabilityStatus: tier.availabilityStatus, providerName: tier.providerName, providerExternalId: tier.providerExternalId, providerUrl: tier.providerUrl })),
+    ticketSettings: { enabled: event.ticketingEnabled, saleStatus: event.ticketSaleStatus, currency: event.ticketCurrency, onlineSalesEnabled: event.ticketOnlineSalesEnabled, doorSalesEnabled: event.ticketDoorSalesEnabled, capacityTracking: event.ticketCapacityTracking, squarePaymentEnabled: event.ticketSquareEnabled, externalProviderEnabled: event.ticketExternalProviderEnabled, providerName: event.ticketProviderName, providerUrl: event.ticketProviderUrl, providerEventId: event.ticketProviderEventId },
     vip: {
+      enabled: event.vipEnabled,
+      bookingEnabled: event.vipBookingEnabled,
+      availabilityMode: event.vipAvailabilityMode,
+      currency: event.vipCurrency,
+      squarePaymentEnabled: event.vipSquareEnabled,
       packages: (event.vipPackages ?? []).map((pkg: any) => ({ id: pkg.id, name: pkg.name, priceMinor: pkg.priceMinor, currency: pkg.currency, paymentMode: pkg.paymentMode, depositAmountMinor: pkg.depositAmountMinor, capacity: pkg.capacity, includedBottleCount: pkg.includedBottleCount, bottles: (pkg.packageBottles ?? []).map((item: any) => ({ id: item.bottleOption?.id ?? item.bottleOptionId, name: item.bottleOption?.name ?? '', image: item.bottleOption?.media ? mediaDto(item.bottleOption.media) : null })) })),
       booths: (event.vipBooths ?? []).map((booth: any) => ({ id: booth.id, label: booth.code, zone: booth.zone, x: booth.x == null ? 50 : Number(booth.x), y: booth.y == null ? 50 : Number(booth.y), requestable: booth.requestable, availability: booth.availabilityStatus })),
     },
@@ -93,16 +99,17 @@ export async function getPublicEvent(slug: string, locale: Locale) {
 }
 
 export async function getPublicTickets(slug: string) {
-  const event = await db.event.findFirst({ where: { slug, status: 'PUBLISHED', deletedAt: null }, select: { id: true } });
+  const event = await db.event.findFirst({ where: { slug, status: 'PUBLISHED', deletedAt: null }, select: { id: true, ticketingEnabled: true, ticketSaleStatus: true, ticketCurrency: true, ticketOnlineSalesEnabled: true, ticketDoorSalesEnabled: true, ticketCapacityTracking: true, ticketSquareEnabled: true, ticketExternalProviderEnabled: true, ticketProviderName: true, ticketProviderUrl: true, ticketProviderEventId: true } });
   if (!event) return null;
-  return db.ticketTier.findMany({ where: { eventId: event.id, enabled: true }, orderBy: { sortOrder: 'asc' } });
+  const rows = await db.ticketTier.findMany({ where: { eventId: event.id, enabled: true }, orderBy: { sortOrder: 'asc' } });
+  return { event, rows };
 }
 
 export async function getPublicVip(slug: string) {
-  const event = await db.event.findFirst({ where: { slug, status: 'PUBLISHED', deletedAt: null }, select: { id: true, vipBooths: { where: { requestable: true }, orderBy: { sortOrder: 'asc' } } } });
+  const event = await db.event.findFirst({ where: { slug, status: 'PUBLISHED', deletedAt: null }, select: { id: true, vipEnabled: true, vipBookingEnabled: true, vipAvailabilityMode: true, vipCurrency: true, vipSquareEnabled: true, vipBooths: { where: { requestable: true, enabled: true }, orderBy: { sortOrder: 'asc' } } } });
   if (!event) return null;
   const packages = await db.vipPackage.findMany({ where: { eventId: event.id, enabled: true }, orderBy: { sortOrder: 'asc' }, include: { packageBottles: { include: { bottleOption: { include: { media: true } } } } } });
-  return { packages, booths: event.vipBooths };
+  return { event, packages, booths: event.vipBooths };
 }
 
 function artistDto(artist: any, locale: Locale) {

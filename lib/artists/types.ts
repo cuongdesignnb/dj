@@ -106,7 +106,10 @@ export interface LineupFinalCta {
   background?: MediaAsset;
 }
 
+import type { PublicListingContent } from '@/lib/cms/public-page';
+
 export interface LineupPageData {
+  content?: PublicListingContent;
   hero: LineupHeroData;
   artists: Artist[];
   story: LineupStoryData;

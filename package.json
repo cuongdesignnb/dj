@@ -19,6 +19,7 @@
     "seo:sitemap:check": "node scripts/seo-sitemap-check.mjs",
     "seo:redirects:check": "node scripts/seo-redirects-check.mjs",
     "seo:runtime-audit": "node scripts/runtime-audit.mjs",
+    "cms:audit": "node scripts/cms-audit.mjs",
     "db:studio": "prisma studio",
     "test": "vitest run",
     "test:watch": "vitest",

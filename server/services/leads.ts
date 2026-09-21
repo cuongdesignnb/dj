@@ -9,7 +9,10 @@ type ContactInput = z.infer<typeof contactSchema>;
 type NewsletterInput = z.infer<typeof newsletterSchema>;
 
 export async function createBooking(input: BookingInput) {
-  const event = await db.event.findFirst({ where: { OR: [{ id: input.eventId }, { slug: input.eventId }], status: 'PUBLISHED', deletedAt: null }, include: { vipPackages: true, vipBooths: true } });
+  const eventLookup = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.eventId)
+    ? { id: input.eventId }
+    : { slug: input.eventId };
+  const event = await db.event.findFirst({ where: { ...eventLookup, status: 'PUBLISHED', deletedAt: null }, include: { vipPackages: true, vipBooths: true } });
   if (!event) throw notFound('Event not found.');
 
   const vipPackage = input.vipPackageId ? event.vipPackages.find((row) => row.id === input.vipPackageId) : null;
@@ -64,4 +67,3 @@ export async function subscribeNewsletter(input: NewsletterInput) {
   });
   return row;
 }
-

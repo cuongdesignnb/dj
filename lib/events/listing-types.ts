@@ -109,7 +109,10 @@ export interface EventsFooterData {
   legalPrivacyHref?: string | null;
 }
 
+import type { PublicListingContent } from '@/lib/cms/public-page';
+
 export interface EventsPageData {
+  content?: PublicListingContent;
   hero: EventsHeroData;
   featuredEvent?: EventSummary | null;
   events: EventSummary[];
@@ -199,6 +202,7 @@ export interface PastEventsHeroData {
 export type ArchiveBenefit = EventBenefit;
 
 export interface PastEventsPageData {
+  content?: PublicListingContent;
   hero: PastEventsHeroData;
   featuredRecap?: PastEventSummary | null;
   events: PastEventSummary[];

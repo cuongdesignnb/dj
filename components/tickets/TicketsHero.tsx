@@ -14,15 +14,15 @@ import { CalendarDays, Clock, MapPin } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import EventsBreadcrumb from '@/components/events/EventsBreadcrumb';
 import { eventHeroLineReveal, ticketReveal, ticketStagger } from '@/lib/animations';
-import type { TicketEventInfo } from '@/lib/tickets/types';
-
-const SIDE_NOTES = ['MUSIC', 'PEOPLE', 'CULTURE', 'A BRIGHTER TOMORROW'];
+import type { TicketEventInfo, TicketsHeroContent } from '@/lib/tickets/types';
 
 export default function TicketsHero({
   event,
+  content,
   visual,
 }: {
   event: TicketEventInfo;
+  content: TicketsHeroContent;
   visual: { src: string; alt: string };
 }) {
   const ref = useRef<HTMLElement>(null);
@@ -53,7 +53,7 @@ export default function TicketsHero({
 
   return (
     <>
-      <EventsBreadcrumb trail={[{ label: 'Home', href: '/' }, { label: 'Ticket' }]} />
+      <EventsBreadcrumb trail={[{ label: 'Home', href: '/' }, { label: content.breadcrumb }]} />
 
       <section
         ref={ref}
@@ -81,7 +81,7 @@ export default function TicketsHero({
                 variants={ticketReveal}
                 className="font-heading text-xs font-semibold uppercase tracking-[0.28em] text-rave-red sm:text-sm"
               >
-                {event.title} Experience
+                {content.eyebrow}
               </motion.span>
 
               <motion.h1
@@ -92,22 +92,14 @@ export default function TicketsHero({
                 }}
                 className="mt-4 font-heading text-4xl font-black uppercase leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl"
               >
-                {['CHOOSE YOUR', 'TICKET'].map((line, i) => (
-                  <span key={line} className="block overflow-hidden">
-                    <motion.span variants={eventHeroLineReveal} className="block">
-                      {line}
-                      {i === 0 && ' '}
-                    </motion.span>
-                  </span>
-                ))}
+                <span className="block overflow-hidden"><motion.span variants={eventHeroLineReveal} className="block">{content.title}</motion.span></span>
               </motion.h1>
 
               <motion.p
                 variants={ticketReveal}
                 className="mt-6 max-w-xl text-base leading-relaxed text-rave-muted md:text-lg"
               >
-                Secure your entry to the {event.title} experience. Music, people and culture come
-                together for a night of pure connection in {event.venue}.
+                {content.description}
               </motion.p>
 
               <motion.ul variants={ticketStagger} className="mt-7 flex flex-wrap gap-3">
@@ -163,7 +155,7 @@ export default function TicketsHero({
                   className="absolute right-3 top-1/2 flex -translate-y-1/2 flex-col gap-2 rounded-l-xl bg-gradient-to-l from-black/70 to-transparent py-3 pl-6 pr-2 text-right font-heading text-[10px] uppercase tracking-[0.22em] text-white/85 sm:right-5 sm:text-xs"
                   style={{ textShadow: '0 1px 6px rgba(0,0,0,0.85)' }}
                 >
-                  {SIDE_NOTES.map((line) => (
+                  {content.sideNotes.map((line) => (
                     <span key={line}>{line}</span>
                   ))}
                 </div>

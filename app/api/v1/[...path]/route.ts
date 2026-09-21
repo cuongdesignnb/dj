@@ -71,6 +71,36 @@ import type { SingletonKey } from '@/lib/admin/common/resource';
 import { aboutContentDefinition, contactContentDefinition, homeContentDefinition } from '@/lib/admin/content/definitions';
 import { integrationsDefinition, languageSettingsDefinition, shippingDefinition, siteSettingsDefinition, socialSettingsDefinition } from '@/lib/admin/settings/definitions';
 import { revalidatePublicResource } from '@/server/cache/public-revalidation';
+import {
+  assignMenuLocation,
+  createMenu,
+  getAdminMenu,
+  getAdminMenus,
+  getAdminPageContent,
+  getMenuLocations,
+  getNavigationRoutes,
+  getPublicNavigation,
+  getPublicPageContent,
+  getTicketSettings,
+  getVipSettings,
+  listBottleOptions,
+  listTicketTiers,
+  listVipBooths,
+  listVipPackages,
+  publishMenu,
+  saveBottleOption,
+  saveMenu,
+  saveTicketTier,
+  saveVipBooth,
+  saveVipPackage,
+  updateTicketSettings,
+  updateVipSettings,
+  deleteTicketTier,
+  deleteVipPackage,
+  deleteVipBooth,
+  deleteBottleOption,
+  updateAdminPageContent,
+} from '@/server/services/cms';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -1213,10 +1243,18 @@ async function dispatch(request: Request, path: string[], requestId: string) {
     return dataResponse(session ? { user: session.user, permissions: [...session.permissions], csrfToken: await readCsrfCookie() } : null, {}, { requestId, startedAt: Date.now() });
   }
 
+  if (root === 'page-content' && second && request.method === 'GET') {
+    return dataResponse(await getPublicPageContent(second, params.get('locale')));
+  }
+  if (root === 'navigation' && second && request.method === 'GET') {
+    const result = await getPublicNavigation(second);
+    return dataResponse(result, {}, { requestId, startedAt: Date.now() });
+  }
+
   if (root === 'events' && request.method === 'GET') {
     if (second === 'past') return dataResponse(await listPublicEvents(locale, true));
-    if (second && third === 'tickets') { const rows = await getPublicTickets(second); if (!rows) throw notFound('Event not found.'); return dataResponse(rows.map((row) => ({ id: row.id, name: row.name, priceMinor: row.priceMinor, currency: row.currency, badge: row.badge, purchasableOnline: row.purchasableOnline, purchasableAtDoor: row.purchasableAtDoor, availabilityStatus: row.availabilityStatus, providerName: row.providerName, providerExternalId: row.providerExternalId, providerUrl: row.providerUrl }))); }
-    if (second && third === 'vip') { const result = await getPublicVip(second); if (!result) throw notFound('Event not found.'); return dataResponse({ packages: result.packages.map((row) => ({ id: row.id, name: row.name, priceMinor: row.priceMinor, currency: row.currency, paymentMode: row.paymentMode.toLowerCase().replace('_', '-'), deposit: row.depositAmountMinor == null ? null : { amountMinor: row.depositAmountMinor, currency: row.currency }, capacity: row.capacity, includedBottleCount: row.includedBottleCount, bottles: row.packageBottles.map((item) => ({ id: item.bottleOption.id, name: item.bottleOption.name, image: item.bottleOption.media ? { src: item.bottleOption.media.publicUrl, alt: item.bottleOption.media.altText, width: item.bottleOption.media.width, height: item.bottleOption.media.height } : null })) })), booths: result.booths.map((booth) => ({ id: booth.id, label: booth.code, zone: booth.zone?.toLowerCase(), x: booth.x ? Number(booth.x) : 50, y: booth.y ? Number(booth.y) : 50, requestable: booth.requestable, availability: booth.availabilityStatus.toLowerCase() })) }); }
+    if (second && third === 'tickets') { const result = await getPublicTickets(second); if (!result) throw notFound('Event not found.'); return dataResponse({ settings: result.event, tiers: result.rows.map((row) => ({ id: row.id, name: row.name, description: row.description, priceMinor: row.priceMinor, currency: row.currency, badge: row.badge, purchasableOnline: row.purchasableOnline && result.event.ticketOnlineSalesEnabled, purchasableAtDoor: row.purchasableAtDoor && result.event.ticketDoorSalesEnabled, availabilityStatus: row.availabilityStatus, capacity: row.capacity, soldQuantity: row.soldQuantity, minQuantity: row.minQuantity, maxQuantity: row.maxQuantity, defaultQuantity: row.defaultQuantity, highlighted: row.highlighted, providerName: row.providerName ?? result.event.ticketProviderName, providerExternalId: row.providerExternalId ?? result.event.ticketProviderEventId, providerUrl: row.providerUrl ?? result.event.ticketProviderUrl })) }); }
+    if (second && third === 'vip') { const result = await getPublicVip(second); if (!result) throw notFound('Event not found.'); return dataResponse({ settings: result.event, packages: result.packages.map((row) => ({ id: row.id, name: row.name, description: row.description, priceMinor: row.priceMinor, currency: row.currency, paymentMode: row.paymentMode.toLowerCase().replace('_', '-'), deposit: row.depositAmountMinor == null ? null : { amountMinor: row.depositAmountMinor, currency: row.currency }, capacity: row.capacity, includedBottleCount: row.includedBottleCount, minBottleSelections: row.minBottleSelection, maxBottleSelections: row.maxBottleSelection, bottles: row.packageBottles.map((item) => ({ id: item.bottleOption.id, name: item.bottleOption.name, description: item.bottleOption.description, category: item.bottleOption.category, image: item.bottleOption.media ? { src: item.bottleOption.media.publicUrl, alt: item.bottleOption.media.altText, width: item.bottleOption.media.width, height: item.bottleOption.media.height } : null })) })), booths: result.booths.map((booth) => ({ id: booth.id, label: booth.label ?? booth.code, zone: booth.zone?.toLowerCase(), x: booth.x ? Number(booth.x) : 50, y: booth.y ? Number(booth.y) : 50, requestable: booth.requestable, availability: booth.availabilityStatus.toLowerCase() })) }); }
     if (second) { const event = await getPublicEvent(second, locale); if (!event) throw notFound('Event not found.'); return dataResponse(event); }
     return dataResponse(await listPublicEvents(locale));
   }
@@ -1319,6 +1357,122 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       const row = await storeMedia(file as File, altText, session.user.id);
       await writeAuditLog({ actorUserId: session.user.id, action: 'upload', entityType: 'media', entityId: row.id, after: row, requestId });
       return dataResponse(adminRecord('media', row), { status: 201 });
+    }
+
+    if (second === 'events' && third && path[3] && ['tickets', 'vip'].includes(path[3])) {
+      const eventId = third;
+      const eventModule = path[3];
+      const resource = path[4];
+      const resourceId = path[5];
+      const viewPermission = 'events.view';
+      const editPermission = 'events.edit';
+      if (eventModule === 'tickets' && resource === 'settings') {
+        if (request.method === 'GET') { await requirePermission(request, viewPermission); return dataResponse(await getTicketSettings(eventId)); }
+        if (request.method === 'PATCH' || request.method === 'PUT') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await updateTicketSettings(eventId, await body(request)); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'ticket_settings', entityId: eventId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+      }
+      if (eventModule === 'tickets' && resource === 'tiers') {
+        if (request.method === 'GET') { await requirePermission(request, viewPermission); return dataResponse(await listTicketTiers(eventId)); }
+        if (!resourceId && request.method === 'POST') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await saveTicketTier(eventId, await body(request)); await writeAuditLog({ actorUserId: session.user.id, action: 'create', entityType: 'ticket_tier', entityId: result.id, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result, { status: 201 }); }
+        if (resourceId && (request.method === 'PATCH' || request.method === 'PUT')) { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const raw = await body(request); const result = await saveTicketTier(eventId, { ...(isRecord(raw) ? raw : {}), id: resourceId }); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'ticket_tier', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+        if (resourceId && request.method === 'DELETE') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await deleteTicketTier(eventId, resourceId); await writeAuditLog({ actorUserId: session.user.id, action: 'delete', entityType: 'ticket_tier', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+      }
+      if (eventModule === 'vip' && resource === 'settings') {
+        if (request.method === 'GET') { await requirePermission(request, viewPermission); return dataResponse(await getVipSettings(eventId)); }
+        if (request.method === 'PATCH' || request.method === 'PUT') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await updateVipSettings(eventId, await body(request)); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'vip_settings', entityId: eventId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+      }
+      if (eventModule === 'vip' && resource === 'packages') {
+        if (request.method === 'GET') { await requirePermission(request, viewPermission); return dataResponse(await listVipPackages(eventId)); }
+        if (request.method === 'POST' && !resourceId) { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await saveVipPackage(eventId, await body(request)); await writeAuditLog({ actorUserId: session.user.id, action: 'create', entityType: 'vip_package', entityId: result.id, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result, { status: 201 }); }
+        if ((request.method === 'PATCH' || request.method === 'PUT') && resourceId) { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const raw = await body(request); const result = await saveVipPackage(eventId, { ...(isRecord(raw) ? raw : {}), id: resourceId }); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'vip_package', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+        if (resourceId && request.method === 'DELETE') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await deleteVipPackage(eventId, resourceId); await writeAuditLog({ actorUserId: session.user.id, action: 'delete', entityType: 'vip_package', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+      }
+      if (eventModule === 'vip' && resource === 'booths') {
+        if (request.method === 'GET') { await requirePermission(request, viewPermission); return dataResponse(await listVipBooths(eventId)); }
+        if (request.method === 'POST' && !resourceId) { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await saveVipBooth(eventId, await body(request)); await writeAuditLog({ actorUserId: session.user.id, action: 'create', entityType: 'vip_booth', entityId: result.id, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result, { status: 201 }); }
+        if ((request.method === 'PATCH' || request.method === 'PUT') && resourceId) { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const raw = await body(request); const result = await saveVipBooth(eventId, { ...(isRecord(raw) ? raw : {}), id: resourceId }); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'vip_booth', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+        if (resourceId && request.method === 'DELETE') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await deleteVipBooth(eventId, resourceId); await writeAuditLog({ actorUserId: session.user.id, action: 'delete', entityType: 'vip_booth', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+      }
+      if (eventModule === 'vip' && resource === 'bottles') {
+        if (request.method === 'GET') { await requirePermission(request, viewPermission); return dataResponse(await listBottleOptions(eventId)); }
+        if (request.method === 'POST' && !resourceId) { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await saveBottleOption(eventId, await body(request)); await writeAuditLog({ actorUserId: session.user.id, action: 'create', entityType: 'bottle_option', entityId: result.id, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result, { status: 201 }); }
+        if ((request.method === 'PATCH' || request.method === 'PUT') && resourceId) { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const raw = await body(request); const result = await saveBottleOption(eventId, { ...(isRecord(raw) ? raw : {}), id: resourceId }); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'bottle_option', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+        if (resourceId && request.method === 'DELETE') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await deleteBottleOption(eventId, resourceId); await writeAuditLog({ actorUserId: session.user.id, action: 'delete', entityType: 'bottle_option', entityId: resourceId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }
+      }
+    }
+
+    if (second === 'page-content' && third) {
+      const permission = third === 'global-content' ? 'settings' : 'content';
+      if (request.method === 'GET') {
+        await requirePermission(request, `${permission}.view`);
+        return dataResponse(await getAdminPageContent(third, params.get('locale')));
+      }
+      if (request.method === 'PATCH' || request.method === 'PUT') {
+        assertSameOrigin(request);
+        const session = await requirePermission(request, `${permission}.edit`, true);
+        const result = await updateAdminPageContent(third, await body(request));
+        await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'page_content', entityId: result.id, after: result, requestId });
+        revalidatePublicResource('page-content', third);
+        return dataResponse(result);
+      }
+    }
+
+    if (second === 'navigation') {
+      if (third === 'routes' && request.method === 'GET') {
+        await requirePermission(request, 'navigation.view');
+        return dataResponse(await getNavigationRoutes(params.get('q')));
+      }
+      if (third === 'locations') {
+        if (request.method === 'GET') {
+          await requirePermission(request, 'navigation.view');
+          return dataResponse(await getMenuLocations());
+        }
+        if (request.method === 'PATCH' || request.method === 'PUT') {
+          assertSameOrigin(request);
+          const session = await requirePermission(request, 'navigation.edit', true);
+          const rawInput = await body(request);
+          const input = isRecord(rawInput) ? rawInput : {};
+          const result = await assignMenuLocation(String(input.locationKey ?? ''), typeof input.menuId === 'string' ? input.menuId : null);
+          await writeAuditLog({ actorUserId: session.user.id, action: 'menu.location.assign', entityType: 'menu_location', entityId: result.id, after: result, requestId });
+          revalidatePublicResource('navigation');
+          return dataResponse(result);
+        }
+      }
+      if (third === 'menus') {
+        const menuId = path[3];
+        const menuAction = path[4];
+        if (!menuId && request.method === 'GET') {
+          await requirePermission(request, 'navigation.view');
+          return dataResponse(await getAdminMenus());
+        }
+        if (!menuId && request.method === 'POST') {
+          assertSameOrigin(request);
+          const session = await requirePermission(request, 'navigation.edit', true);
+          const result = await createMenu(await body(request));
+          await writeAuditLog({ actorUserId: session.user.id, action: 'menu.create', entityType: 'menu', entityId: result.id, after: result, requestId });
+          return dataResponse(result, { status: 201 });
+        }
+        if (menuId && menuAction === 'publish' && request.method === 'POST') {
+          assertSameOrigin(request);
+          const session = await requirePermission(request, 'navigation.publish', true);
+          const result = await publishMenu(menuId);
+          await writeAuditLog({ actorUserId: session.user.id, action: 'menu.publish', entityType: 'menu', entityId: menuId, after: result, requestId });
+          revalidatePublicResource('navigation');
+          return dataResponse(result);
+        }
+        if (menuId && request.method === 'GET') {
+          await requirePermission(request, 'navigation.view');
+          return dataResponse(await getAdminMenu(menuId));
+        }
+        if (menuId && (request.method === 'PATCH' || request.method === 'PUT')) {
+          assertSameOrigin(request);
+          const session = await requirePermission(request, 'navigation.edit', true);
+          const result = await saveMenu(menuId, await body(request));
+          await writeAuditLog({ actorUserId: session.user.id, action: 'menu.update', entityType: 'menu', entityId: menuId, after: result, requestId });
+          await writeAuditLog({ actorUserId: session.user.id, action: 'menu.item.reorder', entityType: 'menu', entityId: menuId, after: { count: result.items.length }, requestId });
+          revalidatePublicResource('navigation');
+          return dataResponse(result);
+        }
+      }
     }
     const singleton = singletonRoute(second, third);
     if (singleton && request.method === 'GET') {

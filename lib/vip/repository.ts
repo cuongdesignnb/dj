@@ -35,10 +35,19 @@ export class HttpVipRepository implements VipRepository {
   async getVipPage(): Promise<VipRepositoryResult> {
     let response: Response;
     let eventResponse: Response;
+    let tablesContentResponse: Response;
+    let bookingContentResponse: Response;
     try {
       [eventResponse, response] = await Promise.all([
         fetch(this.url(`/api/v1/events/${this.eventSlug}`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events] } }),
         fetch(this.url(`/api/v1/events/${this.eventSlug}/vip`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.vip(this.eventSlug)] } }),
+      ]);
+      const eventPayload = await eventResponse.clone().json() as { data?: { id?: string } };
+      const eventId = eventPayload.data?.id;
+      if (!eventId) throw new Error('Event payload did not include an id.');
+      [tablesContentResponse, bookingContentResponse] = await Promise.all([
+        fetch(this.url(`/api/v1/page-content/tables:${encodeURIComponent(eventId)}`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.pageContent(`tables:${eventId}`)] } }),
+        fetch(this.url(`/api/v1/page-content/booking:${encodeURIComponent(eventId)}`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.pageContent(`booking:${eventId}`)] } }),
       ]);
     } catch {
       return {
@@ -50,20 +59,22 @@ export class HttpVipRepository implements VipRepository {
       };
     }
 
-    if (!response.ok || !eventResponse.ok) {
+    if (!response.ok || !eventResponse.ok || !tablesContentResponse.ok || !bookingContentResponse.ok) {
       return {
         ok: false,
         error: {
           kind: 'http',
-          message: `The VIP service returned ${!eventResponse.ok ? eventResponse.status : response.status}. Please try again shortly.`,
+          message: `The VIP service returned ${!eventResponse.ok ? eventResponse.status : !response.ok ? response.status : !tablesContentResponse.ok ? tablesContentResponse.status : bookingContentResponse.status}. Please try again shortly.`,
         },
       };
     }
 
     let eventRaw: unknown;
     let vipRaw: unknown;
+    let tablesRaw: unknown;
+    let bookingRaw: unknown;
     try {
-      [eventRaw, vipRaw] = await Promise.all([eventResponse.json(), response.json()]);
+      [eventRaw, vipRaw, tablesRaw, bookingRaw] = await Promise.all([eventResponse.json(), response.json(), tablesContentResponse.json(), bookingContentResponse.json()]);
     } catch {
       return {
         ok: false,
@@ -72,18 +83,24 @@ export class HttpVipRepository implements VipRepository {
     }
 
     const event = unwrapApiData<Record<string, any>>(eventRaw);
-    const vip = unwrapApiData<{ packages: any[]; booths: any[] }>(vipRaw);
+    const vip = unwrapApiData<{ settings: Record<string, any>; packages: any[]; booths: any[] }>(vipRaw);
+    const tablesContent = unwrapApiData<{ data?: Record<string, any> }>(tablesRaw).data;
+    const bookingContent = unwrapApiData<{ data?: Record<string, any> }>(bookingRaw).data;
+    if (!tablesContent || !bookingContent) return { ok: false, error: { kind: 'invalid', message: 'VIP page content is not configured.' } };
     const pkg = vip.packages[0];
     const bottles = pkg?.bottles ?? [];
     const raw = {
       event: { id: event.id, slug: event.slug, title: event.title, subtitle: event.eyebrow, venue: [event.venue?.name, event.venue?.city].filter(Boolean).join(', '), date: event.startAt, dateStatus: event.dateStatus?.toLowerCase(), schedule: event.startAt, scheduleStatus: event.scheduleStatus?.toLowerCase(), image: event.poster ?? event.hero },
-      package: pkg ? { ...pkg, price: { amountMinor: pkg.priceMinor, currency: pkg.currency }, maxBottleSelections: bottles.length || 1, minBottleSelections: 0, description: '' } : null,
+      package: pkg ? { ...pkg, price: { amountMinor: pkg.priceMinor, currency: pkg.currency }, maxBottleSelections: pkg.maxBottleSelections ?? (bottles.length || 1), minBottleSelections: pkg.minBottleSelections ?? 0 } : null,
       booths: vip.booths,
       bottles: bottles.map((bottle: Record<string, any>, index: number) => ({ ...bottle, tint: ['#A6A6B2', '#F3B35A', '#E46A6A', '#8AC3FF', '#B78CFF', '#7BE0B2'][index % 6] })),
-      mapDisclaimer: 'Booth positions are indicative. A request is not a reservation.',
-      infoItems: [], faq: [], processSteps: [], bookingNotes: [], bookingFaq: [],
-      tablesCta: { title: 'REQUEST A VIP EXPERIENCE', primary: { label: 'Send a request', href: '/book-now' } },
-      bookingCta: { title: 'STAY CONNECTED', primary: { label: 'View events', href: '/events' } },
+      tablesContent,
+      bookingContent,
+      infoItems: tablesContent.infoItems,
+      faq: tablesContent.faq,
+      processSteps: bookingContent.processSteps,
+      bookingNotes: bookingContent.bookingNotes,
+      bookingFaq: bookingContent.faq,
       footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
     };
     const data = normalizeVipPage(raw);

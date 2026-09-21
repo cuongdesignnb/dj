@@ -6,6 +6,7 @@
 
 import type { Money } from '@/lib/money';
 import type { EventsFooterData } from '@/lib/events/listing-types';
+import type { PublicListingContent } from '@/lib/cms/public-page';
 
 export type { Money };
 
@@ -133,6 +134,7 @@ export interface ShopBenefit {
 }
 
 export interface ShopPageData {
+  content?: PublicListingContent;
   hero: {
     eyebrow: string;
     titleLines: string[];

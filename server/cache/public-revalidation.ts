@@ -81,6 +81,13 @@ export function revalidatePublicResource(resource: string, slug?: string | null,
     add(PUBLIC_CACHE_TAGS.bootstrap);
     add(PUBLIC_CACHE_TAGS.home);
     for (const path of ['/', '/about', '/partners', '/events', '/lineup', '/tickets', '/tables', '/shop', '/news', '/gallery', '/faq', '/contact', '/terms', '/privacy']) addPath(path);
+  } else if (resource === 'page-content' && slug) {
+    add(PUBLIC_CACHE_TAGS.pageContent(slug));
+    for (const path of ['/', '/events', '/events/past', '/lineup', '/news', '/gallery', '/shop', '/tickets', '/tables', '/book-now']) addPath(path);
+  } else if (resource === 'navigation') {
+    add(PUBLIC_CACHE_TAGS.navigation);
+    for (const location of ['HEADER_PRIMARY', 'HEADER_CTA', 'MOBILE_PRIMARY', 'FOOTER_QUICK', 'FOOTER_LEGAL', 'FOOTER_SECONDARY']) add(PUBLIC_CACHE_TAGS.navigationLocation(location));
+    addPath('/');
   }
 
   for (const tag of tags) revalidateTag(tag, { expire: 0 });

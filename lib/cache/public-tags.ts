@@ -20,4 +20,7 @@ export const PUBLIC_CACHE_TAGS = {
   product: (slug: string) => `public:product:${slug}`,
   newsArticle: (slug: string) => `public:news:${slug}`,
   galleryCollection: (slug: string) => `public:gallery:${slug}`,
+  navigation: 'public:navigation',
+  navigationLocation: (location: string) => `public:navigation:${location}`,
+  pageContent: (key: string) => `public:page-content:${key}`,
 } as const;

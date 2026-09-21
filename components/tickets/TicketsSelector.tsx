@@ -10,6 +10,7 @@ import type {
   TicketSelection,
   TicketTier,
   TicketTrustItem,
+  TicketSelectorContent,
 } from '@/lib/tickets/types';
 import { clampQuantity, initialSelection } from '@/lib/tickets/pricing';
 import TicketOptionCard from './TicketOptionCard';
@@ -27,11 +28,13 @@ export default function TicketsSelector({
   tiers,
   provider,
   trustItems,
+  content,
 }: {
   event: TicketEventInfo;
   tiers: TicketTier[];
   provider: TicketProviderAction;
   trustItems: TicketTrustItem[];
+  content: TicketSelectorContent;
 }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -63,14 +66,14 @@ export default function TicketsSelector({
             id="ticket-options-title"
             className="font-heading text-3xl font-black uppercase tracking-tight text-white sm:text-4xl"
           >
-            Ticket Options
+              {content.emptyTitle}
           </h2>
           <div className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center">
             <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
               Ticket information is being prepared.
             </p>
             <p className="mt-3 text-sm text-rave-muted sm:text-base">
-              Please check back for the latest release details.
+              {content.emptyDescription}
             </p>
           </div>
         </Container>
@@ -95,7 +98,7 @@ export default function TicketsSelector({
                   id="ticket-options-title"
                   className="font-heading text-3xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl"
                 >
-                  Ticket Options
+                  {content.title}
                 </h2>
                 <span
                   aria-hidden
@@ -104,7 +107,7 @@ export default function TicketsSelector({
                 />
               </div>
               <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:text-xs sm:pb-2">
-                Same People <span aria-hidden className="text-rave-red">&mdash;</span> Brighter Tomorrow
+                {content.aside}
               </p>
             </div>
 

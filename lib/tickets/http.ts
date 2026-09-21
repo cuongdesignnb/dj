@@ -7,6 +7,8 @@ import type {
   TicketProviderAction,
   TicketTier,
   TicketTrustItem,
+  TicketSelectorContent,
+  TicketsHeroContent,
   TicketsFinalCta,
   TicketsFooterData,
   TicketsPageData,
@@ -279,8 +281,23 @@ export function normalizeTicketsPage(raw: unknown): TicketsPageData | null {
       })
     : [];
 
+  const heroRaw = isRecord(raw.hero) ? raw.hero : {};
+  const hero: TicketsHeroContent = {
+    breadcrumb: str(heroRaw.breadcrumb),
+    eyebrow: str(heroRaw.eyebrow),
+    title: str(heroRaw.title),
+    description: str(heroRaw.description),
+    image: isRecord(heroRaw.image) ? media(heroRaw.image) : null,
+    sideNotes: Array.isArray(heroRaw.sideNotes) ? heroRaw.sideNotes.filter((item): item is string => typeof item === 'string') : [],
+    footNotes: Array.isArray(heroRaw.footNotes) ? heroRaw.footNotes.filter((item): item is string => typeof item === 'string') : [],
+  };
+  const selectorRaw = isRecord(raw.selector) ? raw.selector : {};
+  const selector: TicketSelectorContent = { eyebrow: str(selectorRaw.eyebrow), title: str(selectorRaw.title), description: str(selectorRaw.description), aside: str(selectorRaw.aside), emptyTitle: str(selectorRaw.emptyTitle), emptyDescription: str(selectorRaw.emptyDescription) };
+
   return {
     event,
+    hero,
+    selector,
     tiers,
     provider: provider(raw.provider),
     trustItems: trustItems(raw.trustItems),

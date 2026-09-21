@@ -26,9 +26,13 @@ export class HttpLegalRepository implements LegalRepository {
       return { ok: false, message: 'This document could not be loaded. Please try again shortly.' };
     }
     try {
+      const globalResponse = await fetch(`${this.baseUrl.replace(/\/$/, '')}/api/v1/page-content/global-content`, { headers: { accept: 'application/json' }, next: { revalidate: 300, tags: [PUBLIC_CACHE_TAGS.pageContent('global-content')] } });
+      const globalPayload = globalResponse.ok ? unwrapApiData(await globalResponse.json()) : null;
+      const globalData = globalPayload && typeof globalPayload === 'object' && 'data' in globalPayload ? (globalPayload as { data?: { genericCtaFallback?: { label?: string; href?: string } } }).data : undefined;
+      const generic = globalData?.genericCtaFallback;
       return {
         ok: true,
-        document: normalizeLegalDocument(unwrapApiData(await response.json()), type, { title: 'STAY CONNECTED', primary: { label: 'View events', href: '/events' }, secondary: { label: 'Contact us', href: '/contact' } }),
+        document: normalizeLegalDocument(unwrapApiData(await response.json()), type, { title: generic?.label ?? '', primary: { label: generic?.label ?? '', href: generic?.href ?? '' } }),
       };
     } catch {
       return { ok: false, message: 'This document could not be loaded. Please try again shortly.' };

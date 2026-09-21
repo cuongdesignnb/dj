@@ -7,6 +7,7 @@ import type { NewsArticle, NewsPageData } from './types';
 import { normalizeArticle, normalizeArticles } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
+import { fetchPublicListingContent, listingAction, listingImage, listingTitleLines } from '@/lib/cms/public-page';
 
 export interface NewsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -88,31 +89,32 @@ export class HttpNewsRepository implements NewsRepository {
     return { ok: true, data: normalizeArticles(result.raw).filter(isPublic) };
   }
 
-  /**
-   * Page chrome is presentation; article records always come from the API.
-   */
   async getNewsPage(): Promise<RepositoryResult<NewsPageData>> {
     const result = await this.getArticles();
     if (!result.ok) return result;
+    const content = await fetchPublicListingContent(this.baseUrl, 'news-list', this.revalidateSeconds);
+    if (!content) return { ok: false, error: { kind: 'invalid', message: 'The news page content is unavailable.' } };
 
     const articles = result.data;
     const featured = articles.find((article) => article.featured) ?? articles[0] ?? null;
+    const visual = listingImage(content.hero, featured?.heroImage ?? { src: '', alt: '' });
 
     return {
       ok: true,
       data: {
+        content,
         hero: {
-          eyebrow: 'NEWS & STORIES',
-          titleLines: ['THE LATEST', 'FROM CONNECTION'],
-          description: 'Published updates and stories from the Connection team.',
-          visual: featured?.heroImage ?? { src: '', alt: '' },
-          sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'],
-          primaryCta: featured ? { label: 'Read latest story', href: `/news/${featured.slug}` } : { label: 'Explore events', href: '/events' },
-          secondaryCta: { label: 'Explore gallery', href: '/gallery' },
+          eyebrow: content.hero?.eyebrow ?? '',
+          titleLines: listingTitleLines(content.hero, []),
+          description: content.hero?.description ?? '',
+          visual,
+          sideNotes: content.hero?.sideNotes ?? [],
+          primaryCta: listingAction(content.hero?.primary, { label: '', href: '' }),
+          secondaryCta: listingAction(content.hero?.secondary, { label: '', href: '' }),
         },
         featuredArticle: featured,
         articles,
-        finalCta: { title: 'STAY CLOSE TO THE STORY', description: 'Follow the latest published updates from Connection Rave.', primary: { label: 'Explore gallery', href: '/gallery' }, secondary: { label: 'View events', href: '/events' } },
+        finalCta: { title: content.finalCta?.title ?? '', description: content.finalCta?.description ?? content.finalCta?.subtitle ?? '', primary: listingAction(content.finalCta?.primary, { label: '', href: '' }), secondary: content.finalCta?.secondary ? listingAction(content.finalCta.secondary, { label: '', href: '' }) : undefined, background: content.finalCta?.background ?? visual },
         footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
       },
     };

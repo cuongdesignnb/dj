@@ -15,6 +15,7 @@ import { seedNewsPreview } from './seeds/11-news-preview';
 import { seedGalleryPreview } from './seeds/12-gallery-preview';
 import { seedSettings } from './seeds/13-settings';
 import { seedAdminUser } from './seeds/14-admin-user';
+import { seedCms } from './seeds/15-cms';
 
 const db = new PrismaClient();
 
@@ -37,6 +38,7 @@ async function main() {
     await seedGalleryPreview(context, event.id);
     await seedSettings(context);
     await seedAdminUser(context, roles);
+    await seedCms(context, event.id);
   });
 
   console.log(`[seed] bootstrap complete (preview content: ${preview ? 'enabled' : 'disabled'}).`);

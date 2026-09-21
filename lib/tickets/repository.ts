@@ -33,6 +33,7 @@ export class HttpTicketsRepository implements TicketsRepository {
 
     let eventResponse: Response;
     let ticketsResponse: Response;
+    let contentResponse: Response;
     try {
       [eventResponse, ticketsResponse] = await Promise.all([
         fetch(eventUrl, {
@@ -44,6 +45,13 @@ export class HttpTicketsRepository implements TicketsRepository {
           next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.tickets(this.eventSlug)] },
         }),
       ]);
+      const eventPayload = await eventResponse.clone().json() as { data?: { id?: string } };
+      const eventId = eventPayload.data?.id;
+      if (!eventId) throw new Error('Event payload did not include an id.');
+      contentResponse = await fetch(`${this.baseUrl.replace(/\/$/, '')}/api/v1/page-content/tickets:${encodeURIComponent(eventId)}`, {
+        headers: { accept: 'application/json' },
+        next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.pageContent(`tickets:${eventId}`)] },
+      });
     } catch {
       return {
         ok: false,
@@ -54,20 +62,21 @@ export class HttpTicketsRepository implements TicketsRepository {
       };
     }
 
-    if (!eventResponse.ok || !ticketsResponse.ok) {
+    if (!eventResponse.ok || !ticketsResponse.ok || !contentResponse.ok) {
       return {
         ok: false,
         error: {
           kind: 'http',
-          message: `The ticketing service returned ${!eventResponse.ok ? eventResponse.status : ticketsResponse.status}. Please try again shortly.`,
+          message: `The ticketing service returned ${!eventResponse.ok ? eventResponse.status : !ticketsResponse.ok ? ticketsResponse.status : contentResponse.status}. Please try again shortly.`,
         },
       };
     }
 
     let eventRaw: unknown;
     let ticketsRaw: unknown;
+    let contentRaw: unknown;
     try {
-      [eventRaw, ticketsRaw] = await Promise.all([eventResponse.json(), ticketsResponse.json()]);
+      [eventRaw, ticketsRaw, contentRaw] = await Promise.all([eventResponse.json(), ticketsResponse.json(), contentResponse.json()]);
     } catch {
       return {
         ok: false,
@@ -76,7 +85,10 @@ export class HttpTicketsRepository implements TicketsRepository {
     }
 
     const event = unwrapApiData<Record<string, any>>(eventRaw);
-    const ticketRows = unwrapApiData<any[]>(ticketsRaw);
+    const ticketPayload = unwrapApiData<{ settings: Record<string, any>; tiers: any[] }>(ticketsRaw);
+    const contentPayload = unwrapApiData<{ data?: Record<string, any> }>(contentRaw);
+    const content = contentPayload.data;
+    if (!content) return { ok: false, error: { kind: 'invalid', message: 'The ticket page content is not configured.' } };
     const raw = {
       event: {
         id: event.id,
@@ -90,19 +102,26 @@ export class HttpTicketsRepository implements TicketsRepository {
         scheduleStatus: event.scheduleStatus?.toLowerCase(),
         image: event.poster ?? event.hero,
       },
-      tiers: ticketRows.map((row) => ({
+      tiers: ticketPayload.tiers.map((row) => ({
         ...row,
         description: row.description ?? '',
         price: { amountMinor: row.priceMinor, currency: row.currency },
         icon: 'Ticket',
         features: [],
-        minQuantity: 0,
-        availability: { status: row.availabilityStatus?.toLowerCase() === 'available' ? 'available' : 'unknown' },
+        minQuantity: row.minQuantity ?? 1,
+        maxQuantity: row.maxQuantity,
+        defaultQuantity: row.defaultQuantity,
+        highlighted: row.highlighted,
+        availability: { status: row.availabilityStatus?.toLowerCase() === 'available' ? 'available' : row.availabilityStatus?.toLowerCase() === 'sold_out' ? 'sold-out' : 'unknown' },
       })),
-      provider: { mode: 'unavailable', unavailableNote: 'Ticket provider link will be published when confirmed.' },
-      trustItems: [], infoItems: [], faq: [],
-      finalCta: { title: 'STAY CONNECTED', subtitle: 'Ticket release details will be published here.', primary: { label: 'View event', href: '/event' }, secondary: { label: 'Contact us', href: '/contact' }, background: event.hero },
-      footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
+      provider: ticketPayload.settings.externalProviderEnabled ? { providerName: ticketPayload.settings.providerName, checkoutUrl: ticketPayload.settings.providerUrl, eventExternalId: ticketPayload.settings.providerEventId, unavailableNote: content.provider?.unavailableNote } : { mode: 'unavailable', unavailableNote: content.provider?.unavailableNote },
+      hero: content.hero,
+      selector: content.selector,
+      trustItems: content.trustItems,
+      infoItems: content.infoItems,
+      faq: content.faq,
+      finalCta: content.finalCta,
+      footer: content.footer ?? { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
     };
     const data = normalizeTicketsPage(raw);
     if (!data) {

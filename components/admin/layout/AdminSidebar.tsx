@@ -16,6 +16,7 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
+  Network,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { hasPermission } from '@/lib/admin/auth/permissions';
@@ -33,6 +34,7 @@ const ICONS: Record<NavIcon, LucideIcon> = {
   partners: Handshake,
   team: ShieldCheck,
   settings: Settings,
+  navigation: Network,
 };
 
 function Brand({ compact }: { compact: boolean }) {

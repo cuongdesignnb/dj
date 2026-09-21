@@ -107,6 +107,44 @@ export interface VipFinalCtaData {
   background?: MediaAsset;
 }
 
+export interface VipHeroContent {
+  breadcrumb: string;
+  eyebrow: string;
+  titleLine1: string;
+  titleLine2: string;
+  description: string;
+  image?: MediaAsset | null;
+  sideNotes: string[];
+  footNotes: string[];
+}
+
+export interface VipMapContent {
+  eyebrow: string;
+  title: string;
+  description: string;
+  disclaimer: string;
+  stageLabel: string;
+  infoTitle: string;
+  infoContext: string;
+  faqContext: string;
+}
+
+export interface VipBookingFormContent {
+  heading: string;
+  description: string;
+  nameLabel: string;
+  emailLabel: string;
+  phoneLabel: string;
+  groupSizeLabel: string;
+  boothLabel: string;
+  bottleLabel: string;
+  specialRequestLabel: string;
+  submitLabel: string;
+  notesTitle: string;
+  notesContext: string;
+  faqContext: string;
+}
+
 export interface VipFooterPartner {
   id: string;
   name: string;
@@ -131,6 +169,11 @@ export interface VipPageData {
   package: VipPackage;
   booths: VipBooth[];
   bottles: VipBottle[];
+  tablesHero: VipHeroContent;
+  tablesMap: VipMapContent;
+  bookingHero: VipHeroContent;
+  bookingTabs: { tickets: string; vip: string };
+  bookingForm: VipBookingFormContent;
 
   /** Shown on the illustrative club map so it is never read as a floor plan. */
   mapDisclaimer: string;

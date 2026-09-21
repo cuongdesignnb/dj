@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { navItems, siteNav } from '@/lib/navigation';
+
+type PublicMenuItem = { id: string; labelEn: string; labelVi?: string | null; href: string | null; target?: string; children?: PublicMenuItem[] };
 
 interface HeaderProps {
   ctaHref?: string;
@@ -23,8 +24,28 @@ function normalize(path: string): string {
 export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [primaryItems, setPrimaryItems] = useState<PublicMenuItem[]>([]);
+  const [mobileItems, setMobileItems] = useState<PublicMenuItem[]>([]);
+  const [ctaItem, setCtaItem] = useState<PublicMenuItem | null>(null);
   const pathnameRaw = usePathname();
   const pathname = normalize(pathnameRaw ?? '/');
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetch('/api/v1/navigation/HEADER_PRIMARY').then((response) => response.json()),
+      fetch('/api/v1/navigation/MOBILE_PRIMARY').then((response) => response.json()),
+      fetch('/api/v1/navigation/HEADER_CTA').then((response) => response.json()),
+    ]).then(([primary, mobile, cta]) => {
+      if (cancelled) return;
+      const primaryRows = (primary?.data?.items ?? []) as PublicMenuItem[];
+      const mobileRows = (mobile?.data?.items ?? []) as PublicMenuItem[];
+      setPrimaryItems(primaryRows);
+      setMobileItems(mobileRows.length ? mobileRows : primaryRows);
+      setCtaItem(((cta?.data?.items ?? [])[0] as PublicMenuItem | undefined) ?? null);
+    }).catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -52,7 +73,8 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
   // Determine which nav item is active based on the current pathname.
   // The homepage is matched exactly; other items match their own root path.
   // Spec: `/event` and `/events` both highlight the Event nav item.
-  const isActive = (href: string): boolean => {
+  const isActive = (href: string | null | undefined): boolean => {
+    if (!href) return false;
     const norm = normalize(href);
     if (norm === '/') return pathname === '/';
     if (pathname === norm) return true;
@@ -65,8 +87,8 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
     return false;
   };
 
-  const resolvedCtaHref = ctaHref ?? siteNav.ctaHref;
-  const resolvedCtaLabel = ctaLabel ?? siteNav.ctaLabel;
+  const resolvedCtaHref = ctaHref ?? ctaItem?.href;
+  const resolvedCtaLabel = ctaLabel ?? ctaItem?.labelEn;
 
   return (
     <>
@@ -105,16 +127,16 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1" aria-label="Primary">
-            {navItems.map((item, index) => {
+            {primaryItems.map((item, index) => {
               const active = isActive(item.href);
               return (
                 <motion.div
-                  key={item.href}
+                  key={item.id}
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Link
+                  {item.href && <Link
                     key={item.href}
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
@@ -127,7 +149,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                       initial={{ scale: 0.8 }}
                       whileHover={{ scale: 1 }}
                     />
-                    <span className="relative z-10 inline-block">{item.label}</span>
+                    <span className="relative z-10 inline-block">{item.labelEn}</span>
                     {active ? (
                       <>
                         <motion.span
@@ -146,7 +168,8 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                         style={{ transformOrigin: 'left' }}
                       />
                     )}
-                  </Link>
+                  </Link>}
+                  {item.children?.length ? <div className="invisible absolute left-0 top-full z-20 min-w-48 rounded-xl border border-white/10 bg-rave-deep p-2 opacity-0 transition group-hover:visible group-hover:opacity-100">{item.children.map((child) => child.href && <Link key={child.id} href={child.href} className="block rounded px-3 py-2 text-sm text-white hover:bg-white/5">{child.labelEn}</Link>)}</div> : null}
                 </motion.div>
               );
             })}
@@ -160,24 +183,24 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
               transition={{ type: 'spring', stiffness: 280, damping: 22 }}
               className="relative"
             >
-              <Link
+              {resolvedCtaHref && resolvedCtaLabel && <Link
                 href={resolvedCtaHref}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-rave-red to-rave-red2 text-white font-heading uppercase tracking-wider text-sm font-bold border border-white/15 hover:border-rave-red shadow-[0_0_24px_rgba(255,23,61,0.45)] hover:shadow-[0_0_36px_rgba(255,23,61,0.65)] transition-all"
               >
                 <span>{resolvedCtaLabel}</span>
                 <span aria-hidden>»</span>
-              </Link>
+              </Link>}
             </motion.div>
           </div>
 
           {/* Mobile Toggle */}
           <div className="flex items-center gap-3 lg:hidden">
-            <Link
+            {resolvedCtaHref && resolvedCtaLabel && <Link
               href={resolvedCtaHref}
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-rave-red text-white font-heading uppercase tracking-wider text-xs font-bold"
             >
               {resolvedCtaLabel} »
-            </Link>
+            </Link>}
             <motion.button
               className="w-10 h-10 flex items-center justify-center text-white hover:text-rave-red transition-colors rounded-lg hover:bg-rave-red/10"
               onClick={() => setMobileOpen(true)}
@@ -235,16 +258,16 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
               </motion.div>
 
               <nav className="flex-1 flex flex-col p-6 gap-2" aria-label="Mobile primary">
-                {navItems.map((item, i) => {
+                {mobileItems.map((item, i) => {
                   const active = isActive(item.href);
                   return (
                     <motion.div
-                      key={item.href}
+                      key={item.id}
                       initial={{ opacity: 0, x: 30 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.15 + i * 0.05, type: 'spring', stiffness: 300, damping: 25 }}
                     >
-                      <Link
+                      {item.href && <Link
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
                         aria-current={active ? 'page' : undefined}
@@ -254,8 +277,8 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                             : 'text-white/70 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        {item.label}
-                      </Link>
+                        {item.labelEn}
+                      </Link>}
                     </motion.div>
                   );
                 })}
@@ -267,13 +290,13 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <Link
+                {resolvedCtaHref && resolvedCtaLabel && <Link
                   href={resolvedCtaHref}
                   onClick={() => setMobileOpen(false)}
                   className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-rave-red text-white font-heading uppercase tracking-wider text-sm font-bold"
                 >
                   {resolvedCtaLabel} »
-                </Link>
+                </Link>}
                 <div className="flex items-center justify-center gap-4 mt-4">
                   {[...Array(5)].map((_, i) => (
                     <motion.div

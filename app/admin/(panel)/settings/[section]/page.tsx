@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import SingletonScreen from '@/components/admin/modules/SingletonScreen';
 import type { SingletonKey } from '@/lib/admin/common/resource';
 import { SINGLETONS } from '@/lib/admin/registry';
+import CmsEditor from '@/components/admin/cms/CmsEditor';
 
 type Props = { params: Promise<{ section: string }> };
 
@@ -14,12 +15,15 @@ const SECTIONS: Record<string, SingletonKey> = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const key = SECTIONS[(await params).section];
-  return { title: key ? SINGLETONS[key].label : 'Not found' };
+  const section = (await params).section;
+  const key = SECTIONS[section];
+  return { title: key ? SINGLETONS[key].label : section === 'global-content' ? 'Global Content' : 'Not found' };
 }
 
 export default async function SettingsPage({ params }: Props) {
-  const key = SECTIONS[(await params).section];
+  const section = (await params).section;
+  if (section === 'global-content') return <CmsEditor contentKey="global-content" title="Global Content" description="Only truly global copy belongs here; page-specific content stays with its page." />;
+  const key = SECTIONS[section];
   if (!key) notFound();
   return <SingletonScreen settingKey={key} />;
 }

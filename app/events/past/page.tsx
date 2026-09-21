@@ -57,6 +57,7 @@ export default async function PastEventsPage({
   }
 
   const data = result.data;
+  const benefitsSection = data.content?.sections?.find((section) => section.key === 'benefits' && section.enabled !== false);
 
   return (
     <EventsMotion>
@@ -69,9 +70,9 @@ export default async function PastEventsPage({
         </EventsFilterProvider>
         <EventBenefits
           benefits={data.benefits}
-          title="WHY OUR NIGHTS LAST"
+          title={benefitsSection?.title ?? ''}
           titleId="archive-benefits-title"
-          context={['Music', 'People', 'Culture', 'A Brighter Tomorrow']}
+          context={benefitsSection?.description ? benefitsSection.description.split('|').map((value) => value.trim()).filter(Boolean) : []}
         />
         <EventsCTA cta={data.finalCta} titleId="past-events-cta-title" />
       </main>

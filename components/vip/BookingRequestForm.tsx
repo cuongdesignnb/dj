@@ -21,7 +21,7 @@ import {
 import Container from '@/components/ui/Container';
 import { vipReveal, vipStagger } from '@/lib/animations';
 import { formatMoney } from '@/lib/money';
-import type { BookingRequestInput, BookingRequestResult, VipPageData, VipSelection } from '@/lib/vip/types';
+import type { BookingRequestInput, BookingRequestResult, VipBookingFormContent, VipPageData, VipSelection } from '@/lib/vip/types';
 import { getVipRepository, isBookingSubmissionConnected } from '@/lib/vip/repository';
 import { toggleBottle } from '@/lib/vip/selection';
 import {
@@ -58,9 +58,11 @@ const INPUT_CLASS =
  */
 export default function BookingRequestForm({
   data,
+  content,
   initialSelection,
 }: {
   data: VipPageData;
+  content: VipBookingFormContent;
   initialSelection: VipSelection;
 }) {
   const reduced = useReducedMotion();
@@ -213,7 +215,7 @@ export default function BookingRequestForm({
     >
       <Container>
         <h2 id="booking-form-title" className="sr-only">
-          Booking request
+          {content.heading}
         </h2>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10">
@@ -255,7 +257,7 @@ export default function BookingRequestForm({
                     className="mb-2 flex items-center gap-2 text-sm text-rave-muted"
                   >
                     <User aria-hidden className="h-4 w-4 text-rave-red" />
-                    Full Name <span className="text-rave-red">*</span>
+                    {content.nameLabel} <span className="text-rave-red">*</span>
                   </label>
                   <input
                     id={ids.fullName}
@@ -280,7 +282,7 @@ export default function BookingRequestForm({
                       className="mb-2 flex items-center gap-2 text-sm text-rave-muted"
                     >
                       <Mail aria-hidden className="h-4 w-4 text-rave-red" />
-                      Email <span className="text-rave-red">*</span>
+                      {content.emailLabel} <span className="text-rave-red">*</span>
                     </label>
                     <input
                       id={ids.email}
@@ -305,7 +307,7 @@ export default function BookingRequestForm({
                       className="mb-2 flex items-center gap-2 text-sm text-rave-muted"
                     >
                       <Phone aria-hidden className="h-4 w-4 text-rave-red" />
-                      Phone <span className="text-rave-red">*</span>
+                      {content.phoneLabel} <span className="text-rave-red">*</span>
                     </label>
                     <input
                       id={ids.phone}
@@ -353,7 +355,7 @@ export default function BookingRequestForm({
                     className="mb-2 flex items-center gap-2 text-sm text-rave-muted"
                   >
                     <Users aria-hidden className="h-4 w-4 text-rave-red" />
-                    Group Size <span className="text-rave-red">*</span>
+                    {content.groupSizeLabel} <span className="text-rave-red">*</span>
                   </label>
                   <div id={ids.groupSize}>
                     <GroupSizeControl
@@ -380,7 +382,7 @@ export default function BookingRequestForm({
                     className="mb-2 flex items-center gap-2 text-sm text-rave-muted"
                   >
                     <MapPin aria-hidden className="h-4 w-4 text-rave-red" />
-                    Preferred Booth <span className="text-rave-red">*</span>
+                    {content.boothLabel} <span className="text-rave-red">*</span>
                   </label>
                   <select
                     id={ids.booth}
@@ -414,7 +416,7 @@ export default function BookingRequestForm({
                 <p className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-rave-muted">
                   <Wine aria-hidden className="h-4 w-4 text-rave-red" />
                   <span>
-                    Bottle Preferences <span className="text-rave-red">*</span>
+                  {content.bottleLabel} <span className="text-rave-red">*</span>
                   </span>
                   <span id={ids.bottles} className="text-rave-muted/70">
                     (Choose up to {data.package.maxBottleSelections} bottles &mdash;{' '}
@@ -439,7 +441,7 @@ export default function BookingRequestForm({
                   className="mb-2 flex items-center gap-2 text-sm text-rave-muted"
                 >
                   <MessageSquare aria-hidden className="h-4 w-4 text-rave-red" />
-                  Special Requests
+                  {content.specialRequestLabel}
                 </label>
                 <textarea
                   id={ids.special}
@@ -477,7 +479,7 @@ export default function BookingRequestForm({
                   disabled={submitting}
                   className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgba(255,23,61,0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-wait disabled:opacity-70 sm:text-base"
                 >
-                  <span>{submitting ? 'Sending…' : 'Send Booking Request'}</span>
+                  <span>{submitting ? '…' : content.submitLabel}</span>
                   <ArrowRight
                     aria-hidden
                     className="h-4 w-4 transition-transform group-hover/cta:translate-x-1"

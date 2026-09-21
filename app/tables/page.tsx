@@ -63,10 +63,10 @@ export default async function TablesPage({
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <PageHero
-          crumbs={[{ label: 'Home', href: '/' }, { label: 'Table' }]}
-          eyebrow="VIP Tables"
-          titleLines={['YOUR NIGHT.', 'YOUR BOOTH.']}
-          description={`An elevated VIP experience for ${data.event.title}. Premium booths, bottle service and the best views in the house — at ${data.event.venue}.`}
+          crumbs={[{ label: 'Home', href: '/' }, { label: data.tablesHero.breadcrumb }]}
+          eyebrow={data.tablesHero.eyebrow}
+          titleLines={[data.tablesHero.titleLine1, data.tablesHero.titleLine2]}
+          description={data.tablesHero.description}
           meta={[
             {
               icon: 'date' as const,
@@ -84,30 +84,30 @@ export default async function TablesPage({
             },
             { icon: 'place' as const, label: data.event.venue },
           ]}
-          visual={{ src: data.event.image.src, alt: data.event.image.alt }}
+          visual={data.tablesHero.image?.src ? data.tablesHero.image : data.event.image}
           titleId="tables-hero-title"
           actions={[
-            { label: 'Request a Booth', href: '#club-map', tone: 'primary' },
-            { label: 'View Club Map', href: '#club-map', tone: 'secondary' },
+            { label: data.tablesCta.primary.label, href: data.tablesCta.primary.href, tone: 'primary' },
+            ...(data.tablesCta.secondary ? [{ label: data.tablesCta.secondary.label, href: data.tablesCta.secondary.href, tone: 'secondary' as const }] : []),
           ]}
-          sideNotes={['PEOPLE', 'MUSIC', 'CULTURE', 'FOREVER']}
-          footNotes={['VIP MUSIC ENERGY', 'A BRIGHTER TOMORROW']}
+          sideNotes={data.tablesHero.sideNotes}
+          footNotes={data.tablesHero.footNotes}
         />
 
         <VipConfigurator data={data} initialSelection={initialSelection} />
 
         <VipInfoGrid
           items={data.infoItems}
-          title="VIP Information"
+          title={data.tablesMap.infoTitle}
           titleId="vip-information-title"
-          context="Same People — Brighter Tomorrow"
+          context={data.tablesMap.infoContext}
         />
 
         <FaqAccordion
           items={data.faq}
           titleId="tables-faq-title"
           idPrefix="tables-faq"
-          context="Get The Answers — VIP Ready"
+          context={data.tablesMap.faqContext}
         />
 
         <FinalCtaSection cta={data.tablesCta} titleId="tables-cta-title" />

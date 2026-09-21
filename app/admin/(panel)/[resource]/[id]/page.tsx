@@ -473,6 +473,14 @@ export default async function ResourceDetailPage({ params }: Props) {
                 <Pencil aria-hidden className="h-4 w-4" /> Edit
               </Link>
             )}
+            {definition.key === 'events' && (
+              <div className="flex flex-wrap gap-2">
+                <Link href={`/admin/events/${record.id}/tickets`} className={buttonClass.secondary}>Manage Tickets</Link>
+                <Link href={`/admin/events/${record.id}/vip`} className={buttonClass.secondary}>Manage VIP Tables</Link>
+                <Link href={`/admin/events/${record.id}/edit#artists`} className={buttonClass.ghost}>Manage Lineup</Link>
+                <Link href={`/admin/events/${record.id}/edit#gallery`} className={buttonClass.ghost}>Manage Gallery</Link>
+              </div>
+            )}
           </>
         }
       />

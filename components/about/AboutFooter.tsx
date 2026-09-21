@@ -1,12 +1,12 @@
 'use client';
 
 import type { ReactElement } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
-import { navItems, siteNav } from '@/lib/navigation';
+import PublicMenuLinks from '@/components/shared/PublicMenuLinks';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { AboutFooterContact } from '@/lib/about/types';
+import { useEffect, useState } from 'react';
 
 interface Props {
   contact: AboutFooterContact;
@@ -61,7 +61,15 @@ export default function AboutFooter({
   copyright,
 }: Props) {
   const year = new Date().getFullYear();
-  const copyrightText = copyright ?? `© ${year} Connection Land. All rights reserved.`;
+  const [global, setGlobal] = useState<{ tagline?: string; footerDescription?: string; copyright?: string }>({});
+
+  useEffect(() => {
+    fetch('/api/v1/page-content/global-content')
+      .then((response) => response.json())
+      .then((payload) => setGlobal(payload?.data?.data ?? {}))
+      .catch(() => undefined);
+  }, []);
+  const copyrightText = copyright ?? global.copyright ?? `© ${year}`;
 
   return (
     <footer className="relative border-t border-white/[0.06] bg-rave-black">
@@ -83,15 +91,15 @@ export default function AboutFooter({
               </div>
               <div className="flex flex-col">
                 <span className="font-heading font-bold tracking-wider text-white leading-tight">
-                  {siteNav.brandName}
+                  CONNECTION
                 </span>
                 <span className="text-[9px] tracking-[0.3em] text-rave-muted uppercase">
-                  {siteNav.tagline}
+                  {global.tagline}
                 </span>
               </div>
             </div>
             <p className="text-sm text-rave-muted leading-relaxed mb-5">
-              Uniting music, energy and people for unforgettable experiences.
+              {global.footerDescription}
             </p>
             <div className="flex items-center gap-3" aria-label="Social links">
               {contact.socials
@@ -121,24 +129,11 @@ export default function AboutFooter({
             <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">
               Quick Links
             </h4>
-            <ul className="flex flex-col gap-2.5">
-              {navItems.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-rave-muted hover:text-white transition-all duration-300 inline-block"
-                  >
-                    <motion.span
-                      className="inline-block"
-                      whileHover={{ x: 4 }}
-                      transition={{ type: 'spring', stiffness: 400 }}
-                    >
-                      {link.label}
-                    </motion.span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <PublicMenuLinks
+              location="FOOTER_QUICK"
+              listClassName="flex flex-col gap-2.5"
+              linkClassName="text-sm text-rave-muted hover:text-white transition-all duration-300 inline-block"
+            />
           </motion.div>
 
           {/* Contact */}
@@ -188,8 +183,7 @@ export default function AboutFooter({
               Music Connects Us All
             </h4>
             <p className="text-sm text-rave-muted leading-relaxed max-w-md">
-              A nightlife and entertainment brand creating immersive music experiences that bring
-              together sound, people and culture. Welcome to the dancefloor.
+              {global.footerDescription}
             </p>
           </motion.div>
         </motion.div>
@@ -203,29 +197,11 @@ export default function AboutFooter({
           transition={{ delay: 0.5 }}
         >
           <p className="text-xs text-rave-muted/60">{copyrightText}</p>
-          <div className="flex items-center gap-4">
-            {legalTermsHref ? (
-              <Link
-                href={legalTermsHref}
-                className="text-xs text-rave-muted/60 hover:text-white transition-colors"
-              >
-                Terms & Conditions
-              </Link>
-            ) : (
-              <span className="text-xs text-rave-muted/40">Terms & Conditions</span>
-            )}
-            <span aria-hidden className="text-rave-muted/30">|</span>
-            {legalPrivacyHref ? (
-              <Link
-                href={legalPrivacyHref}
-                className="text-xs text-rave-muted/60 hover:text-white transition-colors"
-              >
-                Privacy Policy
-              </Link>
-            ) : (
-              <span className="text-xs text-rave-muted/40">Privacy Policy</span>
-            )}
-          </div>
+          <PublicMenuLinks
+            location="FOOTER_LEGAL"
+            listClassName="flex items-center gap-4"
+            linkClassName="text-xs text-rave-muted/60 hover:text-white transition-colors"
+          />
         </motion.div>
       </Container>
     </footer>

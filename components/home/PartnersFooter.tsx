@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import Container from '../ui/Container';
-import { footerLinks } from '@/lib/navigation';
+import PublicMenuLinks from '@/components/shared/PublicMenuLinks';
 import type { HomeFooterData, HomePartner } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 
@@ -82,6 +81,14 @@ function MarqueeStrip({ partners }: { partners: HomePartner[] }) {
 export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
   const [email, setEmail] = useState('');
   const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [global, setGlobal] = useState<{ tagline?: string; footerDescription?: string; copyright?: string }>({});
+
+  useEffect(() => {
+    fetch('/api/v1/page-content/global-content')
+      .then((response) => response.json())
+      .then((payload) => setGlobal(payload?.data?.data ?? {}))
+      .catch(() => undefined);
+  }, []);
 
   const submitNewsletter = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -206,11 +213,11 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                   </div>
                   <div className="flex flex-col">
                     <span className="font-heading text-base font-bold tracking-wider text-white leading-tight">CONNECTION</span>
-                    <span className="text-[9px] tracking-[0.3em] text-rave-muted uppercase">Sound Meets Soul</span>
+                    <span className="text-[9px] tracking-[0.3em] text-rave-muted uppercase">{global.tagline}</span>
                   </div>
                 </div>
                 <p className="text-sm text-rave-muted leading-relaxed mb-5">
-                  Uniting music, energy and people for unforgettable experiences.
+                  {global.footerDescription}
                 </p>
                 <div className="flex items-center gap-3">
                   {footer.socials.map((social, i) => {
@@ -245,24 +252,11 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                 transition={{ delay: 0.2 }}
               >
                 <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">Quick Links</h4>
-                <ul className="flex flex-col gap-2.5">
-                  {footerLinks.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-rave-muted hover:text-white transition-all duration-300 inline-block"
-                      >
-                        <motion.span
-                          className="inline-block"
-                          whileHover={{ x: 4 }}
-                          transition={{ type: 'spring', stiffness: 400 }}
-                        >
-                          {link.label}
-                        </motion.span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <PublicMenuLinks
+                  location="FOOTER_QUICK"
+                  listClassName="flex flex-col gap-2.5"
+                  linkClassName="text-sm text-rave-muted hover:text-white transition-all duration-300 inline-block"
+                />
               </motion.div>
 
               {/* Column 3 - Event Info */}
@@ -301,9 +295,6 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
                     {footer.address || 'VIP & table details to be confirmed'}
                   </motion.li>
-                  <li>
-                    <Link href="/contact" className="hover:text-white transition-colors">Send an enquiry</Link>
-                  </li>
                   {footer.email ? <li><a href={`mailto:${footer.email}`} className="hover:text-white transition-colors">{footer.email}</a></li> : <li>Contact details to be confirmed</li>}
                   {footer.phone && <li><a href={`tel:${footer.phone}`} className="hover:text-white transition-colors">{footer.phone}</a></li>}
                 </ul>
@@ -358,17 +349,13 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
             transition={{ delay: 0.6 }}
           >
             <p className="text-xs text-rave-muted/60">
-              © Connection Rave. All Rights Reserved.
+              {global.copyright}
             </p>
-            <div className="flex items-center gap-4">
-              <Link href="/terms" className="text-xs text-rave-muted/60 hover:text-white transition-colors">
-                <motion.span whileHover={{ color: '#fff' }}>Terms & Conditions</motion.span>
-              </Link>
-              <span className="text-rave-muted/30">|</span>
-              <Link href="/privacy" className="text-xs text-rave-muted/60 hover:text-white transition-colors">
-                <motion.span whileHover={{ color: '#fff' }}>Privacy Policy</motion.span>
-              </Link>
-            </div>
+            <PublicMenuLinks
+              location="FOOTER_LEGAL"
+              listClassName="flex items-center gap-4"
+              linkClassName="text-xs text-rave-muted/60 hover:text-white transition-colors"
+            />
           </motion.div>
         </Container>
       </div>

@@ -95,7 +95,10 @@ export interface GalleryFinalCta {
   background?: MediaAsset;
 }
 
+import type { PublicListingContent } from '@/lib/cms/public-page';
+
 export interface GalleryPageData {
+  content?: PublicListingContent;
   hero: GalleryHeroData;
   previewMedia: GalleryMediaItem[];
   featuredCollection?: GalleryCollection | null;

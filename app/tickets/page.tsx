@@ -58,20 +58,19 @@ export default async function TicketsPage() {
   return (
     <EventsMotion>
       {/* On this page the header CTA scrolls to the options rather than reloading it. */}
-      <Header ctaHref="#ticket-options" ctaLabel="Get Tickets" />
+      <Header ctaHref={data.finalCta.primary.href} ctaLabel={data.finalCta.primary.label} />
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <TicketsHero
           event={data.event}
-          visual={{
-            src: '/assets/hero-crowd.jpg',
-            alt: 'Crowd with raised hands in front of a circular stage light under red lasers',
-          }}
+          content={data.hero}
+          visual={data.hero.image?.src ? data.hero.image : data.event.image}
         />
         <TicketsSelector
           event={data.event}
           tiers={data.tiers}
           provider={data.provider}
           trustItems={data.trustItems}
+          content={data.selector}
         />
         <TicketInfoGrid items={data.infoItems} />
         <FaqAccordion items={data.faq} titleId="tickets-faq-title" idPrefix="tickets-faq" />

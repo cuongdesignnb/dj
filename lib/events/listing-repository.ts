@@ -20,6 +20,7 @@ import type {
 } from './listing-types';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
+import { fetchPublicListingContent, listingAction, listingImage, listingTitleLines } from '@/lib/cms/public-page';
 
 export interface EventsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -376,8 +377,8 @@ export class HttpEventsRepository implements EventsRepository {
     return { ok: true, data };
   }
 
-  getEventsPage(): Promise<EventsRepositoryResult> {
-    return this.getPage('/api/v1/events', (raw) => {
+  async getEventsPage(): Promise<EventsRepositoryResult> {
+    const result = await this.getPage('/api/v1/events', (raw) => {
       const rows = Array.isArray(raw) ? raw : [];
       const events = rows.flatMap((row) => {
         if (!isRecord(row)) return [];
@@ -406,10 +407,40 @@ export class HttpEventsRepository implements EventsRepository {
       const visual = featured?.image ?? { src: '', alt: '' };
       return { hero: { eyebrow: 'UPCOMING EVENTS', titleLines: ['THE NIGHTS', 'WE ARE BUILDING'], description: 'Explore published Connection Rave events.', primaryCta: { label: featured ? 'Explore event' : 'Explore lineup', href: featured?.detailHref ?? '/lineup' }, secondaryCta: { label: 'Join the community', href: '/about' }, visual, visualAnnotations: { side: ['MUSIC', 'PEOPLE', 'ENERGY', 'CONNECTION'] } }, featuredEvent: featured, events, benefits: [], finalCta: { title: 'READY FOR THE NEXT NIGHT?', description: 'Follow the published event programme.', primary: { label: 'Explore events', href: '/events' }, secondary: { label: 'Contact us', href: '/contact' }, background: visual }, footer: { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' } };
     });
+    if (!result.ok) return result;
+    const content = await fetchPublicListingContent(this.baseUrl, 'events-list', this.revalidateSeconds);
+    if (!content) return { ok: false, error: { kind: 'invalid', message: 'The events page content is unavailable.' } };
+    const visual = listingImage(content.hero, result.data.hero.visual);
+    return {
+      ok: true,
+      data: {
+        content,
+        ...result.data,
+        hero: {
+          ...result.data.hero,
+          eyebrow: content.hero?.eyebrow ?? '',
+          titleLines: listingTitleLines(content.hero, []),
+          description: content.hero?.description ?? '',
+          primaryCta: listingAction(content.hero?.primary, result.data.hero.primaryCta),
+          secondaryCta: content.hero?.secondary ? listingAction(content.hero.secondary, result.data.hero.secondaryCta ?? result.data.hero.primaryCta) : undefined,
+          visual,
+          visualAnnotations: content.hero?.sideNotes ? { side: content.hero.sideNotes } : undefined,
+        },
+        finalCta: {
+          ...result.data.finalCta,
+          eyebrow: content.finalCta?.eyebrow,
+          title: content.finalCta?.title ?? '',
+          description: content.finalCta?.description ?? content.finalCta?.subtitle,
+          primary: listingAction(content.finalCta?.primary, result.data.finalCta.primary),
+          secondary: content.finalCta?.secondary ? listingAction(content.finalCta.secondary, result.data.finalCta.secondary ?? result.data.finalCta.primary) : undefined,
+          background: content.finalCta?.background ?? result.data.finalCta.background,
+        },
+      },
+    };
   }
 
-  getPastEventsPage(): Promise<PastEventsRepositoryResult> {
-    return this.getPage('/api/v1/events/past', (raw) => {
+  async getPastEventsPage(): Promise<PastEventsRepositoryResult> {
+    const result = await this.getPage('/api/v1/events/past', (raw) => {
       const rows = Array.isArray(raw) ? raw : [];
       const events = rows.flatMap((row) => {
         if (!isRecord(row)) return [];
@@ -420,6 +451,36 @@ export class HttpEventsRepository implements EventsRepository {
       const visual = featured?.image ?? { src: '', alt: '' };
       return { hero: { eyebrow: 'PAST EVENTS', titleLines: ['THE NIGHTS', 'WE REMEMBER'], description: 'Published event archive records.', primaryCta: { label: 'View events', href: '/events' }, secondaryCta: { label: 'View gallery', href: '/gallery' }, visual, visualAnnotations: { side: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'] } }, featuredRecap: featured, events, benefits: [], finalCta: { title: 'FIND THE NEXT NIGHT', primary: { label: 'Explore events', href: '/events' }, secondary: { label: 'View lineup', href: '/lineup' }, background: visual }, footer: { email: null, phone: null, socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' } };
     });
+    if (!result.ok) return result;
+    const content = await fetchPublicListingContent(this.baseUrl, 'past-events', this.revalidateSeconds);
+    if (!content) return { ok: false, error: { kind: 'invalid', message: 'The past events page content is unavailable.' } };
+    const visual = listingImage(content.hero, result.data.hero.visual);
+    return {
+      ok: true,
+      data: {
+        content,
+        ...result.data,
+        hero: {
+          ...result.data.hero,
+          eyebrow: content.hero?.eyebrow ?? '',
+          titleLines: listingTitleLines(content.hero, []),
+          description: content.hero?.description ?? '',
+          primaryCta: listingAction(content.hero?.primary, result.data.hero.primaryCta),
+          secondaryCta: content.hero?.secondary ? listingAction(content.hero.secondary, result.data.hero.secondaryCta ?? result.data.hero.primaryCta) : undefined,
+          visual,
+          visualAnnotations: content.hero?.sideNotes ? { side: content.hero.sideNotes } : undefined,
+        },
+        finalCta: {
+          ...result.data.finalCta,
+          eyebrow: content.finalCta?.eyebrow,
+          title: content.finalCta?.title ?? '',
+          description: content.finalCta?.description ?? content.finalCta?.subtitle,
+          primary: listingAction(content.finalCta?.primary, result.data.finalCta.primary),
+          secondary: content.finalCta?.secondary ? listingAction(content.finalCta.secondary, result.data.finalCta.secondary ?? result.data.finalCta.primary) : undefined,
+          background: content.finalCta?.background ?? result.data.finalCta.background,
+        },
+      },
+    };
   }
 }
 

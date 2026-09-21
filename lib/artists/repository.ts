@@ -6,6 +6,7 @@ import type { Artist, LineupPageData } from './types';
 import { normalizeArtist, normalizeArtists } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
+import { fetchPublicListingContent, listingAction, listingImage, listingTitleLines } from '@/lib/cms/public-page';
 
 export interface ArtistRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -103,23 +104,28 @@ export class HttpArtistRepository implements ArtistRepository {
   async getLineupPage(): Promise<RepositoryResult<LineupPageData>> {
     const result = await this.getArtists();
     if (!result.ok) return result;
+    const content = await fetchPublicListingContent(this.baseUrl, 'lineup-list', this.revalidateSeconds);
+    if (!content) return { ok: false, error: { kind: 'invalid', message: 'The lineup page content is unavailable.' } };
+    const fallbackVisual = result.data[0]?.heroImage ?? result.data[0]?.portrait ?? { src: '', alt: '' };
+    const story = (content.sections ?? []).find((section) => section.key === 'story' || section.key === 'info');
     return {
       ok: true,
       data: {
+        content,
         hero: {
-          eyebrow: 'ARTIST LINEUP',
-          titleLines: ['THE SOUND', 'OF CONNECTION'],
-          description: 'Meet the published artists connected to this event.',
-          primaryCta: { label: 'Explore the event', href: '/event' },
-          secondaryCta: { label: 'View tickets', href: '/tickets' },
-          visual: result.data[0]?.heroImage ?? result.data[0]?.portrait ?? { src: '', alt: '' },
-          sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'],
+          eyebrow: content.hero?.eyebrow ?? '',
+          titleLines: listingTitleLines(content.hero, []),
+          description: content.hero?.description ?? '',
+          primaryCta: listingAction(content.hero?.primary, { label: '', href: '' }),
+          secondaryCta: listingAction(content.hero?.secondary, { label: '', href: '' }),
+          visual: listingImage(content.hero, fallbackVisual),
+          sideNotes: content.hero?.sideNotes ?? [],
           badge: [],
           location: process.env.EVENT_CITY?.trim() ?? '',
         },
         artists: result.data,
-        story: { eyebrow: 'THE LINEUP', title: 'Artists in focus', description: 'Published artist profiles for the current programme.', image: result.data[0]?.heroImage ?? { src: '', alt: '' } },
-        finalCta: { title: 'STAY CONNECTED', primary: { label: 'Explore events', href: '/events' }, secondary: { label: 'Contact us', href: '/contact' } },
+        story: { eyebrow: story?.eyebrow ?? '', title: story?.title ?? '', description: story?.description ?? '', image: listingImage(content.hero, fallbackVisual) },
+        finalCta: { title: content.finalCta?.title ?? '', subtitle: content.finalCta?.description ?? content.finalCta?.subtitle, primary: listingAction(content.finalCta?.primary, { label: '', href: '' }), secondary: listingAction(content.finalCta?.secondary, { label: '', href: '' }) },
         footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
       },
     };

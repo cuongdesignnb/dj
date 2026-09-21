@@ -11,6 +11,7 @@ const PERMISSION_KEYS = [
   'gallery.view', 'gallery.create', 'gallery.edit', 'gallery.publish', 'gallery.delete',
   'media.view', 'media.create', 'media.edit', 'media.delete',
   'content.view', 'content.create', 'content.edit', 'content.publish', 'content.delete',
+  'navigation.view', 'navigation.edit', 'navigation.publish',
   'partners.view', 'partners.create', 'partners.edit', 'partners.publish', 'partners.delete',
   'staff.view', 'staff.create', 'staff.edit', 'staff.disable',
   'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
@@ -72,10 +73,10 @@ export async function seedSystem({ db }: SeedContext) {
     .filter(([key]) => !key.startsWith('roles.') && !key.startsWith('staff.'))
     .map(([, row]) => row.id);
   const managerPermissionIds = [...permissionRows.entries()]
-    .filter(([key]) => /^(events|artists|products|news|gallery|media|content|partners)\./.test(key))
+    .filter(([key]) => /^(events|artists|products|news|gallery|media|content|partners|navigation)\./.test(key))
     .map(([, row]) => row.id);
   const editorPermissionIds = [...permissionRows.entries()]
-    .filter(([key]) => /\.(view|create|edit)$/.test(key) && !key.startsWith('orders.'))
+    .filter(([key]) => /\.(view|create|edit)$/.test(key) && !key.startsWith('orders.') && !key.startsWith('navigation.publish'))
     .map(([, row]) => row.id);
   const rolePermissions: Record<string, string[]> = {
     SUPER_ADMIN: allPermissionIds,

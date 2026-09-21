@@ -11,6 +11,7 @@ export const PERMISSION_MODULES = [
   { id: 'gallery', label: 'Gallery' },
   { id: 'media', label: 'Media' },
   { id: 'content', label: 'Content' },
+  { id: 'navigation', label: 'Navigation' },
   { id: 'partners', label: 'Partners' },
   { id: 'staff', label: 'Staff' },
   { id: 'roles', label: 'Roles' },

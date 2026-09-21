@@ -7,6 +7,7 @@ import type { GalleryCollection, GalleryPageData } from './types';
 import { normalizeCollection, normalizeCollections } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
+import { fetchPublicListingContent, listingAction, listingImage, listingTitleLines } from '@/lib/cms/public-page';
 
 export interface GalleryRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -84,25 +85,25 @@ export class HttpGalleryRepository implements GalleryRepository {
     return { ok: true, data: normalizeCollections(result.raw) };
   }
 
-  /**
-   * Page chrome is presentation; collections and media always come from the API.
-   */
   async getGalleryPage(): Promise<RepositoryResult<GalleryPageData>> {
     const result = await this.getCollections();
     if (!result.ok) return result;
+    const content = await fetchPublicListingContent(this.baseUrl, 'gallery-list', this.revalidateSeconds);
+    if (!content) return { ok: false, error: { kind: 'invalid', message: 'The gallery page content is unavailable.' } };
 
     const collections = result.data;
     const featured = collections.find((c) => c.featured) ?? collections[0] ?? null;
 
-    const visual = featured?.hero ?? featured?.cover ?? { src: '', alt: '' };
+    const visual = listingImage(content.hero, featured?.hero ?? featured?.cover ?? { src: '', alt: '' });
     return {
       ok: true,
       data: {
-        hero: { eyebrow: 'GALLERY', titleLines: ['MUSIC IN', 'MOTION'], description: 'Published visual collections from Connection Rave.', visual, sideNotes: ['MUSIC', 'PEOPLE', 'CULTURE', 'CONNECTION'], primaryCta: { label: 'Explore collections', href: '#collections' }, secondaryCta: { label: 'View events', href: '/events' } },
+        content,
+        hero: { eyebrow: content.hero?.eyebrow ?? '', titleLines: listingTitleLines(content.hero, []), description: content.hero?.description ?? '', visual, sideNotes: content.hero?.sideNotes ?? [], primaryCta: listingAction(content.hero?.primary, { label: '', href: '' }), secondaryCta: listingAction(content.hero?.secondary, { label: '', href: '' }) },
         previewMedia: featured?.media ?? [],
         featuredCollection: featured,
         collections,
-        finalCta: { title: 'KEEP THE CONNECTION GOING', subtitle: 'Explore the next published event.', primary: { label: 'View events', href: '/events' }, secondary: { label: 'View lineup', href: '/lineup' }, background: visual },
+        finalCta: { title: content.finalCta?.title ?? '', subtitle: content.finalCta?.description ?? content.finalCta?.subtitle, primary: listingAction(content.finalCta?.primary, { label: '', href: '' }), secondary: content.finalCta?.secondary ? listingAction(content.finalCta.secondary, { label: '', href: '' }) : undefined, background: content.finalCta?.background ?? visual },
         footer: { email: null, phone: null, partners: [], socials: [], legalTermsHref: '/terms', legalPrivacyHref: '/privacy' },
       },
     };

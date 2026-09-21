@@ -116,7 +116,10 @@ export interface NewsFinalCta {
   background?: MediaAsset;
 }
 
+import type { PublicListingContent } from '@/lib/cms/public-page';
+
 export interface NewsPageData {
+  content?: PublicListingContent;
   hero: NewsHeroData;
   featuredArticle?: NewsArticle | null;
   articles: NewsArticle[];

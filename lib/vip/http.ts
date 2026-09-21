@@ -11,6 +11,9 @@ import type {
   VipInfoItem,
   VipPackage,
   VipPageData,
+  VipBookingFormContent,
+  VipHeroContent,
+  VipMapContent,
   VipProcessStep,
 } from './types';
 
@@ -188,14 +191,14 @@ function bookingNotes(value: unknown): VipBookingNote[] {
   });
 }
 
-function finalCta(value: unknown, fallback: VipFinalCtaData): VipFinalCtaData {
-  if (!isRecord(value)) return fallback;
+function finalCta(value: unknown): VipFinalCtaData | null {
+  if (!isRecord(value)) return null;
   const title = str(value.title);
   const primary =
     isRecord(value.primary) && typeof value.primary.label === 'string' && typeof value.primary.href === 'string'
       ? { label: value.primary.label, href: value.primary.href }
       : null;
-  if (!title || !primary) return fallback;
+  if (!title || !primary) return null;
   return {
     title,
     subtitle: typeof value.subtitle === 'string' ? value.subtitle : undefined,
@@ -274,19 +277,38 @@ export function normalizeVipPage(raw: unknown): VipPageData | null {
       })
     : [];
 
+  const tablesRaw = isRecord(raw.tablesContent) ? raw.tablesContent : {};
+  const bookingRaw = isRecord(raw.bookingContent) ? raw.bookingContent : {};
+  const hero = (value: unknown): VipHeroContent => {
+    const item = isRecord(value) ? value : {};
+    return { breadcrumb: str(item.breadcrumb), eyebrow: str(item.eyebrow), titleLine1: str(item.titleLine1), titleLine2: str(item.titleLine2), description: str(item.description), image: isRecord(item.image) ? media(item.image) : null, sideNotes: Array.isArray(item.sideNotes) ? item.sideNotes.filter((entry): entry is string => typeof entry === 'string') : [], footNotes: Array.isArray(item.footNotes) ? item.footNotes.filter((entry): entry is string => typeof entry === 'string') : [] };
+  };
+  const mapRaw = isRecord(tablesRaw.map) ? tablesRaw.map : {};
+  const map: VipMapContent = { eyebrow: str(mapRaw.eyebrow), title: str(mapRaw.title), description: str(mapRaw.description), disclaimer: str(mapRaw.disclaimer), stageLabel: str(mapRaw.stageLabel), infoTitle: str(tablesRaw.infoTitle), infoContext: str(tablesRaw.infoContext), faqContext: str(tablesRaw.faqContext) };
+  const formRaw = isRecord(bookingRaw.form) ? bookingRaw.form : {};
+  const bookingForm: VipBookingFormContent = { heading: str(formRaw.heading), description: str(formRaw.description), nameLabel: str(formRaw.nameLabel), emailLabel: str(formRaw.emailLabel), phoneLabel: str(formRaw.phoneLabel), groupSizeLabel: str(formRaw.groupSizeLabel), boothLabel: str(formRaw.boothLabel), bottleLabel: str(formRaw.bottleLabel), specialRequestLabel: str(formRaw.specialRequestLabel), submitLabel: str(formRaw.submitLabel), notesTitle: str(bookingRaw.notesTitle), notesContext: str(bookingRaw.notesContext), faqContext: str(bookingRaw.faqContext) };
+  const tablesCta = finalCta(tablesRaw.finalCta);
+  const bookingCta = finalCta(bookingRaw.finalCta);
+  if (!tablesCta || !bookingCta) return null;
+
   return {
     event,
     package: pkg,
     booths,
     bottles,
-    mapDisclaimer: str(raw.mapDisclaimer, 'Booth positions are indicative. A request is not a reservation.'),
+    tablesHero: hero(tablesRaw.hero),
+    tablesMap: map,
+    bookingHero: hero(bookingRaw.hero),
+    bookingTabs: isRecord(bookingRaw.tabs) ? { tickets: str(bookingRaw.tabs.tickets), vip: str(bookingRaw.tabs.vip) } : { tickets: '', vip: '' },
+    bookingForm,
+    mapDisclaimer: map.disclaimer,
     infoItems: infoItems(raw.infoItems),
     faq: faqItems(raw.faq),
     processSteps: processSteps(raw.processSteps),
     bookingNotes: bookingNotes(raw.bookingNotes),
     bookingFaq: faqItems(raw.bookingFaq),
-    tablesCta: finalCta(raw.tablesCta, { title: 'REQUEST A VIP EXPERIENCE', primary: { label: 'Send a request', href: '/book-now' } }),
-    bookingCta: finalCta(raw.bookingCta, { title: 'STAY CONNECTED', primary: { label: 'View events', href: '/events' } }),
+    tablesCta,
+    bookingCta,
     footer: footer(raw.footer),
   };
 }
