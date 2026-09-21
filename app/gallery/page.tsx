@@ -82,13 +82,15 @@ export default async function GalleryPage({
           sideNotes={data.hero.sideNotes}
         />
 
-        <GalleryMosaic
-          media={data.previewMedia}
-          initialFilter={initialFilter}
-          // Says plainly what these images are, so nothing reads as a record of
-          // a night that has happened.
-          previewNote="Gallery preview | Not from a past event"
-        />
+        <div id="collections">
+          <GalleryMosaic
+            media={data.previewMedia}
+            initialFilter={initialFilter}
+            // Says plainly what these images are, so nothing reads as a record of
+            // a night that has happened.
+            previewNote="Gallery preview | Not from a past event"
+          />
+        </div>
 
         <FeaturedCollection collection={data.featuredCollection} />
 

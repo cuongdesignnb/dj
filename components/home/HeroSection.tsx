@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Ticket, Disc3 } from 'lucide-react';
+import { Ticket } from 'lucide-react';
 import Image from 'next/image';
 import NeonButton from './NeonButton';
 import Container from '../ui/Container';
-import { fadeUp, staggerContainer, bounceIn, staggerFast } from '@/lib/animations';
-import GlitchText from '../ui/GlitchText';
+import { fadeUp, staggerContainer, bounceIn } from '@/lib/animations';
 import AudioBars from '../ui/AudioBars';
 import DancingCrowd, { LaserLights, DiscoBall } from '../ui/DancingCrowd';
 import DESTINYShatter from '../ui/DESTINYShatter';
@@ -304,6 +303,7 @@ function DestinyTitle({ text }: { text: string }) {
       variants={fadeUp}
       className="relative flex items-center justify-center py-2 my-0 select-none"
     >
+      <h1 className="sr-only">{text}</h1>
       {/* Concentric expanding bass beats */}
       {Array.from({ length: 4 }).map((_, i) => (
         <motion.div

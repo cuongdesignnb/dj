@@ -1,6 +1,7 @@
 // Repository contract for /partners. Mirrors the about-page pattern.
 import type { PartnersPageData } from './types';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export type PartnersRepositoryResult =
   | { ok: true; data: PartnersPageData }
@@ -50,7 +51,7 @@ export class HttpPartnersRepository implements PartnersRepository {
     const url = `${this.baseUrl.replace(/\/$/, '')}/api/v1/partners`;
     let response: Response;
     try {
-      response = await fetch(url, { next: { revalidate: 300 } });
+      response = await fetch(url, { next: { revalidate: 300, tags: [PUBLIC_CACHE_TAGS.partners, PUBLIC_CACHE_TAGS.bootstrap] } });
     } catch {
       return {
         ok: false,

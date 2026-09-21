@@ -4,6 +4,7 @@
 
 import type { AboutPageData } from './types';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export type AboutRepositoryResult =
   | { ok: true; data: AboutPageData }
@@ -56,7 +57,7 @@ export class HttpAboutRepository implements AboutRepository {
       // Next.js exposes the standard fetch on the server with same defaults
       // as the browser; we don't need `cache: 'no-store'` for the static
       // about page — Next will infer.
-      response = await fetch(url, { next: { revalidate: 300 } });
+      response = await fetch(url, { next: { revalidate: 300, tags: [PUBLIC_CACHE_TAGS.bootstrap] } });
     } catch {
       return {
         ok: false,

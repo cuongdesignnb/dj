@@ -1,0 +1,23 @@
+/** Stable cache tags shared by public repositories and admin invalidation. */
+export const PUBLIC_CACHE_TAGS = {
+  home: 'public:home',
+  bootstrap: 'public:bootstrap',
+  site: 'public:site',
+  events: 'public:events',
+  eventsPast: 'public:events:past',
+  artists: 'public:artists',
+  products: 'public:products',
+  news: 'public:news',
+  gallery: 'public:gallery',
+  partners: 'public:partners',
+  faq: 'public:faq',
+  legalTerms: 'public:legal:terms',
+  legalPrivacy: 'public:legal:privacy',
+  event: (slug: string) => `public:event:${slug}`,
+  tickets: (slug: string) => `public:tickets:${slug}`,
+  vip: (slug: string) => `public:vip:${slug}`,
+  artist: (slug: string) => `public:artist:${slug}`,
+  product: (slug: string) => `public:product:${slug}`,
+  newsArticle: (slug: string) => `public:news:${slug}`,
+  galleryCollection: (slug: string) => `public:gallery:${slug}`,
+} as const;

@@ -190,10 +190,28 @@ function dateTime(date: unknown, time: unknown): string | null {
   return Number.isNaN(value.getTime()) ? null : value.toISOString();
 }
 
+function moneyValue(value: unknown): Record<string, unknown> | null {
+  if (!isRecord(value)) return null;
+  const amountMinor = typeof value.amountMinor === 'number' ? value.amountMinor : 0;
+  const currency = textValue(value.currency) || 'AUD';
+  return { amountMinor, currency };
+}
+
+function idValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
 /** Converts the admin form model into the public API write contract. */
 function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Record<string, unknown> {
   if (resource === 'events') {
     const venue = isRecord(input.venue) ? input.venue : {};
+    const seo = isRecord(input.seo) ? input.seo : {};
+    const tickets = isRecord(input.tickets) ? input.tickets : {};
+    const vip = isRecord(input.vip) ? input.vip : {};
+    const tierInputs = Array.isArray(tickets.tiers) ? tickets.tiers : [];
+    const boothInputs = Array.isArray(vip.booths) ? vip.booths : [];
+    const bottleInputs = Array.isArray(vip.bottles) ? vip.bottles : [];
+    const faqInputs = Array.isArray(input.faqs) ? input.faqs : [];
     return {
       slug: textValue(input.slug),
       status: enumValue(input.status),
@@ -209,6 +227,14 @@ function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Reco
       address: nullableText(venue.address),
       mapUrl: nullableText(venue.mapUrl),
       featured: Boolean(input.featured),
+      heroMediaId: mediaId(input.heroImage),
+      posterMediaId: mediaId(input.posterImage),
+      seoTitle: nullableText(seo.title),
+      seoDescription: nullableText(seo.description),
+      canonicalOverride: nullableText(seo.canonical),
+      ogMediaId: mediaId(seo.ogImage),
+      indexable: typeof seo.index === 'boolean' ? seo.index : true,
+      followLinks: typeof seo.follow === 'boolean' ? seo.follow : true,
       translations: localizedTranslations(input, 'name', (locale) => ({
         locale,
         title: localizedValue(input.name, locale),
@@ -216,6 +242,68 @@ function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Reco
         shortDescription: nullableText(localizedValue(input.shortDescription, locale)),
         description: nullableText(localizedValue(input.longDescription, locale)),
       })),
+      tickets: {
+        providerMode: textValue(tickets.providerMode) === 'external' ? 'external' : 'none',
+        providerUrl: nullableText(tickets.providerUrl),
+        tiers: tierInputs.map((raw, index) => {
+          const tier = isRecord(raw) ? raw : {};
+          return {
+            id: idValue(tier.id),
+            name: textValue(tier.name),
+            price: moneyValue(tier.price),
+            badge: nullableText(tier.badge),
+            online: Boolean(tier.online),
+            door: Boolean(tier.door),
+            sortOrder: typeof tier.sortOrder === 'number' ? tier.sortOrder : index,
+            enabled: typeof tier.enabled === 'boolean' ? tier.enabled : true,
+            availabilityStatus: enumValue(tier.availabilityStatus),
+            capacity: typeof tier.capacity === 'number' ? tier.capacity : null,
+            providerName: nullableText(tier.providerName),
+            providerExternalId: nullableText(tier.providerExternalId),
+            providerUrl: nullableText(tier.providerUrl) ?? nullableText(tickets.providerUrl),
+          };
+        }),
+      },
+      vip: {
+        id: idValue(vip.id),
+        enabled: Boolean(vip.enabled),
+        packageName: textValue(vip.packageName),
+        price: moneyValue(vip.price),
+        capacity: typeof vip.capacity === 'number' ? vip.capacity : null,
+        includedBottles: typeof vip.includedBottles === 'number' ? vip.includedBottles : null,
+        availabilityMode: textValue(vip.availabilityMode) === 'managed' ? 'managed' : 'on-request',
+        paymentMode: enumValue(vip.paymentMode),
+        depositAmountMinor: typeof vip.depositAmountMinor === 'number' ? vip.depositAmountMinor : null,
+        booths: boothInputs.map((raw, index) => {
+          const booth = isRecord(raw) ? raw : {};
+          return {
+            id: idValue(booth.id),
+            code: textValue(booth.code),
+            zone: nullableText(booth.zone),
+            x: typeof booth.x === 'number' ? booth.x : null,
+            y: typeof booth.y === 'number' ? booth.y : null,
+            requestable: typeof booth.requestable === 'boolean' ? booth.requestable : true,
+            availabilityStatus: enumValue(booth.availabilityStatus),
+            sortOrder: typeof booth.sortOrder === 'number' ? booth.sortOrder : index,
+          };
+        }),
+        bottles: bottleInputs.map((raw, index) => {
+          const bottle = isRecord(raw) ? raw : {};
+          return {
+            id: idValue(bottle.id),
+            name: textValue(bottle.name),
+            enabled: typeof bottle.enabled === 'boolean' ? bottle.enabled : true,
+            sortOrder: typeof bottle.sortOrder === 'number' ? bottle.sortOrder : index,
+            mediaId: mediaId(bottle.media ?? bottle.mediaId),
+          };
+        }),
+      },
+      artistIds: Array.isArray(input.artistIds) ? input.artistIds.map(idValue).filter((value): value is string => Boolean(value)) : [],
+      albumIds: Array.isArray(input.albumIds) ? input.albumIds.map(idValue).filter((value): value is string => Boolean(value)) : [],
+      faqs: faqInputs.map((raw) => {
+        const faq = isRecord(raw) ? raw : {};
+        return { id: idValue(faq.id), question: textValue(faq.question), answer: textValue(faq.answer) };
+      }),
     };
   }
 

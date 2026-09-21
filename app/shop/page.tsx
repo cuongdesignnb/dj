@@ -53,12 +53,14 @@ export default async function ShopPage({
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <ShopHero hero={data.hero} />
 
-        <ShopCatalog
-          products={data.products}
-          featured={data.featuredProduct}
-          featuredHighlights={data.featuredHighlights}
-          initialFilter={parseProductFilter(params.category)}
-        />
+        <div id="catalogue">
+          <ShopCatalog
+            products={data.products}
+            featured={data.featuredProduct}
+            featuredHighlights={data.featuredHighlights}
+            initialFilter={parseProductFilter(params.category)}
+          />
+        </div>
 
         <ShopBenefits
           benefits={data.benefits}

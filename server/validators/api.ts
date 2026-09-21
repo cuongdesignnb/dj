@@ -78,6 +78,52 @@ export const refundSchema = z.object({
 
 export const paginationSchema = z.object({ page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(20) });
 
+const moneyMutationSchema = z.object({
+  amountMinor: z.number().int().nonnegative(),
+  currency: z.string().trim().length(3),
+}).strict();
+
+const eventTicketTierMutationSchema = z.object({
+  id: uuid.optional(),
+  name: z.string().trim().min(1).max(160),
+  price: moneyMutationSchema,
+  badge: z.string().trim().max(80).nullable().optional(),
+  online: z.boolean().default(false),
+  door: z.boolean().default(false),
+  sortOrder: z.number().int().nonnegative().default(0),
+  enabled: z.boolean().optional(),
+  availabilityStatus: z.enum(['AVAILABLE', 'SOLD_OUT', 'NOT_AVAILABLE', 'UNKNOWN', 'ON_REQUEST']).optional(),
+  capacity: z.number().int().nonnegative().nullable().optional(),
+  providerName: z.string().trim().max(120).nullable().optional(),
+  providerExternalId: z.string().trim().max(160).nullable().optional(),
+  providerUrl: z.string().url().nullable().optional(),
+}).strict();
+
+const eventBoothMutationSchema = z.object({
+  id: uuid.optional(),
+  code: z.string().trim().min(1).max(80),
+  zone: z.string().trim().max(80).nullable().optional(),
+  x: z.number().min(0).max(100).nullable().optional(),
+  y: z.number().min(0).max(100).nullable().optional(),
+  requestable: z.boolean().optional(),
+  availabilityStatus: z.enum(['AVAILABLE', 'SOLD_OUT', 'NOT_AVAILABLE', 'UNKNOWN', 'ON_REQUEST']).optional(),
+  sortOrder: z.number().int().nonnegative().default(0),
+}).strict();
+
+const eventBottleMutationSchema = z.object({
+  id: uuid.optional(),
+  name: z.string().trim().min(1).max(160),
+  enabled: z.boolean().default(true),
+  sortOrder: z.number().int().nonnegative().default(0),
+  mediaId: uuid.nullable().optional(),
+}).strict();
+
+const eventFaqMutationSchema = z.object({
+  id: uuid.optional(),
+  question: z.string().trim().min(1).max(160),
+  answer: z.string().trim().min(1).max(10000),
+}).strict();
+
 export const eventMutationSchema = z.object({
   slug: z.string().trim().min(2).max(120),
   status: z.enum(['DRAFT', 'PREVIEW', 'PUBLISHED', 'ARCHIVED']).optional(),
@@ -93,8 +139,66 @@ export const eventMutationSchema = z.object({
   address: z.string().trim().max(300).nullable().optional(),
   mapUrl: z.string().url().nullable().optional(),
   featured: z.boolean().optional(),
+  heroMediaId: uuid.nullable().optional(),
+  posterMediaId: uuid.nullable().optional(),
+  seoTitle: z.string().trim().max(200).nullable().optional(),
+  seoDescription: z.string().trim().max(500).nullable().optional(),
+  canonicalOverride: z.string().url().nullable().optional(),
+  ogMediaId: uuid.nullable().optional(),
+  indexable: z.boolean().optional(),
+  followLinks: z.boolean().optional(),
   translations: z.array(z.object({ locale: z.enum(['en', 'vi']), title: z.string().trim().min(1).max(200), eyebrow: z.string().trim().max(200).nullable().optional(), shortDescription: z.string().trim().max(500).nullable().optional(), description: z.string().trim().max(10000).nullable().optional() }).strict()).min(1).max(2),
-}).strict();
+  tickets: z.object({
+    providerMode: z.enum(['none', 'external']),
+    providerUrl: z.string().url().nullable().optional(),
+    tiers: z.array(eventTicketTierMutationSchema).max(50).default([]),
+  }).strict().optional(),
+  vip: z.object({
+    id: uuid.optional(),
+    enabled: z.boolean().default(false),
+    packageName: z.string().trim().max(160).default(''),
+    price: moneyMutationSchema.nullable().optional(),
+    capacity: z.number().int().positive().nullable().optional(),
+    includedBottles: z.number().int().nonnegative().nullable().optional(),
+    availabilityMode: z.enum(['on-request', 'managed']).default('on-request'),
+    paymentMode: z.enum(['REQUEST_ONLY', 'FULL_PAYMENT', 'DEPOSIT']).optional(),
+    depositAmountMinor: z.number().int().nonnegative().nullable().optional(),
+    booths: z.array(eventBoothMutationSchema).max(200).default([]),
+    bottles: z.array(eventBottleMutationSchema).max(100).default([]),
+  }).strict().optional(),
+  artistIds: z.array(uuid).max(200).default([]),
+  albumIds: z.array(uuid).max(200).default([]),
+  faqs: z.array(eventFaqMutationSchema).max(100).default([]),
+}).strict().superRefine((value, ctx) => {
+  if (value.tickets?.providerMode === 'external' && !value.tickets.providerUrl) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['tickets', 'providerUrl'], message: 'A provider URL is required when an external ticket provider is selected.' });
+  }
+  if (value.tickets) {
+    const names = new Set<string>();
+    for (const [index, tier] of value.tickets.tiers.entries()) {
+      const key = tier.name.toLowerCase();
+      if (names.has(key)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['tickets', 'tiers', index, 'name'], message: 'Ticket tier names must be unique within an event.' });
+      names.add(key);
+    }
+  }
+  if (value.vip) {
+    const codes = new Set<string>();
+    for (const [index, booth] of value.vip.booths.entries()) {
+      const key = booth.code.toLowerCase();
+      if (codes.has(key)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['vip', 'booths', index, 'code'], message: 'Booth codes must be unique within an event.' });
+      codes.add(key);
+    }
+    const bottles = new Set<string>();
+    for (const [index, bottle] of value.vip.bottles.entries()) {
+      const key = bottle.name.toLowerCase();
+      if (bottles.has(key)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['vip', 'bottles', index, 'name'], message: 'Bottle names must be unique.' });
+      bottles.add(key);
+    }
+    if (value.vip.enabled && (!value.vip.packageName || !value.vip.price || !value.vip.capacity || value.vip.includedBottles == null)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['vip'], message: 'Enabled VIP packages require a name, price, capacity, and bottle count.' });
+    }
+  }
+});
 
 export const artistMutationSchema = z.object({
   slug: z.string().trim().min(2).max(120),

@@ -5,6 +5,7 @@
 import type { Artist, LineupPageData } from './types';
 import { normalizeArtist, normalizeArtists } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface ArtistRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -37,7 +38,7 @@ export class HttpArtistRepository implements ArtistRepository {
     try {
       response = await fetch(url, {
         headers: { accept: 'application/json' },
-        next: { revalidate: this.revalidateSeconds },
+        next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.artists, PUBLIC_CACHE_TAGS.events] },
       });
     } catch {
       return {

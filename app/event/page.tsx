@@ -11,18 +11,18 @@ import EventAbout from '@/components/event/EventAbout';
 import EventExpectations from '@/components/event/EventExpectations';
 import EventLineup from '@/components/event/EventLineup';
 import EventVenue from '@/components/event/EventVenue';
+import EventFaq from '@/components/event/EventFaq';
 import EventFinalCta from '@/components/event/EventFinalCta';
 import EventFooter from '@/components/event/EventFooter';
 import EventError from './error';
 
-// Frontend-owned route table. Pages that don't exist yet (tickets, tables,
-// lineup, booking, legal) resolve to fallback anchors per spec — never to
-// fake checkout/payment pages.
+// Frontend-owned route table. These are real client surfaces; payment and
+// ticket availability are still enforced by their server-side state.
 const ROUTES: FrontendRoutes = {
-  tickets: null,
-  tables: null,
-  lineup: null,
-  booking: null,
+  tickets: '/tickets',
+  tables: '/tables',
+  lineup: '/lineup',
+  booking: '/book-now',
   legalTerms: '/terms',
   legalPrivacy: '/privacy',
 };
@@ -99,7 +99,7 @@ export default async function EventPage() {
   return (
     <EventMotion>
       <main className="min-h-screen bg-rave-black text-white">
-        <Header ctaHref="/event#tickets" ctaLabel="Get Tickets" />
+        <Header ctaHref="/tickets" ctaLabel="Get Tickets" />
         <div className="pt-[84px]">
           <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8 pt-6">
             <Breadcrumb
@@ -115,6 +115,7 @@ export default async function EventPage() {
         <EventExpectations event={data} />
         <EventLineup event={data} routes={ROUTES} />
         <EventVenue event={data} />
+        <EventFaq event={data} />
         <EventFinalCta event={data} routes={ROUTES} />
         <EventFooter event={data} routes={ROUTES} />
 

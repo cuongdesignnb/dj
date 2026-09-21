@@ -5,6 +5,7 @@
 import type { TicketsPageData } from './types';
 import { normalizeTicketsPage } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface TicketsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -36,11 +37,11 @@ export class HttpTicketsRepository implements TicketsRepository {
       [eventResponse, ticketsResponse] = await Promise.all([
         fetch(eventUrl, {
           headers: { accept: 'application/json' },
-          next: { revalidate: this.revalidateSeconds },
+          next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events] },
         }),
         fetch(ticketsUrl, {
           headers: { accept: 'application/json' },
-          next: { revalidate: this.revalidateSeconds },
+          next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.tickets(this.eventSlug)] },
         }),
       ]);
     } catch {

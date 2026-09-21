@@ -5,6 +5,7 @@
 import { normalizeFaqItems } from './faq-http';
 import type { FaqItem, FaqPageData, FaqRepository, RepositoryResult } from './faq-types';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 function published(items: FaqItem[]): FaqItem[] {
   return items
@@ -20,7 +21,7 @@ export class HttpFaqRepository implements FaqRepository {
     try {
       response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/api/v1/faq`, {
         headers: { accept: 'application/json' },
-        next: { revalidate: 300 },
+        next: { revalidate: 300, tags: [PUBLIC_CACHE_TAGS.faq] },
       });
     } catch {
       return { ok: false, error: { kind: 'network', message: 'Could not reach the FAQ service. Please try again shortly.' } };

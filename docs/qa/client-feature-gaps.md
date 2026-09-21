@@ -10,8 +10,16 @@ These are remaining conditions found during QA. They are separated from code def
 | CONTENT-002 | P2 content state | Event date/schedule and ticket availability are not confirmed in seed data | Ticket CTAs cannot create a purchase intent yet | Set confirmed event schedule, ticket availability and `purchasableOnline` flags when sales open. |
 | ARCH-001 | P2 integration | Integration settings UI reports provider state but does not persist raw provider secrets in the application database | Provider setup must happen through deployment secrets, not the admin UI | Keep secrets in deployment secret storage and expose only health/configuration metadata. |
 
+## Production gate interpretation
+
+The application and data paths are QA-ready, but the launch gate remains closed until external payment credentials and approved production content are supplied. No date, schedule, legal clause, product, article, gallery item or payment success was invented to make the gate appear green.
+
 ## Closed in this run
 
 - The homepage hero and sections no longer depend on the removed static runtime data module.
 - Prices now remain visible before the ticket-card animation enters the viewport.
 - Admin list requests no longer exceed the API pagination limit.
+- Event admin fields now round-trip through strict validation, PostgreSQL relations, public DTOs and the client.
+- Resource-specific cache tags and path revalidation are wired to public reads after admin writes.
+- Legacy `/public/assets/...` media rows were cleaned up safely; canonical static assets were retained intentionally.
+- Named smoke-test events were removed after verifying that they had no bookings, purchases or VIP bookings.

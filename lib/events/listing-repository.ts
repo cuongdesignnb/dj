@@ -19,6 +19,7 @@ import type {
   PastEventsPageData,
 } from './listing-types';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface EventsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -329,7 +330,7 @@ export class HttpEventsRepository implements EventsRepository {
     try {
       response = await fetch(url, {
         headers: { accept: 'application/json' },
-        next: { revalidate: this.revalidateSeconds },
+        next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.eventsPast] },
       });
     } catch {
       return {

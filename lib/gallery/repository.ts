@@ -6,6 +6,7 @@
 import type { GalleryCollection, GalleryPageData } from './types';
 import { normalizeCollection, normalizeCollections } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface GalleryRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -41,7 +42,7 @@ export class HttpGalleryRepository implements GalleryRepository {
     try {
       response = await fetch(url, {
         headers: { accept: 'application/json' },
-        next: { revalidate: this.revalidateSeconds },
+        next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.gallery] },
       });
     } catch {
       return {

@@ -18,8 +18,9 @@ Browser: Chrome, Docker app at `http://localhost:43171`.
 | Newsletter form | `POST /api/v1/newsletter/subscribe` | PASS; valid canary returned `202`, invalid email returned `422`, and canary was cleaned up. |
 | Partners/social links | HTTPS URLs from persisted social settings | PASS; empty settings produce no `#` placeholders or dead links. |
 | Footer legal links | `/terms`, `/privacy` | PASS; frontend renders draft-safe pages while unpublished API documents remain gated. |
-| Public route matrix | `/`, `/about`, `/partners`, `/events`, `/events/past`, `/events/destiny`, `/tickets`, `/tables`, `/book-now`, `/lineup`, `/lineup/ryal`, `/gallery`, `/news`, `/shop`, `/cart`, `/faq`, `/contact`, `/terms`, `/privacy` | PASS; no browser route error or console error observed. |
+| Homepage section anchors | `#tickets`, `#vip-tables`, `#collections`, `#catalogue` | PASS; each destination is backed by an actual section wrapper, not a dead hash. |
+| Public route matrix | `/`, `/about`, `/artists`, `/partners`, `/events`, `/event`, `/events/destiny`, `/tickets`, `/tables`, `/book-now`, `/lineup`, `/gallery`, `/news`, `/shop`, `/cart`, `/faq`, `/contact`, `/terms`, `/privacy` | PASS; Chrome spot-check rendered every route without a load-error state. `/event` resolved to `/events/destiny`. |
 
 ## Dead-CTA check
 
-The final homepage check found `0` hash-only links. Empty social settings are omitted instead of rendered as `href="#"`. The newsletter form has a real API target and visible success/error handling.
+The final homepage check found `0` hash-only links. Empty social settings are omitted instead of rendered as `href="#"`. The newsletter form has a real API target and visible success/error handling. The browser sweep and SEO route matrix agree on the CTA destinations.

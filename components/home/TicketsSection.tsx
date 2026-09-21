@@ -69,7 +69,7 @@ function AnimatedPrice({ price, isNeon = false }: { price: string; isNeon?: bool
 
 export default function TicketsSection({ ticketTiers, trustItems }: { ticketTiers: HomeTicketTier[]; trustItems: HomeTrustItem[] }) {
   return (
-    <section className="relative py-20 md:py-28 overflow-hidden bg-rave-black">
+    <section id="tickets" className="relative py-20 md:py-28 overflow-hidden bg-rave-black">
       {/* Background Grid */}
       <div className="absolute inset-0 bg-rave-grid opacity-15 pointer-events-none" />
 

@@ -26,11 +26,7 @@ export function resolveTicketsAction(
   const direct = safeHref(event.actions.ticketUrl);
   if (direct) return direct;
   if (routes.tickets) return { href: routes.tickets, external: false };
-  return {
-    href: '/#tickets',
-    external: false,
-    note: 'Online ticketing link to be announced.',
-  };
+  return { href: '/tickets', external: false };
 }
 
 export function resolveVipAction(
@@ -40,11 +36,7 @@ export function resolveVipAction(
   const direct = safeHref(event.actions.vipRequestUrl);
   if (direct) return direct;
   if (routes.tables) return { href: routes.tables, external: false };
-  return {
-    href: '/#vip-tables',
-    external: false,
-    note: 'VIP table requests to be announced.',
-  };
+  return { href: '/tables', external: false };
 }
 
 export function resolveBookedNowAction(
@@ -52,9 +44,7 @@ export function resolveBookedNowAction(
   routes: FrontendRoutes,
 ): ResolvedAction {
   if (routes.booking) return { href: routes.booking, external: false };
-  // Per spec, Booked Now falls back to the VIP info anchor — never opens a
-  // fake checkout.
-  return { href: '/#vip-tables', external: false };
+  return { href: '/tables', external: false };
 }
 
 export function resolveLineupAction(

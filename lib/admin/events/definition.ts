@@ -5,12 +5,19 @@ import type { LocalizedString, MediaRef, PublishStatus, SeoFields } from '@/lib/
 import type { Money } from '@/lib/money';
 
 export interface TicketTierInput {
+  id?: string;
   name: string;
   price: Money | null;
   badge: string;
   online: boolean;
   door: boolean;
   sortOrder: number;
+  enabled?: boolean;
+  availabilityStatus?: string;
+  capacity?: number | null;
+  providerName?: string | null;
+  providerExternalId?: string | null;
+  providerUrl?: string | null;
 }
 
 export interface AdminEvent {
@@ -40,12 +47,12 @@ export interface AdminEvent {
     capacity: number | null;
     includedBottles: number | null;
     availabilityMode: 'on-request' | 'managed';
-    booths: { code: string; zone: string }[];
-    bottles: { name: string; enabled: boolean }[];
+    booths: { id?: string; code: string; zone: string; x?: number | null; y?: number | null; requestable?: boolean; availabilityStatus?: string; sortOrder?: number }[];
+    bottles: { id?: string; name: string; enabled: boolean; sortOrder?: number; mediaId?: string | null }[];
   };
   artistIds: string[];
   albumIds: string[];
-  faqs: { question: string; answer: string }[];
+  faqs: { id?: string; question: string; answer: string }[];
   seo: SeoFields;
   updatedAt: string;
   [key: string]: unknown;

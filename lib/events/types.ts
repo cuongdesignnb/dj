@@ -57,6 +57,30 @@ export interface EventContactInfo {
   socials: EventSocialLink[];
 }
 
+export interface EventFaq {
+  id: string;
+  question: string;
+  answer: string;
+  sortOrder: number;
+}
+
+export interface EventTicketSummary {
+  id: string;
+  name: string;
+  priceMinor: number;
+  currency: string;
+  badge: string | null;
+  purchasableOnline: boolean;
+  purchasableAtDoor: boolean;
+  availabilityStatus: string;
+  providerUrl: string | null;
+}
+
+export interface EventVipSummary {
+  packages: Array<Record<string, unknown>>;
+  booths: Array<Record<string, unknown>>;
+}
+
 export interface EventPartner {
   id: string;
   name: string;
@@ -95,6 +119,10 @@ export interface EventRecord {
     ticketUrl: string | null;
     vipRequestUrl: string | null;
   };
+  tickets: EventTicketSummary[];
+  vip: EventVipSummary;
+  faqs: EventFaq[];
+  gallery: Array<{ id: string; slug: string; title: string; cover: MediaAsset | null; hero: MediaAsset | null }>;
   seo: {
     title: string;
     description: string;

@@ -7,6 +7,7 @@ import type { Product, ShopPageData } from './types';
 import { normalizeProduct, normalizeProducts } from './http';
 import { sortProducts } from './helpers';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface ShopRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -60,7 +61,7 @@ export class HttpShopRepository implements ShopRepository {
     try {
       response = await fetch(url, {
         headers: { accept: 'application/json' },
-        next: { revalidate: this.revalidateSeconds },
+        next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.products] },
       });
     } catch {
       return {

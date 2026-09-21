@@ -70,6 +70,7 @@ import {
 import type { SingletonKey } from '@/lib/admin/common/resource';
 import { aboutContentDefinition, contactContentDefinition, homeContentDefinition } from '@/lib/admin/content/definitions';
 import { integrationsDefinition, languageSettingsDefinition, shippingDefinition, siteSettingsDefinition, socialSettingsDefinition } from '@/lib/admin/settings/definitions';
+import { revalidatePublicResource } from '@/server/cache/public-revalidation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -454,12 +455,52 @@ function adminRecord(resource: string, row: any) {
       endTime: row.endAt ? iso(row.endAt).slice(11, 16) : '',
       scheduleStatus: String(row.scheduleStatus).toLowerCase(),
       venue: { name: row.venueName, city: row.city, region: row.region ?? '', country: row.country, address: row.address ?? '', mapUrl: row.mapUrl ?? '', image: null },
-      tickets: { providerMode: row.ticketTiers?.length ? 'external' : 'none', providerUrl: '', tiers: (row.ticketTiers ?? []).map((tier: any, index: number) => ({ name: tier.name, price: { amountMinor: tier.priceMinor, currency: tier.currency }, badge: tier.badge ?? '', online: tier.purchasableOnline, door: tier.purchasableAtDoor, sortOrder: tier.sortOrder ?? index })) },
-      vip: { enabled: Boolean(packageRow?.enabled), packageName: packageRow?.name ?? '', price: packageRow ? { amountMinor: packageRow.priceMinor, currency: packageRow.currency } : null, capacity: packageRow?.capacity ?? null, includedBottles: packageRow?.includedBottleCount ?? null, availabilityMode: 'on-request', booths: (row.vipBooths ?? []).map((booth: any) => ({ code: booth.code, zone: String(booth.zone).toLowerCase() })), bottles: [] },
+      tickets: {
+        providerMode: row.ticketTiers?.some((tier: any) => tier.providerUrl || tier.providerName || tier.providerExternalId) ? 'external' : 'none',
+        providerUrl: row.ticketTiers?.find((tier: any) => tier.providerUrl)?.providerUrl ?? '',
+        tiers: (row.ticketTiers ?? []).map((tier: any, index: number) => ({
+          id: tier.id,
+          name: tier.name,
+          price: { amountMinor: tier.priceMinor, currency: tier.currency },
+          badge: tier.badge ?? '',
+          online: tier.purchasableOnline,
+          door: tier.purchasableAtDoor,
+          sortOrder: tier.sortOrder ?? index,
+          enabled: tier.enabled,
+          availabilityStatus: tier.availabilityStatus,
+          capacity: tier.capacity,
+          providerName: tier.providerName,
+          providerExternalId: tier.providerExternalId,
+          providerUrl: tier.providerUrl,
+        })),
+      },
+      vip: {
+        id: packageRow?.id,
+        enabled: Boolean(packageRow?.enabled),
+        packageName: packageRow?.name ?? '',
+        price: packageRow ? { amountMinor: packageRow.priceMinor, currency: packageRow.currency } : null,
+        capacity: packageRow?.capacity ?? null,
+        includedBottles: packageRow?.includedBottleCount ?? null,
+        availabilityMode: packageRow?.paymentMode === 'REQUEST_ONLY' || !packageRow?.paymentMode ? 'on-request' : 'managed',
+        paymentMode: packageRow?.paymentMode,
+        depositAmountMinor: packageRow?.depositAmountMinor ?? null,
+        booths: (row.vipBooths ?? []).map((booth: any, index: number) => ({ id: booth.id, code: booth.code, zone: booth.zone ?? '', x: booth.x == null ? null : Number(booth.x), y: booth.y == null ? null : Number(booth.y), requestable: booth.requestable, availabilityStatus: booth.availabilityStatus, sortOrder: booth.sortOrder ?? index })),
+        bottles: (packageRow?.packageBottles ?? []).map((item: any, index: number) => ({ id: item.bottleOption?.id ?? item.bottleOptionId, name: item.bottleOption?.name ?? '', enabled: item.bottleOption?.enabled !== false, sortOrder: item.bottleOption?.sortOrder ?? index, mediaId: item.bottleOption?.mediaId ?? null })),
+      },
       artistIds: (row.eventArtists ?? []).map((item: any) => item.artistId),
-      albumIds: [],
-      faqs: [],
-      seo: {},
+      albumIds: (row.galleryAlbums ?? []).map((album: any) => album.id),
+      faqs: (row.faqItems ?? []).flatMap((item: any) => {
+        const translation = item.translations?.find((translation: any) => translation.locale === 'en') ?? item.translations?.[0];
+        return translation ? [{ id: item.id, question: translation.question, answer: translation.answer }] : [];
+      }),
+      seo: {
+        title: row.seoTitle ?? '',
+        description: row.seoDescription ?? '',
+        canonical: row.canonicalOverride ?? '',
+        ogImage: mediaRef(row.ogMedia),
+        index: row.indexable !== false,
+        follow: row.followLinks !== false,
+      },
       updatedAt: iso(row.updatedAt),
     };
   }
@@ -641,7 +682,7 @@ async function adminList(resource: string, request: Request) {
   const { page, pageSize } = parsed.data;
   const skip = (page - 1) * pageSize;
   if (resource === 'events') {
-    const [rows, total] = await Promise.all([db.event.findMany({ skip, take: pageSize, orderBy: { updatedAt: 'desc' }, include: { translations: true, ticketTiers: true, vipPackages: true, vipBooths: true, eventArtists: true, heroMedia: true, posterMedia: true } }), db.event.count()]);
+    const [rows, total] = await Promise.all([db.event.findMany({ skip, take: pageSize, orderBy: { updatedAt: 'desc' }, include: { translations: true, ticketTiers: true, vipPackages: { include: { packageBottles: { include: { bottleOption: true } } } }, vipBooths: true, eventArtists: true, galleryAlbums: true, faqItems: { include: { translations: true } }, heroMedia: true, posterMedia: true } }), db.event.count()]);
     return { rows, total };
   }
   if (resource === 'artists') {
@@ -720,13 +761,169 @@ async function adminList(resource: string, request: Request) {
   throw notFound('Admin resource not found.');
 }
 
+async function syncEventRelations(tx: Prisma.TransactionClient, eventId: string, input: any) {
+  if (input.tickets) {
+    const existingTiers = await tx.ticketTier.findMany({ where: { eventId } });
+    const existingById = new Map(existingTiers.map((tier: any) => [tier.id, tier]));
+    const keptIds = new Set<string>();
+    for (const [index, tier] of input.tickets.tiers.entries()) {
+      const existing = tier.id ? existingById.get(tier.id) : undefined;
+      if (tier.id && !existing) throw validationError({ [`tickets.tiers.${index}.id`]: 'Ticket tier does not belong to this event.' });
+      const providerUrl = input.tickets.providerMode === 'external' ? tier.providerUrl ?? input.tickets.providerUrl ?? null : null;
+      const data = {
+        name: tier.name,
+        priceMinor: tier.price.amountMinor,
+        currency: tier.price.currency,
+        badge: tier.badge ?? null,
+        purchasableOnline: tier.online,
+        purchasableAtDoor: tier.door,
+        providerName: input.tickets.providerMode === 'external' ? tier.providerName ?? null : null,
+        providerExternalId: input.tickets.providerMode === 'external' ? tier.providerExternalId ?? null : null,
+        providerUrl,
+        availabilityStatus: tier.availabilityStatus ?? existing?.availabilityStatus ?? 'UNKNOWN',
+        capacity: tier.capacity === undefined ? existing?.capacity ?? null : tier.capacity,
+        sortOrder: tier.sortOrder ?? index,
+        enabled: tier.enabled ?? existing?.enabled ?? true,
+      };
+      const row = existing
+        ? await tx.ticketTier.update({ where: { id: existing.id }, data })
+        : await tx.ticketTier.create({ data: { eventId, ...data } });
+      keptIds.add(row.id);
+    }
+    for (const tier of existingTiers) {
+      if (keptIds.has(tier.id)) continue;
+      const [purchaseItems, holds, issuedTickets] = await Promise.all([
+        tx.ticketPurchaseItem.count({ where: { ticketTierId: tier.id } }),
+        tx.ticketHold.count({ where: { ticketTierId: tier.id } }),
+        tx.issuedTicket.count({ where: { ticketTierId: tier.id } }),
+      ]);
+      if (purchaseItems || holds || issuedTickets) {
+        await tx.ticketTier.update({ where: { id: tier.id }, data: { enabled: false, availabilityStatus: 'NOT_AVAILABLE' } });
+      } else {
+        await tx.ticketTier.delete({ where: { id: tier.id } });
+      }
+    }
+  }
+
+  const artistIds = Array.isArray(input.artistIds) ? input.artistIds : [];
+  const artists = artistIds.length ? await tx.artist.findMany({ where: { id: { in: artistIds } }, select: { id: true } }) : [];
+  if (artists.length !== artistIds.length) throw validationError({ artistIds: 'One or more selected artists no longer exist.' });
+  await tx.eventArtist.deleteMany({ where: { eventId } });
+  if (artistIds.length) {
+    await tx.eventArtist.createMany({ data: artistIds.map((artistId: string, sortOrder: number) => ({ eventId, artistId, sortOrder })) });
+  }
+
+  const albumIds = Array.isArray(input.albumIds) ? input.albumIds : [];
+  const albums = albumIds.length ? await tx.galleryAlbum.findMany({ where: { id: { in: albumIds } }, select: { id: true, eventId: true } }) : [];
+  if (albums.length !== albumIds.length) throw validationError({ albumIds: 'One or more selected gallery albums no longer exist.' });
+  const occupiedAlbums = albums.filter((album: any) => album.eventId && album.eventId !== eventId);
+  if (occupiedAlbums.length) throw validationError({ albumIds: 'A selected gallery album is already linked to another event.' });
+  await tx.galleryAlbum.updateMany({ where: { eventId }, data: { eventId: null } });
+  for (const albumId of albumIds) await tx.galleryAlbum.update({ where: { id: albumId }, data: { eventId } });
+
+  if (input.vip) {
+    const vip = input.vip;
+    const existingPackages = await tx.vipPackage.findMany({ where: { eventId }, include: { packageBottles: true } });
+    const selectedPackage = vip.id ? existingPackages.find((pkg: any) => pkg.id === vip.id) : existingPackages[0];
+    if (vip.id && !selectedPackage) throw validationError({ 'vip.id': 'VIP package does not belong to this event.' });
+
+    let packageId = selectedPackage?.id ?? null;
+    if (vip.enabled) {
+      if (!vip.packageName || !vip.price || !vip.capacity || vip.includedBottles == null) throw validationError({ vip: 'Enabled VIP packages require a name, price, capacity, and bottle count.' });
+      const paymentMode = vip.paymentMode ?? (vip.availabilityMode === 'managed' ? 'FULL_PAYMENT' : 'REQUEST_ONLY');
+      const packageData = {
+        name: vip.packageName,
+        priceMinor: vip.price.amountMinor,
+        currency: vip.price.currency,
+        capacity: vip.capacity,
+        includedBottleCount: vip.includedBottles,
+        enabled: true,
+        paymentMode,
+        depositAmountMinor: paymentMode === 'DEPOSIT' ? vip.depositAmountMinor ?? null : null,
+      };
+      const packageRow = selectedPackage
+        ? await tx.vipPackage.update({ where: { id: selectedPackage.id }, data: packageData })
+        : await tx.vipPackage.create({ data: { eventId, ...packageData, sortOrder: 0 } });
+      packageId = packageRow.id;
+      await tx.vipPackage.updateMany({ where: { eventId, id: { not: packageId } }, data: { enabled: false } });
+
+      const bottleIds: string[] = [];
+      for (const [index, bottle] of vip.bottles.entries()) {
+        const existingBottle = bottle.id ? await tx.bottleOption.findUnique({ where: { id: bottle.id } }) : await tx.bottleOption.findUnique({ where: { name: bottle.name } });
+        if (bottle.id && !existingBottle) throw validationError({ [`vip.bottles.${index}.id`]: 'Bottle option does not exist.' });
+        const bottleRow = existingBottle
+          ? await tx.bottleOption.update({ where: { id: existingBottle.id }, data: { name: bottle.name, enabled: bottle.enabled, sortOrder: bottle.sortOrder ?? index, mediaId: bottle.mediaId ?? null } })
+          : await tx.bottleOption.create({ data: { name: bottle.name, enabled: bottle.enabled, sortOrder: bottle.sortOrder ?? index, mediaId: bottle.mediaId ?? null } });
+        bottleIds.push(bottleRow.id);
+      }
+      await tx.vipPackageBottle.deleteMany({ where: { vipPackageId: packageId, bottleOptionId: { notIn: bottleIds } } });
+      if (bottleIds.length) await tx.vipPackageBottle.createMany({ data: bottleIds.map((bottleOptionId) => ({ vipPackageId: packageId!, bottleOptionId })), skipDuplicates: true });
+    } else if (existingPackages.length) {
+      await tx.vipPackage.updateMany({ where: { eventId }, data: { enabled: false } });
+      packageId = (selectedPackage ?? existingPackages[0]).id;
+    }
+
+    const existingBooths = await tx.vipBooth.findMany({ where: { eventId } });
+    const existingBoothById = new Map(existingBooths.map((booth: any) => [booth.id, booth]));
+    const existingBoothByCode = new Map(existingBooths.map((booth: any) => [booth.code.toLowerCase(), booth]));
+    const keptBoothIds = new Set<string>();
+    for (const [index, booth] of vip.booths.entries()) {
+      const existing = booth.id ? existingBoothById.get(booth.id) : existingBoothByCode.get(booth.code.toLowerCase());
+      if (booth.id && !existing) throw validationError({ [`vip.booths.${index}.id`]: 'VIP booth does not belong to this event.' });
+      const data = {
+        code: booth.code,
+        zone: booth.zone ?? null,
+        x: booth.x ?? null,
+        y: booth.y ?? null,
+        requestable: vip.enabled ? booth.requestable !== false : false,
+        availabilityStatus: vip.enabled ? booth.availabilityStatus ?? existing?.availabilityStatus ?? 'ON_REQUEST' : 'NOT_AVAILABLE',
+        sortOrder: booth.sortOrder ?? index,
+      };
+      const row = existing
+        ? await tx.vipBooth.update({ where: { id: existing.id }, data })
+        : await tx.vipBooth.create({ data: { eventId, ...data } });
+      keptBoothIds.add(row.id);
+    }
+    for (const booth of existingBooths) {
+      if (keptBoothIds.has(booth.id)) continue;
+      const [requests, holds, bookings] = await Promise.all([
+        tx.bookingRequest.count({ where: { preferredBoothId: booth.id } }),
+        tx.vipBoothHold.count({ where: { boothId: booth.id } }),
+        tx.vipBooking.count({ where: { boothId: booth.id } }),
+      ]);
+      if (requests || holds || bookings) {
+        await tx.vipBooth.update({ where: { id: booth.id }, data: { requestable: false, availabilityStatus: 'NOT_AVAILABLE' } });
+      } else {
+        await tx.vipBooth.delete({ where: { id: booth.id } });
+      }
+    }
+  }
+
+  if (Array.isArray(input.faqs)) {
+    const existingFaqs = await tx.faqItem.findMany({ where: { eventId }, include: { translations: true } });
+    const existingFaqIds = new Set(existingFaqs.map((faq: any) => faq.id));
+    const keptFaqIds = new Set<string>();
+    const category = input.faqs.length ? await tx.faqCategory.upsert({ where: { key: 'event' }, update: {}, create: { key: 'event', sortOrder: 0 } }) : null;
+    for (const [index, faq] of input.faqs.entries()) {
+      if (faq.id && !existingFaqIds.has(faq.id)) throw validationError({ [`faqs.${index}.id`]: 'FAQ does not belong to this event.' });
+      const row = faq.id
+        ? await tx.faqItem.update({ where: { id: faq.id }, data: { eventId } })
+        : await tx.faqItem.create({ data: { eventId, categoryId: category!.id, published: false, answersConfirmed: false, sortOrder: index } });
+      await tx.faqTranslation.upsert({ where: { faqId_locale: { faqId: row.id, locale: 'en' } }, update: { question: faq.question, answer: faq.answer }, create: { faqId: row.id, locale: 'en', question: faq.question, answer: faq.answer, keywordsJson: jsonInput([]) } });
+      keptFaqIds.add(row.id);
+    }
+    if (existingFaqs.length) await tx.faqItem.updateMany({ where: { eventId, id: { notIn: [...keptFaqIds] } }, data: { eventId: null } });
+  }
+}
+
 async function createAdminResource(resource: string, payload: unknown, requestId: string, userId: string) {
   if (resource === 'events') {
     const input = parse(eventMutationSchema, payload);
     const row = await db.$transaction(async (tx) => {
-      const event = await tx.event.create({ data: { slug: input.slug, status: input.status ?? 'DRAFT', lifecycleStatus: input.lifecycleStatus ?? 'UPCOMING', dateStatus: input.dateStatus ?? 'TBA', scheduleStatus: input.scheduleStatus ?? 'TBC', startAt: input.startAt ? new Date(input.startAt) : null, endAt: input.endAt ? new Date(input.endAt) : null, venueName: input.venueName, city: input.city, region: input.region ?? null, country: input.country, address: input.address ?? null, mapUrl: input.mapUrl ?? null, featured: input.featured ?? false, publishedAt: input.status === 'PUBLISHED' ? new Date() : null } });
+      const event = await tx.event.create({ data: { slug: input.slug, status: input.status ?? 'DRAFT', lifecycleStatus: input.lifecycleStatus ?? 'UPCOMING', dateStatus: input.dateStatus ?? 'TBA', scheduleStatus: input.scheduleStatus ?? 'TBC', startAt: input.startAt ? new Date(input.startAt) : null, endAt: input.endAt ? new Date(input.endAt) : null, venueName: input.venueName, city: input.city, region: input.region ?? null, country: input.country, address: input.address ?? null, mapUrl: input.mapUrl ?? null, featured: input.featured ?? false, heroMediaId: input.heroMediaId ?? null, posterMediaId: input.posterMediaId ?? null, seoTitle: input.seoTitle ?? null, seoDescription: input.seoDescription ?? null, canonicalOverride: input.canonicalOverride ?? null, ogMediaId: input.ogMediaId ?? null, indexable: input.indexable ?? true, followLinks: input.followLinks ?? true, publishedAt: input.status === 'PUBLISHED' ? new Date() : null } });
       await tx.eventTranslation.createMany({ data: input.translations.map((translation) => ({ eventId: event.id, ...translation })) });
-      return tx.event.findUnique({ where: { id: event.id }, include: { translations: true, ticketTiers: true, vipPackages: true, vipBooths: true, eventArtists: true, heroMedia: true, posterMedia: true } });
+      await syncEventRelations(tx, event.id, input);
+      return tx.event.findUnique({ where: { id: event.id }, include: { translations: true, ticketTiers: true, vipPackages: { include: { packageBottles: { include: { bottleOption: true } } } }, vipBooths: true, eventArtists: true, galleryAlbums: true, faqItems: { include: { translations: true } }, heroMedia: true, posterMedia: true } });
     });
     await writeAuditLog({ actorUserId: userId, action: 'create', entityType: 'event', entityId: row?.id, after: row, requestId });
     return row;
@@ -793,10 +990,11 @@ async function updateAdminResource(resource: string, id: string, payload: unknow
     const before = await db.event.findUnique({ where: { id }, include: { translations: true } });
     if (!before) throw notFound();
     const row = await db.$transaction(async (tx) => {
-      await tx.event.update({ where: { id }, data: { slug: input.slug, status: input.status, lifecycleStatus: input.lifecycleStatus, dateStatus: input.dateStatus, scheduleStatus: input.scheduleStatus, startAt: input.startAt === undefined ? undefined : input.startAt ? new Date(input.startAt) : null, endAt: input.endAt === undefined ? undefined : input.endAt ? new Date(input.endAt) : null, venueName: input.venueName, city: input.city, region: input.region ?? null, country: input.country, address: input.address ?? null, mapUrl: input.mapUrl ?? null, featured: input.featured, publishedAt: input.status === 'PUBLISHED' ? (before.publishedAt ?? new Date()) : input.status ? null : undefined } });
+      await tx.event.update({ where: { id }, data: { slug: input.slug, status: input.status, lifecycleStatus: input.lifecycleStatus, dateStatus: input.dateStatus, scheduleStatus: input.scheduleStatus, startAt: input.startAt === undefined ? undefined : input.startAt ? new Date(input.startAt) : null, endAt: input.endAt === undefined ? undefined : input.endAt ? new Date(input.endAt) : null, venueName: input.venueName, city: input.city, region: input.region ?? null, country: input.country, address: input.address ?? null, mapUrl: input.mapUrl ?? null, featured: input.featured, heroMediaId: input.heroMediaId ?? null, posterMediaId: input.posterMediaId ?? null, seoTitle: input.seoTitle ?? null, seoDescription: input.seoDescription ?? null, canonicalOverride: input.canonicalOverride ?? null, ogMediaId: input.ogMediaId ?? null, indexable: input.indexable ?? true, followLinks: input.followLinks ?? true, publishedAt: input.status === 'PUBLISHED' ? (before.publishedAt ?? new Date()) : input.status ? null : undefined } });
       await rememberPublishedSlug(tx, 'event', id, before, input.slug);
       await Promise.all(input.translations.map((translation) => tx.eventTranslation.upsert({ where: { eventId_locale: { eventId: id, locale: translation.locale } }, update: { title: translation.title, eyebrow: translation.eyebrow ?? null, shortDescription: translation.shortDescription ?? null, description: translation.description ?? null }, create: { eventId: id, locale: translation.locale, title: translation.title, eyebrow: translation.eyebrow ?? null, shortDescription: translation.shortDescription ?? null, description: translation.description ?? null } })));
-      return tx.event.findUnique({ where: { id }, include: { translations: true, ticketTiers: true, vipPackages: true, vipBooths: true, eventArtists: true, heroMedia: true, posterMedia: true } });
+      await syncEventRelations(tx, id, input);
+      return tx.event.findUnique({ where: { id }, include: { translations: true, ticketTiers: true, vipPackages: { include: { packageBottles: { include: { bottleOption: true } } } }, vipBooths: true, eventArtists: true, galleryAlbums: true, faqItems: { include: { translations: true } }, heroMedia: true, posterMedia: true } });
     });
     await writeAuditLog({ actorUserId: userId, action: 'update', entityType: 'event', entityId: id, before, after: row, requestId });
     return row;
@@ -1131,7 +1329,9 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       assertSameOrigin(request);
       const session = await requirePermission(request, `${singleton.permission}.edit`, true);
       const values = cleanSingletonInput(await body(request));
-      return dataResponse(await writeAdminSingleton(singleton, values, requestId, session.user.id));
+      const result = await writeAdminSingleton(singleton, values, requestId, session.user.id);
+      revalidatePublicResource(singleton.key.startsWith('settings-') ? 'settings' : singleton.key.startsWith('content-') ? 'content' : singleton.key);
+      return dataResponse(result);
     }
     const resource = second;
     const resourceId = third;
@@ -1146,11 +1346,12 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       assertSameOrigin(request);
       const session = await requirePermission(request, adminResourcePermission(resource, 'create'), true);
       const row = await createAdminResource(resource, await body(request), requestId, session.user.id);
+      revalidatePublicResource(resource, (row as any)?.slug);
       return dataResponse(adminRecord(resource, row), { status: 201 });
     }
     if (resourceId && !action && request.method === 'GET') {
       await requirePermission(request, adminResourcePermission(resource, 'view'));
-      if (resource === 'events') { const row = await db.event.findUnique({ where: { id: resourceId }, include: { translations: true, ticketTiers: true, vipPackages: true, vipBooths: true, eventArtists: true, heroMedia: true, posterMedia: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
+      if (resource === 'events') { const row = await db.event.findUnique({ where: { id: resourceId }, include: { translations: true, ticketTiers: true, vipPackages: { include: { packageBottles: { include: { bottleOption: true } } } }, vipBooths: true, eventArtists: true, galleryAlbums: true, faqItems: { include: { translations: true } }, heroMedia: true, posterMedia: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'artists') { const row = await db.artist.findUnique({ where: { id: resourceId }, include: { translations: true, portraitMedia: true, heroMedia: true, links: true, media: true, eventArtists: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'products') { const row = await db.product.findUnique({ where: { id: resourceId }, include: { translations: true, images: { include: { media: true } }, optionGroups: true, variants: true, category: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'news') { const row = await db.newsArticle.findUnique({ where: { id: resourceId }, include: { translations: true, heroMedia: true, cardMedia: true, tags: { include: { tag: true } } } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
@@ -1171,12 +1372,14 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       assertSameOrigin(request);
       const session = await requirePermission(request, adminResourcePermission(resource, 'edit'), true);
       const row = await updateAdminResource(resource, resourceId, await body(request), requestId, session.user.id);
+      revalidatePublicResource(resource, (row as any)?.slug);
       return dataResponse(adminRecord(resource, row));
     }
     if (resourceId && !action && request.method === 'DELETE') {
       assertSameOrigin(request);
       const session = await requirePermission(request, adminResourcePermission(resource, 'delete'), true);
-      await deleteAdminResource(resource, resourceId, requestId, session.user.id);
+      const row = await deleteAdminResource(resource, resourceId, requestId, session.user.id);
+      revalidatePublicResource(resource, (row as any)?.slug);
       return dataResponse(null, { status: 200 }, { requestId, startedAt: Date.now() });
     }
     if (resourceId && action === 'publish' && request.method === 'POST') {
@@ -1188,6 +1391,7 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       if (!before) throw notFound();
       const row = await (table as any).update({ where: { id: before.id }, data: { status: 'PUBLISHED', publishedAt: new Date() } });
       await writeAuditLog({ actorUserId: session.user.id, action: 'publish', entityType: resource, entityId: before.id, before, after: row, requestId });
+      revalidatePublicResource(resource, row?.slug);
       return dataResponse(jsonAdminRecord(row));
     }
     if (resourceId && action === 'archive' && request.method === 'POST') {
@@ -1200,6 +1404,7 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       if (!before) throw notFound();
       const row = await (table as any).update({ where: { id }, data: { status: 'ARCHIVED', publishedAt: null } });
       await writeAuditLog({ actorUserId: session.user.id, action: 'archive', entityType: resource, entityId: id, before, after: row, requestId });
+      revalidatePublicResource(resource, row?.slug);
       return dataResponse(jsonAdminRecord(row));
     }
   }

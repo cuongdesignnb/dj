@@ -56,6 +56,10 @@ export function toPageData(raw: unknown): EventPageData | null {
       artists: lineup.map((artist: any) => ({ id: String(artist.id), slug: String(artist.slug), name: String(artist.name), country: String(artist.country ?? ''), portrait: media(artist.portrait), profileHref: `/lineup/${encodeURIComponent(String(artist.slug))}` })),
       venue: { name: String(event.venue?.name ?? ''), city: String(event.venue?.city ?? ''), address: typeof event.venue?.address === 'string' ? event.venue.address : null, description: String(event.description ?? ''), image: null, mapUrl: typeof event.venue?.mapUrl === 'string' ? event.venue.mapUrl : null },
       actions: { ticketUrl: null, vipRequestUrl: '/tables' },
+      tickets: Array.isArray(event.tickets) ? event.tickets : [],
+      vip: isRecord(event.vip) ? { packages: Array.isArray(event.vip.packages) ? event.vip.packages : [], booths: Array.isArray(event.vip.booths) ? event.vip.booths : [] } : { packages: [], booths: [] },
+      faqs: Array.isArray(event.faqs) ? event.faqs.filter((faq: any) => isRecord(faq) && typeof faq.question === 'string' && typeof faq.answer === 'string').map((faq: any) => ({ id: String(faq.id ?? ''), question: faq.question, answer: faq.answer, sortOrder: typeof faq.sortOrder === 'number' ? faq.sortOrder : 0 })) : [],
+      gallery: Array.isArray(event.gallery) ? event.gallery.map((album: any) => ({ id: String(album.id ?? ''), slug: String(album.slug ?? ''), title: String(album.title ?? ''), cover: media(album.cover), hero: media(album.hero) })) : [],
       seo: {
         title: String(event.seoTitle ?? event.title ?? event.slug),
         description: String(event.seoDescription ?? event.shortDescription ?? event.description ?? ''),

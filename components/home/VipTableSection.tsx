@@ -24,7 +24,7 @@ export default function VipTableSection({ boothPackage }: { boothPackage: HomeBo
   const spotlightX = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
   return (
-    <section ref={sectionRef} className="relative py-20 md:py-28 overflow-hidden">
+    <section id="vip-tables" ref={sectionRef} className="relative py-20 md:py-28 overflow-hidden">
       {/* Background with parallax */}
       <div className="absolute inset-0 bg-rave-black" />
       <div className="absolute inset-0 bg-rave-grid opacity-15" />

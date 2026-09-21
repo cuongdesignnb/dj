@@ -5,6 +5,7 @@
 import { normalizeLegalDocument } from './http';
 import type { LegalDocument, LegalDocumentType, LegalRepository, LegalResult } from './types';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export class HttpLegalRepository implements LegalRepository {
   constructor(private readonly baseUrl: string) {}
@@ -14,7 +15,7 @@ export class HttpLegalRepository implements LegalRepository {
     try {
       response = await fetch(`${this.baseUrl.replace(/\/$/, '')}/api/v1/legal/${type}`, {
         headers: { accept: 'application/json' },
-        next: { revalidate: 300 },
+        next: { revalidate: 300, tags: [type === 'terms' ? PUBLIC_CACHE_TAGS.legalTerms : PUBLIC_CACHE_TAGS.legalPrivacy] },
       });
     } catch {
       return { ok: false, message: 'This document could not be loaded. Please try again shortly.' };

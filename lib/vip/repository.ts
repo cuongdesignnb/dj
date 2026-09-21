@@ -5,6 +5,7 @@
 import type { BookingRequestInput, BookingRequestResult, VipPageData } from './types';
 import { normalizeVipPage } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
+import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface VipRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config';
@@ -36,8 +37,8 @@ export class HttpVipRepository implements VipRepository {
     let eventResponse: Response;
     try {
       [eventResponse, response] = await Promise.all([
-        fetch(this.url(`/api/v1/events/${this.eventSlug}`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds } }),
-        fetch(this.url(`/api/v1/events/${this.eventSlug}/vip`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds } }),
+        fetch(this.url(`/api/v1/events/${this.eventSlug}`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events] } }),
+        fetch(this.url(`/api/v1/events/${this.eventSlug}/vip`), { headers: { accept: 'application/json' }, next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.vip(this.eventSlug)] } }),
       ]);
     } catch {
       return {

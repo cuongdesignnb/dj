@@ -44,6 +44,16 @@ function eventDto(event: any, locale: Locale) {
     followLinks: event.followLinks !== false,
     genres: event.genres.map((item: any) => item.genre),
     lineup: event.eventArtists.map((item: any) => ({ id: item.artist.id, slug: item.artist.slug, name: translated(item.artist.translations, locale)?.name ?? item.artist.slug, country: item.artist.country, portrait: mediaDto(item.artist.portraitMedia), sortOrder: item.sortOrder })),
+    tickets: (event.ticketTiers ?? []).map((tier: any) => ({ id: tier.id, name: tier.name, priceMinor: tier.priceMinor, currency: tier.currency, badge: tier.badge, purchasableOnline: tier.purchasableOnline, purchasableAtDoor: tier.purchasableAtDoor, availabilityStatus: tier.availabilityStatus, providerName: tier.providerName, providerExternalId: tier.providerExternalId, providerUrl: tier.providerUrl })),
+    vip: {
+      packages: (event.vipPackages ?? []).map((pkg: any) => ({ id: pkg.id, name: pkg.name, priceMinor: pkg.priceMinor, currency: pkg.currency, paymentMode: pkg.paymentMode, depositAmountMinor: pkg.depositAmountMinor, capacity: pkg.capacity, includedBottleCount: pkg.includedBottleCount, bottles: (pkg.packageBottles ?? []).map((item: any) => ({ id: item.bottleOption?.id ?? item.bottleOptionId, name: item.bottleOption?.name ?? '', image: item.bottleOption?.media ? mediaDto(item.bottleOption.media) : null })) })),
+      booths: (event.vipBooths ?? []).map((booth: any) => ({ id: booth.id, label: booth.code, zone: booth.zone, x: booth.x == null ? 50 : Number(booth.x), y: booth.y == null ? 50 : Number(booth.y), requestable: booth.requestable, availability: booth.availabilityStatus })),
+    },
+    faqs: (event.faqItems ?? []).flatMap((item: any) => {
+      const faqTranslation = translated(item.translations ?? [], locale);
+      return faqTranslation ? [{ id: item.id, question: faqTranslation.question, answer: faqTranslation.answer, sortOrder: item.sortOrder }] : [];
+    }),
+    gallery: (event.galleryAlbums ?? []).map((album: any) => ({ id: album.id, slug: album.slug, title: translated(album.translations ?? [], locale)?.title ?? album.slug, cover: mediaDto(album.coverMedia), hero: mediaDto(album.heroMedia) })),
   };
 }
 
@@ -75,6 +85,8 @@ export async function getPublicEvent(slug: string, locale: Locale) {
       vipPackages: { where: { enabled: true }, orderBy: { sortOrder: 'asc' }, include: { packageBottles: { include: { bottleOption: true } } } },
       vipBooths: { where: { requestable: true }, orderBy: { sortOrder: 'asc' } },
       eventArtists: { orderBy: { sortOrder: 'asc' }, include: { artist: { include: { translations: true, portraitMedia: true } } } },
+      faqItems: { orderBy: { sortOrder: 'asc' }, include: { translations: true } },
+      galleryAlbums: { include: { translations: true, coverMedia: true, heroMedia: true } },
     },
   });
   return event ? eventDto(event, locale) : null;
