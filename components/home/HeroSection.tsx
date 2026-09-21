@@ -328,22 +328,25 @@ function DestinyTitle({ text, animation }: { text: string; animation: HomeMedia 
 
       {/* The CMS-selected SVG takes over when present; the canvas effect remains the safe fallback. */}
       {animation?.src ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="relative z-10 flex w-[min(94vw,960px)] items-center justify-center"
-        >
-          <Image
-            src={animation.src}
-            alt=""
-            width={animation.width ?? 1200}
-            height={animation.height ?? 360}
-            unoptimized
-            priority
-            className="h-auto max-h-[230px] w-full object-contain"
-          />
-        </motion.div>
+        <div className="relative left-1/2 z-10 -mt-8 flex h-[clamp(280px,48vw,720px)] w-screen max-w-none -translate-x-1/2 items-center justify-center overflow-visible sm:-mt-12 lg:-mt-40">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="relative h-full w-full transform-gpu"
+            style={{ backfaceVisibility: 'hidden', willChange: 'opacity' }}
+          >
+            <Image
+              src={animation.src}
+              alt=""
+              fill
+              sizes="100vw"
+              unoptimized
+              priority
+              className="object-contain object-center"
+            />
+          </motion.div>
+        </div>
       ) : (
         <DESTINYShatter
           text={text}
