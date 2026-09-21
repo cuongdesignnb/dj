@@ -29,12 +29,14 @@ async function readPublic<T>(path: string): Promise<T | null> {
   return result.ok ? result.data : null;
 }
 
-function media(value: unknown): HomeMedia | null {
+function media(value: unknown, options?: { presentation?: 'hero' }): HomeMedia | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const raw = value as ApiRecord;
-  return typeof raw.src === 'string' && raw.src
-    ? { src: raw.src, alt: typeof raw.alt === 'string' ? raw.alt : '', width: typeof raw.width === 'number' ? raw.width : null, height: typeof raw.height === 'number' ? raw.height : null }
-    : null;
+  if (typeof raw.src !== 'string' || !raw.src) return null;
+  const src = options?.presentation === 'hero' && raw.src.startsWith('/api/v1/media/')
+    ? `${raw.src}${raw.src.includes('?') ? '&' : '?'}presentation=hero`
+    : raw.src;
+  return { src, alt: typeof raw.alt === 'string' ? raw.alt : '', width: typeof raw.width === 'number' ? raw.width : null, height: typeof raw.height === 'number' ? raw.height : null };
 }
 
 function text(value: unknown, fallback = '') {
@@ -75,7 +77,7 @@ async function loadHomeData(): Promise<HomeData | null> {
 
   const homePage = Array.isArray(bootstrap?.pages) ? bootstrap.pages.find((page: ApiRecord) => page.slug === 'home') : null;
   const homeContent = homePage && typeof homePage.content === 'object' && !Array.isArray(homePage.content) ? homePage.content as ApiRecord : {};
-  const heroAnimation = media((homeContent.hero as ApiRecord | undefined)?.animation);
+  const heroAnimation = media((homeContent.hero as ApiRecord | undefined)?.animation, { presentation: 'hero' });
 
   const eventData: HomeEvent = {
     title: text(event.title, text(event.slug, 'Connection Rave')),

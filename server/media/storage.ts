@@ -42,6 +42,27 @@ function publicS3Url(storageKey: string) {
   return `${base.replace(/\/$/, '')}/${storageKey}`;
 }
 
+function optimizeHeroSvg(bytes: Buffer) {
+  let source = bytes.toString('utf8');
+
+  // Animated SVGs often promote every moving fragment to its own compositor
+  // layer. That makes large hero animations stutter, so keep the SVG animation
+  // intact while removing the blanket hint from the uploaded asset.
+  source = source.replace(/\s*will-change\s*:\s*[^;{}]+;?/gi, '');
+
+  // Keep a subtle stable wordmark behind the shatter pieces when the asset
+  // exposes the same reusable word group. The original animation remains
+  // untouched in the media library; this is only the homepage presentation.
+  if (source.includes('id="word3d"') && source.includes('<!-- the word, split into pieces -->') && !source.includes('data-hero-static-base')) {
+    source = source.replace(
+      '<!-- the word, split into pieces -->',
+      '<!-- data-hero-static-base --><use href="#word3d" opacity=".22"/>\n<!-- the word, split into pieces -->',
+    );
+  }
+
+  return Buffer.from(source, 'utf8');
+}
+
 export async function storeMedia(file: File | null, altText: string, uploadedBy: string) {
   if (!file || typeof file.arrayBuffer !== 'function' || !file.size) throw validationError({ file: 'A file is required.' });
   if (file.size > MAX_MEDIA_BYTES) throw validationError({ file: 'Files must be 20 MB or smaller.' });
@@ -78,7 +99,7 @@ export async function storeMedia(file: File | null, altText: string, uploadedBy:
   });
 }
 
-export async function mediaResponse(id: string) {
+export async function mediaResponse(id: string, presentation?: string | null) {
   const asset = await db.mediaAsset.findUnique({ where: { id } });
   if (!asset || asset.deletedAt) throw notFound('Media asset not found.');
   if (asset.storageDriver === 'S3') return Response.redirect(asset.publicUrl, 302);
@@ -86,10 +107,11 @@ export async function mediaResponse(id: string) {
   const { candidate } = localPath(asset.storageKey);
   try {
     const bytes = await readFile(candidate);
-    return new Response(bytes, {
+    const responseBytes = presentation === 'hero' && asset.mimeType === 'image/svg+xml' ? optimizeHeroSvg(bytes) : bytes;
+    return new Response(responseBytes, {
       headers: {
         'Content-Type': asset.mimeType,
-        'Content-Length': String(bytes.byteLength),
+        'Content-Length': String(responseBytes.byteLength),
         'Cache-Control': 'public, max-age=31536000, immutable',
         'Content-Disposition': `inline; filename="${safeName(asset.storageKey.split('/').pop() ?? 'media')}"`,
       },
