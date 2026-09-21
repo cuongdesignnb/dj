@@ -3,7 +3,7 @@
 // Published legal documents are loaded through the API.
 
 import { normalizeLegalDocument } from './http';
-import type { LegalDocument, LegalDocumentType, LegalRepository, LegalResult } from './types';
+import type { LegalDocumentType, LegalRepository, LegalResult } from './types';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 

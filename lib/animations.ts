@@ -1,7 +1,6 @@
 import { Variants } from 'framer-motion';
 
 const easeCubic = [0.25, 0.46, 0.45, 0.94] as [number, number, number, number];
-const easeElastic = [0.68, -0.55, 0.265, 1.55] as [number, number, number, number];
 
 // ===== SPRING PRESETS =====
 export const springBounce = { type: "spring" as const, stiffness: 300, damping: 15 };

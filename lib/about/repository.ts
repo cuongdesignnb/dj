@@ -25,7 +25,6 @@ import type {
   AboutConnectionItem,
   PartnerItem,
   AboutFinalCta,
-  AboutPageData as AboutPageDataType,
   AboutFooterContact,
 } from './types';
 

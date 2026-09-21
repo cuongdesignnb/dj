@@ -22,7 +22,6 @@ import type {
   ActivationLead,
   CollaborationStep,
   PartnersFinalCta,
-  PartnersPageData as PartnersPageDataType,
   PartnersFooterContact,
 } from './types';
 

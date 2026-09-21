@@ -186,6 +186,5 @@ export function getVipRepository():
 
 /** True when no backend can accept a booking request, so the UI says so up front. */
 export function isBookingSubmissionConnected(): boolean {
-  const env = readVipEnv();
   return true;
 }

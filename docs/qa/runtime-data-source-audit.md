@@ -37,4 +37,4 @@ The local `.env.docker` intentionally has empty Square, Brevo and Mailchimp cred
 
 ## Lint warning classification
 
-`npm run lint` passes with `0` errors and `114` warnings. The warnings are non-blocking: existing UI hook/unused-variable warnings and explicit-`any` boundary warnings in legacy/API DTO code. No warning indicates a runtime mock repository, hardcoded business dataset, fake payment success or dead client action. They remain tracked technical debt rather than being silently counted as zero.
+`npm run lint` passes with `0` errors and `93` warnings, down from the baseline 114. The safe cleanup removed dead imports/variables, fixed a local-navigation anchor, stabilized effect dependencies and removed a hydration state update from the visual effects. The remaining warnings are non-blocking explicit-`any` boundary warnings in legacy/API DTO code plus a small number of canvas-effect warnings; no warning indicates a runtime mock repository, hardcoded business dataset, fake payment success or dead client action.

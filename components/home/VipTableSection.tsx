@@ -8,7 +8,7 @@ import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
 import type { HomeBoothPackage } from './types';
-import { fadeUp, staggerContainer, parallaxDown } from '@/lib/animations';
+import { fadeUp, staggerContainer } from '@/lib/animations';
 
 export default function VipTableSection({ boothPackage }: { boothPackage: HomeBoothPackage | null }) {
   const sectionRef = useRef<HTMLElement>(null);

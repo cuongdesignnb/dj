@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
@@ -11,6 +11,18 @@ interface Sparkle {
   size: number;
   color: string;
 }
+
+const MOUSE_GLOW_COLORS = [
+  'rgba(255, 23, 61, 0.9)',
+  'rgba(139, 44, 255, 0.8)',
+  'rgba(255, 10, 120, 0.8)',
+  'rgba(46, 107, 255, 0.7)',
+  'rgba(255, 48, 79, 0.9)',
+];
+
+const subscribeToHydration = () => () => {};
+const getClientHydrationSnapshot = () => true;
+const getServerHydrationSnapshot = () => false;
 
 export default function MouseGlow() {
   const mouseX = useMotionValue(0);
@@ -26,17 +38,9 @@ export default function MouseGlow() {
   const glow2Y = useSpring(mouseY, { ...springConfig, damping: 25, stiffness: 200 });
 
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeToHydration, getClientHydrationSnapshot, getServerHydrationSnapshot);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const sparkleIdRef = useRef(0);
-
-  const colors = [
-    'rgba(255, 23, 61, 0.9)',    // Red
-    'rgba(139, 44, 255, 0.8)',   // Purple
-    'rgba(255, 10, 120, 0.8)',   // Magenta
-    'rgba(46, 107, 255, 0.7)',   // Blue
-    'rgba(255, 48, 79, 0.9)',    // Red2
-  ];
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     // Offset to center the glow on cursor
@@ -52,7 +56,7 @@ export default function MouseGlow() {
         x: e.clientX + (Math.random() - 0.5) * 40,
         y: e.clientY + (Math.random() - 0.5) * 40,
         size: 4 + Math.random() * 8,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        color: MOUSE_GLOW_COLORS[Math.floor(Math.random() * MOUSE_GLOW_COLORS.length)],
       };
       setSparkles((prev) => [...prev.slice(-20), newSparkle]);
 
@@ -64,7 +68,6 @@ export default function MouseGlow() {
   }, [mouseX, mouseY, glow2X, glow2Y]);
 
   useEffect(() => {
-    setMounted(true);
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [handleMouseMove]);

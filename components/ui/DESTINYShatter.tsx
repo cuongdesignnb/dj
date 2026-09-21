@@ -402,7 +402,6 @@ export default function DESTINYShatter({
     // Skip entirely if user prefers reduced motion
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) {
-      setShowFallback(true);
       canvas.style.display = 'none';
       return;
     }
@@ -564,7 +563,6 @@ export default function DESTINYShatter({
       beamWidth: number,
     ) => {
       // The beam "passes" pixels with center x in [beamX - beamWidth/2, beamX + beamWidth/2]
-      const beamLeft = beamX - beamWidth * 0.5;
       const beamRight = beamX + beamWidth * 0.5;
 
       // Render body using ImageData of mask. Pixels to the LEFT of the beam
@@ -580,8 +578,6 @@ export default function DESTINYShatter({
       // Alpha: 255 for fully intact, 0 for under-beam or beyond
       // Within fracture halo to the right of beam, partial alpha
       const fadeWidthPx = beamWidth * 3.5;
-      const fadeStartPx = beamX + beamWidth * 0.5;
-
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const idx = y * W + x;

@@ -3,33 +3,31 @@
 QA run: 2026-09-21
 Environment: Docker Compose (`destiny-app`, PostgreSQL, Redis) with Chrome at `http://localhost:43171`.
 
-This document separates technical availability from editorial approval. A seeded row is not treated as production-ready merely because it exists in PostgreSQL. Preview/draft rows remain gated, and unknown event facts remain `TBA`/`TBC`.
+This matrix separates technical availability from editorial approval. A seeded row is not treated as production-ready merely because it exists in PostgreSQL. Preview/draft rows remain gated, unknown event facts remain `TBA`/`TBC`, and local indexing stays disabled.
 
-| Domain | Current source state | Public/client behavior | Gate |
-| --- | --- | --- | --- |
-| Event core | `DESTINY` is the one published event; venue and event graph are real and complete | Hero, detail, ticket and VIP routes render the persisted event | PASS for core event data; date/schedule still `TBA`/`TBC` |
-| Event media and hero | Canonical media exists; legacy `/public/assets/...` DB rows are inactive | Original hero artwork and sponsor presentation render | PASS |
-| Artists / lineup | 8 published artists with translations and media | Homepage and lineup routes render the seeded artists | PASS |
-| Ticket catalogue | 3 real tiers with server prices; availability is `UNKNOWN`; `purchasableOnline=false` | Prices render, but checkout intent rejects unavailable tiers | BLOCKED_CONTENT_APPROVAL |
-| VIP / tables | 1 request-only package, 17 current event booths and 6 bottles; event API round-trip preserved the related graph | Tables and booking request routes render; payment is not claimed | PASS for request flow; payment blocked externally |
-| Partners / sponsors | 2 published partners plus bundled brand assets | Homepage/footer/partners render real persisted partner data | PASS |
-| Products / merchandise | 6 preview products (7 admin records including the preview state); no published public products | `/shop` shows a truthful empty catalogue; no checkout success is fabricated | BLOCKED_CONTENT_APPROVAL |
-| News | 1 preview article; no published public article | `/news` remains an explicit empty/preview-safe state | BLOCKED_CONTENT_APPROVAL |
-| Gallery | 2 preview albums; no published public album | `/gallery` remains an explicit empty/preview-safe state | BLOCKED_CONTENT_APPROVAL |
-| Past events | Archived QA/seed history is not a published public programme; smoke rows were deleted | No invented past-event copy is exposed | BLOCKED_CONTENT_APPROVAL |
-| FAQ | Seeded FAQ content is available through the public endpoint | `/faq` renders the public FAQ state | PASS |
-| Terms | Legal document exists but is draft and API-gated | `/terms` renders draft-safe state; it is not presented as approved terms | BLOCKED_CONTENT_APPROVAL |
-| Privacy | Legal document exists but is draft and API-gated | `/privacy` renders draft-safe state; it is not presented as approved policy | BLOCKED_CONTENT_APPROVAL |
-| Contact / newsletter | Contact and newsletter endpoints are live; canaries returned expected `202`/`422` responses and were cleaned | Forms have real API targets and no dead CTA fallback | PASS |
-| Social / footer | Persisted social settings are empty; empty links are omitted | No `#` placeholders or invented social URLs | PASS; configure approved links before campaign launch |
-| SEO production config | Local Docker intentionally has `SEO_INDEXING_ENABLED=false`; `APP_URL` is localhost | Robots/noindex and empty local sitemap are safe for QA | BLOCKED_CONFIG until production HTTPS URL and indexing decision are supplied |
+| Domain | Launch Required | Real Data | Published | Client State | SEO State | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| DESTINY | Yes | Yes: venue, event graph and canonical media | Yes | Hero/detail render; date and schedule remain TBA/TBC | Local noindex; production URL not supplied | BLOCKED_APPROVAL |
+| Artists | Yes | Yes: 8 translated artist records with media | Yes | Homepage and lineup render real artists | Local noindex; detail routes pass SEO checks | PASS |
+| Tickets | Yes for sales | Yes: 3 tiers and server prices | Event published; sale disabled (`UNKNOWN`, `purchasableOnline=false`) | Prices render; unavailable tiers cannot create checkout intent | Local noindex; event schema remains conditional | BLOCKED_APPROVAL |
+| VIP | Yes | Yes: request-only package, 17 booths, 6 bottles | Through published event | Tables and booking request render; no payment is claimed | Local noindex; request-only state is explicit | PASS_WITH_EXTERNAL_BLOCKER |
+| Products | Owner decision | Preview rows only; no approved launch catalogue | No | `/shop` shows intentional empty state with no broken checkout CTA | Excluded from public index while unpublished | BLOCKED_APPROVAL |
+| News | Owner decision | One preview article only | No | `/news` shows intentional preview/empty state | Article schema excluded while unpublished | BLOCKED_APPROVAL |
+| Gallery | Owner decision | Two preview albums only | No | `/gallery` shows intentional preview/empty state | Gallery routes remain non-indexed locally | BLOCKED_APPROVAL |
+| Past Events | Owner decision | No approved public history | No | No invented historical claims are exposed | Excluded until verified history is published | BLOCKED_APPROVAL |
+| Partners | Yes | Yes: 2 published partners plus bundled brand assets | Yes | Homepage/footer/partners render real partner data | Local noindex; route SEO checks pass | PASS |
+| FAQ | Yes | Yes: seeded FAQ content | Yes | `/faq` renders the public FAQ state | Local noindex; FAQ schema is conditional on approval | PASS |
+| Legal | Yes | Draft Terms and Privacy documents exist | No; API remains gated | `/terms` and `/privacy` show draft-safe states | Not indexable until approved/published | BLOCKED_APPROVAL |
+| Contact | Yes | API contract is real, but production contact fields are empty | N/A | Contact form has a real endpoint and validation | No standalone index requirement | BLOCKED_APPROVAL |
+| Social | Owner decision | Persisted social fields are empty | N/A | Missing values hide cleanly; no `#` or fake URLs | No fake social URLs are emitted | BLOCKED_APPROVAL |
 
 ## Approval checklist before launch
 
-- Approve and publish the event date, schedule, ticket availability and online-sales flags.
-- Review and publish Terms and Privacy translations.
+- Approve and publish the DESTINY date, schedule, ticket availability and online-sales flags.
+- Review and publish Terms and Privacy translations with the real effective date/version.
+- Provide real contact details and approved social URLs, or explicitly exclude those modules from launch.
 - Decide which products, news, gallery and past-event records are in launch scope; publish only approved records.
 - Provide Square sandbox credentials/location/webhook configuration, run the provider-backed sandbox flow, then repeat with production credentials under the deployment change process.
-- Set production `APP_URL` and the explicit SEO indexing flag only after the domain is ready.
+- Set production `APP_URL`/`NEXT_PUBLIC_SITE_URL` and enable indexing only after HTTPS canonical, robots and sitemap checks pass.
 
-No content or legal approval is inferred from the seed data. This is why the technical QA result can pass while `PRODUCTION_READY` remains `NO`.
+No content, date, legal clause, contact detail or payment success is inferred from seed data. This is why the technical QA result can pass while `PRODUCTION_READY` remains `NO`.

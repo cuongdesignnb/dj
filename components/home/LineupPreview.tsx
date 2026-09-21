@@ -8,7 +8,7 @@ import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
 import type { HomeArtist } from './types';
-import { fadeUp, staggerContainer, scaleIn } from '@/lib/animations';
+import { fadeUp, staggerContainer } from '@/lib/animations';
 
 interface ArtistCardProps {
   artist: HomeArtist;

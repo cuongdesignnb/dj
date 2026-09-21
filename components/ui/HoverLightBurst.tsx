@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { motion, useSpring, useMotionValue } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface LightBurstProps {
   children: React.ReactNode;
@@ -17,6 +17,12 @@ interface BurstParticle {
   angle: number;
 }
 
+const INTENSITY_VALUES = {
+  low: 6,
+  medium: 12,
+  high: 20,
+} as const;
+
 export default function HoverLightBurst({
   children,
   className = '',
@@ -27,12 +33,6 @@ export default function HoverLightBurst({
   const [bursts, setBursts] = useState<BurstParticle[]>([]);
   const countRef = useRef(0);
 
-  const intensityValues = {
-    low: 6,
-    medium: 12,
-    high: 20,
-  };
-
   const handleMouseEnter = useCallback((e: React.MouseEvent) => {
     setIsHovered(true);
     const rect = e.currentTarget.getBoundingClientRect();
@@ -40,11 +40,11 @@ export default function HoverLightBurst({
     const y = e.clientY - rect.top;
 
     // Create multiple burst particles
-    const newBursts: BurstParticle[] = Array.from({ length: intensityValues[intensity] }, (_, i) => ({
+    const newBursts: BurstParticle[] = Array.from({ length: INTENSITY_VALUES[intensity] }, (_, i) => ({
       id: countRef.current++,
       x,
       y,
-      angle: (360 / intensityValues[intensity]) * i,
+      angle: (360 / INTENSITY_VALUES[intensity]) * i,
     }));
 
     setBursts(newBursts);

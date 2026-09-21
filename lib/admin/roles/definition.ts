@@ -1,4 +1,3 @@
-import { ALL_PERMISSIONS, PERMISSION_MODULES } from '@/lib/admin/auth/permissions';
 import type { Permission } from '@/lib/admin/auth/permissions';
 import { f, section } from '@/lib/admin/common/fields';
 import type { ResourceDefinition } from '@/lib/admin/common/resource';
@@ -15,14 +14,6 @@ export interface AdminRole {
   updatedAt: string;
   [key: string]: unknown;
 }
-
-const every = (...actions: string[]) =>
-  PERMISSION_MODULES.flatMap((m) => actions.map((a) => `${m.id}.${a}` as Permission));
-
-const modules = (ids: string[], actions: string[]) =>
-  ids.flatMap((id) => actions.map((a) => `${id}.${a}` as Permission));
-
-const CONTENT = ['dashboard', 'events', 'artists', 'products', 'news', 'gallery', 'media', 'content', 'partners'];
 
 export const rolesDefinition: ResourceDefinition<AdminRole> = {
   key: 'roles',

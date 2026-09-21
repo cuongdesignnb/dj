@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useInView, useReducedMotion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import {
@@ -61,9 +62,9 @@ export default function PartnersHero({ hero }: Props) {
         <Container>
           <ol className="flex items-center gap-2 text-xs sm:text-sm font-heading uppercase tracking-[0.18em] text-rave-muted">
             <li>
-              <a href="/" className="hover:text-white transition-colors">
+              <Link href="/" className="hover:text-white transition-colors">
                 Home
-              </a>
+              </Link>
             </li>
             <li aria-hidden className="text-rave-muted/60">/</li>
             <li className="text-rave-red">Partners</li>
