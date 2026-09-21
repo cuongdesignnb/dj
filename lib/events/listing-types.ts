@@ -56,13 +56,14 @@ export interface EventSummary {
 }
 
 export interface EventsHeroData {
+  breadcrumb?: string;
   eyebrow: string;
   titleLines: string[];
   description: string;
   primaryCta: LinkAction;
   secondaryCta?: LinkAction;
   visual: MediaAsset;
-  visualAnnotations?: { side: string[] };
+  visualAnnotations?: { side: string[]; note?: string[] };
 }
 
 export type EventFilter = 'all' | 'featured' | 'tickets-available' | 'coming-soon';
@@ -190,6 +191,7 @@ export interface PastEventSummary {
 }
 
 export interface PastEventsHeroData {
+  breadcrumb?: string;
   eyebrow: string;
   titleLines: string[];
   description: string;

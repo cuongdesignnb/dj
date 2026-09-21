@@ -11,15 +11,29 @@ import type { NewsPageData } from '@/lib/news/types';
 import NewsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
-import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
+import { publicApiBaseUrl } from '@/lib/api/public';
+import { fetchPublicListingContent, listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
   const filter = Array.isArray(params.category) ? params.category[0] : params.category;
   const result = await loadNews();
   const hasPublished = 'data' in result && result.data.articles.some((article) => article.status === 'published' && article.indexable !== false);
-  const seo = await getContentSeo('news', { title: 'News & Stories | Connection Rave', description: 'Read published Connection Rave announcements, event updates, artist stories and community features.' });
-  return buildMetadata({ ...seo, path: '/news', indexable: !filter && hasPublished && seo.indexable });
+  const [seo, listing] = await Promise.all([
+    getContentSeo('news', { title: 'News & Stories | Connection Rave', description: 'Read published Connection Rave announcements, event updates, artist stories and community features.' }),
+    fetchPublicListingContent(publicApiBaseUrl(), 'news-list'),
+  ]);
+  return buildMetadata({
+    title: listing?.seo?.title ?? seo.title,
+    description: listing?.seo?.description ?? seo.description,
+    image: listing?.seo?.ogImage?.src
+      ? { url: listing.seo.ogImage.src, alt: listing.seo.ogImage.alt, width: listing.seo.ogImage.width, height: listing.seo.ogImage.height }
+      : undefined,
+    path: '/news',
+    canonicalOverride: seo.canonicalOverride,
+    follow: listing?.seo?.follow ?? seo.follow,
+    indexable: !filter && hasPublished && (listing?.seo?.index ?? seo.indexable),
+  });
 }
 
 async function loadNews(): Promise<
@@ -78,7 +92,7 @@ export default async function NewsPage({
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <PageHero
-          crumbs={[{ label: 'Home', href: '/' }, { label: 'News' }]}
+          crumbs={[{ label: 'Home', href: '/' }, { label: data.content?.hero?.breadcrumb ?? 'News' }]}
           eyebrow={data.hero.eyebrow}
           titleLines={data.hero.titleLines}
           description={data.hero.description}
@@ -90,6 +104,7 @@ export default async function NewsPage({
             { ...data.hero.secondaryCta, tone: 'secondary' },
           ]}
           sideNotes={data.hero.sideNotes}
+          footNotes={data.content?.hero?.footNotes}
         />
 
         <NewsBrowser

@@ -19,10 +19,12 @@ import PastEventFilters from './PastEventFilters';
 
 export default function PastEventsHero({
   hero,
+  breadcrumb,
   filterLabel,
   filterOptions,
 }: {
   hero: PastEventsHeroData;
+  breadcrumb?: string;
   filterLabel?: string;
   filterOptions?: string[];
 }) {
@@ -40,7 +42,7 @@ export default function PastEventsHero({
   return (
     <>
       <EventsBreadcrumb
-        trail={[{ label: 'Home', href: '/' }, { label: 'Events', href: '/events' }, { label: 'Past' }]}
+        trail={[{ label: 'Home', href: '/' }, { label: 'Events', href: '/events' }, { label: breadcrumb ?? hero.breadcrumb ?? 'Past' }]}
       />
 
       <section

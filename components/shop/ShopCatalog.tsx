@@ -203,18 +203,19 @@ export default function ShopCatalog({
 
   return (
     <>
-      <section
-        ref={browseRef}
-        id="browse-merchandise"
-        aria-labelledby="browse-merchandise-title"
-        className="relative scroll-mt-[100px] bg-rave-black pt-4 pb-10 md:pb-14"
-      >
-        <Container>
-          <SectionHeading
-            id="browse-merchandise-title"
-            title={browseSection?.title ?? 'Browse Merchandise'}
-            context={browseSection?.description ?? 'Same People — A Brighter Tomorrow'}
-          />
+      {browseSection?.enabled !== false && (
+        <section
+          ref={browseRef}
+          id="browse-merchandise"
+          aria-labelledby="browse-merchandise-title"
+          className="relative scroll-mt-[100px] bg-rave-black pt-4 pb-10 md:pb-14"
+        >
+          <Container>
+            <SectionHeading
+              id="browse-merchandise-title"
+              title={browseSection?.title ?? 'Browse Merchandise'}
+              context={browseSection?.description ?? 'Same People — A Brighter Tomorrow'}
+            />
 
           <div
             role="group"
@@ -247,8 +248,9 @@ export default function ShopCatalog({
               );
             })}
           </div>
-        </Container>
-      </section>
+          </Container>
+        </section>
+      )}
 
       {showFeatured && featured && (
         <section aria-labelledby="featured-drop-title" className="bg-rave-black pb-14 md:pb-20">
@@ -267,21 +269,22 @@ export default function ShopCatalog({
         </section>
       )}
 
-      <section
-        ref={gridRef}
-        aria-labelledby="all-merchandise-title"
-        className="bg-rave-black pb-16 md:pb-24"
-      >
-        <Container>
-          <SectionHeading
-            id="all-merchandise-title"
-            title={
-              filter === 'all'
-                ? catalogSection?.title ?? 'All Merchandise'
-                : filterOptions?.[PRODUCT_FILTERS.indexOf(filter)] || filterLabel(filter)
-            }
-            context={catalogSection?.description ?? 'Wear the Movement'}
-          />
+      {catalogSection?.enabled !== false && (
+        <section
+          ref={gridRef}
+          aria-labelledby="all-merchandise-title"
+          className="bg-rave-black pb-16 md:pb-24"
+        >
+          <Container>
+            <SectionHeading
+              id="all-merchandise-title"
+              title={
+                filter === 'all'
+                  ? catalogSection?.title ?? 'All Merchandise'
+                  : filterOptions?.[PRODUCT_FILTERS.indexOf(filter)] || filterLabel(filter)
+              }
+              context={catalogSection?.description ?? 'Wear the Movement'}
+            />
 
           <p role="status" aria-live="polite" className="sr-only">
             {visible.length === 1 ? '1 product shown' : `${visible.length} products shown`}
@@ -316,8 +319,9 @@ export default function ShopCatalog({
               />
             </div>
           )}
-        </Container>
-      </section>
+          </Container>
+        </section>
+      )}
     </>
   );
 }

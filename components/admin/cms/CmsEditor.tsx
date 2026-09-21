@@ -37,6 +37,7 @@ function fieldsFor(key: string): Field[] {
           : 'listing';
 
   const hero = (titlePath = 'hero.title', titleLabel = 'Hero title'): Field[] => [
+    textField('hero.breadcrumb', 'Hero breadcrumb'),
     textField('hero.eyebrow', 'Hero eyebrow'),
     textField(titlePath, titleLabel),
     ...(titlePath === 'hero.title'
@@ -132,6 +133,7 @@ function fieldsFor(key: string): Field[] {
   }
 
   return [
+    textField('hero.breadcrumb', 'Hero breadcrumb'),
     textField('hero.eyebrow', 'Hero eyebrow'),
     textField('hero.title', 'Hero title'),
     textField('hero.titleLine1', 'Hero title line 1'),

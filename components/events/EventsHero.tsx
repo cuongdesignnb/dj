@@ -12,11 +12,12 @@ import type { EventsHeroData } from '@/lib/events/listing-types';
 
 interface Props {
   hero: EventsHeroData;
+  breadcrumb?: string;
   filterLabel?: string;
   filterOptions?: string[];
 }
 
-export default function EventsHero({ hero, filterLabel, filterOptions }: Props) {
+export default function EventsHero({ hero, breadcrumb, filterLabel, filterOptions }: Props) {
   const ref = useRef<HTMLElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
@@ -30,7 +31,7 @@ export default function EventsHero({ hero, filterLabel, filterOptions }: Props) 
 
   return (
     <>
-      <EventsBreadcrumb trail={[{ label: 'Home', href: '/' }, { label: 'Events' }]} />
+      <EventsBreadcrumb trail={[{ label: 'Home', href: '/' }, { label: breadcrumb ?? hero.breadcrumb ?? 'Events' }]} />
 
       <section
         ref={ref}
@@ -148,6 +149,18 @@ export default function EventsHero({ hero, filterLabel, filterOptions }: Props) 
                     style={{ textShadow: '0 1px 6px rgba(0,0,0,0.85)' }}
                   >
                     {hero.visualAnnotations.side.map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </div>
+                )}
+
+                {hero.visualAnnotations?.note && hero.visualAnnotations.note.length > 0 && (
+                  <div
+                    aria-hidden
+                    className="absolute bottom-4 right-4 flex flex-col gap-1 text-right font-heading text-[10px] uppercase tracking-[0.22em] text-white/75 sm:text-xs"
+                    style={{ textShadow: '0 1px 6px rgba(0,0,0,0.85)' }}
+                  >
+                    {hero.visualAnnotations.note.map((line) => (
                       <span key={line}>{line}</span>
                     ))}
                   </div>

@@ -13,7 +13,8 @@ import type { ShopPageData } from '@/lib/shop/types';
 import ShopError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
-import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
+import { publicApiBaseUrl } from '@/lib/api/public';
+import { fetchPublicListingContent, listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 async function loadShop(): Promise<{ data: ShopPageData } | { error: { message: string } }> {
   const selection = getShopRepository();
@@ -30,8 +31,21 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const filter = Array.isArray(params.category) ? params.category[0] : params.category;
   const result = await loadShop();
   const hasActive = 'data' in result && result.data.products.some((product) => product.status === 'active' && product.indexable !== false);
-  const seo = await getContentSeo('shop', { title: 'Merchandise | Connection Rave', description: 'Explore published Connection Rave merchandise, apparel, accessories, posters and collectibles.' });
-  return buildMetadata({ ...seo, path: '/shop', indexable: !filter && hasActive && seo.indexable });
+  const [seo, listing] = await Promise.all([
+    getContentSeo('shop', { title: 'Merchandise | Connection Rave', description: 'Explore published Connection Rave merchandise, apparel, accessories, posters and collectibles.' }),
+    fetchPublicListingContent(publicApiBaseUrl(), 'shop-list'),
+  ]);
+  return buildMetadata({
+    title: listing?.seo?.title ?? seo.title,
+    description: listing?.seo?.description ?? seo.description,
+    image: listing?.seo?.ogImage?.src
+      ? { url: listing.seo.ogImage.src, alt: listing.seo.ogImage.alt, width: listing.seo.ogImage.width, height: listing.seo.ogImage.height }
+      : undefined,
+    path: '/shop',
+    canonicalOverride: seo.canonicalOverride,
+    follow: listing?.seo?.follow ?? seo.follow,
+    indexable: !filter && hasActive && (listing?.seo?.index ?? seo.indexable),
+  });
 }
 
 /** Server Component. Filters, featured Add to Cart and the cart are the islands. */

@@ -15,9 +15,27 @@ import type { PastEventsPageData } from '@/lib/events/listing-types';
 import { parsePastFilter } from '@/lib/events/listing-types';
 import PastEventsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
-import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
+import { getContentSeo } from '@/lib/seo/content';
+import { publicApiBaseUrl } from '@/lib/api/public';
+import { fetchPublicListingContent, listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
-export const metadata: Metadata = buildMetadata({ title: 'Past Events | Connection Rave', description: 'Explore published Connection Rave event archive records.', path: '/events/past', indexable: false });
+export async function generateMetadata(): Promise<Metadata> {
+  const [seo, listing] = await Promise.all([
+    getContentSeo('past-events', { title: 'Past Events | Connection Rave', description: 'Explore published Connection Rave event archive records.' }),
+    fetchPublicListingContent(publicApiBaseUrl(), 'past-events'),
+  ]);
+  return buildMetadata({
+    title: listing?.seo?.title ?? seo.title,
+    description: listing?.seo?.description ?? seo.description,
+    image: listing?.seo?.ogImage?.src
+      ? { url: listing.seo.ogImage.src, alt: listing.seo.ogImage.alt, width: listing.seo.ogImage.width, height: listing.seo.ogImage.height }
+      : undefined,
+    path: '/events/past',
+    canonicalOverride: seo.canonicalOverride,
+    follow: listing?.seo?.follow ?? seo.follow,
+    indexable: false,
+  });
+}
 
 // No Event JSON-LD here: the archive currently holds placeholders, and
 // structured data would publish them as records of real nights.
@@ -85,6 +103,7 @@ export default async function PastEventsPage({
         <EventsFilterProvider initialFilter={initialFilter}>
           <PastEventsHero
             hero={data.hero}
+            breadcrumb={data.content?.hero?.breadcrumb}
             filterLabel={filter.label}
             filterOptions={filter.options}
           />

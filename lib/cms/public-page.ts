@@ -3,6 +3,7 @@ import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface PublicListingContent {
   hero?: {
+    breadcrumb?: string;
     eyebrow?: string;
     title?: string;
     titleLine1?: string;
@@ -26,6 +27,7 @@ export interface PublicListingContent {
     secondary?: { label?: string; href?: string };
     background?: PublicMedia | null;
   };
+  seo?: PublicListingSeo;
 }
 
 export interface PublicListingFilter {
@@ -46,6 +48,14 @@ export interface PublicListingEmptyState {
   title: string;
   description: string;
   cta?: { label: string; href: string };
+}
+
+export interface PublicListingSeo {
+  title?: string;
+  description?: string;
+  ogImage?: PublicMedia | null;
+  index?: boolean;
+  follow?: boolean;
 }
 
 export interface PublicMedia {
@@ -86,6 +96,7 @@ function normalize(value: unknown): PublicListingContent | null {
   if (!isRecord(value)) return null;
   const hero = isRecord(value.hero)
     ? {
+        breadcrumb: asString(value.hero.breadcrumb),
         eyebrow: asString(value.hero.eyebrow),
         title: asString(value.hero.title),
         titleLine1: asString(value.hero.titleLine1),
@@ -110,7 +121,10 @@ function normalize(value: unknown): PublicListingContent | null {
   const finalCta = isRecord(value.finalCta)
     ? { eyebrow: asString(value.finalCta.eyebrow), title: asString(value.finalCta.title), subtitle: asString(value.finalCta.subtitle), description: asString(value.finalCta.description), primary: asAction(value.finalCta.primary), secondary: asAction(value.finalCta.secondary), background: asImage(value.finalCta.background) }
     : undefined;
-  return { hero, filters, sections, emptyState, finalCta };
+  const seo = isRecord(value.seo)
+    ? { title: asString(value.seo.title), description: asString(value.seo.description), ogImage: asImage(value.seo.ogImage) ?? null, index: typeof value.seo.index === 'boolean' ? value.seo.index : undefined, follow: typeof value.seo.follow === 'boolean' ? value.seo.follow : undefined }
+    : undefined;
+  return { hero, filters, sections, emptyState, finalCta, seo };
 }
 
 /** Public listing chrome is a page-content record, not a repository fallback. */

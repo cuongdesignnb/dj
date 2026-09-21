@@ -12,15 +12,29 @@ import { availableCategories } from '@/lib/gallery/helpers';
 import GalleryError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
-import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
+import { publicApiBaseUrl } from '@/lib/api/public';
+import { fetchPublicListingContent, listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
   const filter = Array.isArray(params.category) ? params.category[0] : params.category;
   const result = await loadGallery();
   const hasPublished = 'data' in result && result.data.collections.some((collection) => collection.status === 'published' && collection.indexable !== false);
-  const seo = await getContentSeo('gallery', { title: 'Gallery | Connection Rave', description: 'Explore published Connection Rave visual collections, artist moments, venue visuals and event atmosphere.' });
-  return buildMetadata({ ...seo, path: '/gallery', indexable: !filter && hasPublished && seo.indexable });
+  const [seo, listing] = await Promise.all([
+    getContentSeo('gallery', { title: 'Gallery | Connection Rave', description: 'Explore published Connection Rave visual collections, artist moments, venue visuals and event atmosphere.' }),
+    fetchPublicListingContent(publicApiBaseUrl(), 'gallery-list'),
+  ]);
+  return buildMetadata({
+    title: listing?.seo?.title ?? seo.title,
+    description: listing?.seo?.description ?? seo.description,
+    image: listing?.seo?.ogImage?.src
+      ? { url: listing.seo.ogImage.src, alt: listing.seo.ogImage.alt, width: listing.seo.ogImage.width, height: listing.seo.ogImage.height }
+      : undefined,
+    path: '/gallery',
+    canonicalOverride: seo.canonicalOverride,
+    follow: listing?.seo?.follow ?? seo.follow,
+    indexable: !filter && hasPublished && (listing?.seo?.index ?? seo.indexable),
+  });
 }
 
 async function loadGallery(): Promise<
@@ -86,7 +100,7 @@ export default async function GalleryPage({
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <PageHero
-          crumbs={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]}
+          crumbs={[{ label: 'Home', href: '/' }, { label: data.content?.hero?.breadcrumb ?? 'Gallery' }]}
           eyebrow={data.hero.eyebrow}
           titleLines={data.hero.titleLines}
           description={data.hero.description}
@@ -98,6 +112,7 @@ export default async function GalleryPage({
             { ...data.hero.secondaryCta, tone: 'secondary' },
           ]}
           sideNotes={data.hero.sideNotes}
+          footNotes={data.content?.hero?.footNotes}
         />
 
         <div id="collections">

@@ -418,13 +418,14 @@ export class HttpEventsRepository implements EventsRepository {
         ...result.data,
         hero: {
           ...result.data.hero,
+          breadcrumb: content.hero?.breadcrumb,
           eyebrow: content.hero?.eyebrow ?? '',
           titleLines: listingTitleLines(content.hero, []),
           description: content.hero?.description ?? '',
           primaryCta: listingAction(content.hero?.primary, result.data.hero.primaryCta),
           secondaryCta: content.hero?.secondary ? listingAction(content.hero.secondary, result.data.hero.secondaryCta ?? result.data.hero.primaryCta) : undefined,
           visual,
-          visualAnnotations: content.hero?.sideNotes ? { side: content.hero.sideNotes } : undefined,
+          visualAnnotations: content.hero?.sideNotes || content.hero?.footNotes ? { side: content.hero.sideNotes ?? [], note: content.hero.footNotes } : undefined,
         },
         finalCta: {
           ...result.data.finalCta,
@@ -462,13 +463,14 @@ export class HttpEventsRepository implements EventsRepository {
         ...result.data,
         hero: {
           ...result.data.hero,
+          breadcrumb: content.hero?.breadcrumb,
           eyebrow: content.hero?.eyebrow ?? '',
           titleLines: listingTitleLines(content.hero, []),
           description: content.hero?.description ?? '',
           primaryCta: listingAction(content.hero?.primary, result.data.hero.primaryCta),
           secondaryCta: content.hero?.secondary ? listingAction(content.hero.secondary, result.data.hero.secondaryCta ?? result.data.hero.primaryCta) : undefined,
           visual,
-          visualAnnotations: content.hero?.sideNotes ? { side: content.hero.sideNotes } : undefined,
+          visualAnnotations: content.hero?.sideNotes || content.hero?.footNotes ? { side: content.hero.sideNotes ?? [], note: content.hero.footNotes } : undefined,
         },
         finalCta: {
           ...result.data.finalCta,

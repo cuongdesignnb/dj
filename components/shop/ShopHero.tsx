@@ -78,7 +78,7 @@ export default function ShopHero({ hero }: { hero: ShopPageData['hero'] }) {
 
   return (
     <>
-      <EventsBreadcrumb trail={[{ label: 'Home', href: '/' }, { label: 'Merchandise' }]} />
+      <EventsBreadcrumb trail={[{ label: 'Home', href: '/' }, { label: hero.breadcrumb || 'Merchandise' }]} />
 
       <section
         ref={ref}
@@ -209,6 +209,18 @@ export default function ShopHero({ hero }: { hero: ShopPageData['hero'] }) {
                   ))}
                   <span className="ml-auto mt-1 block h-[2px] w-8 rounded-full bg-rave-red" />
                 </div>
+
+                {hero.footNotes && hero.footNotes.length > 0 && (
+                  <div
+                    aria-hidden
+                    className="absolute bottom-5 left-5 hidden flex-col gap-1.5 font-heading text-[10px] uppercase tracking-[0.3em] text-white/75 sm:flex sm:text-xs"
+                    style={{ textShadow: '0 1px 6px rgba(0,0,0,0.85)' }}
+                  >
+                    {hero.footNotes.map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Always rendered so server and client markup match — the
                     reduced-motion preference is unknown on the server. CSS

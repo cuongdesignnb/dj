@@ -123,18 +123,19 @@ export default function NewsBrowser({
   return (
     <>
       {/* Browse + featured */}
-      <section
-        ref={browseRef}
-        id="browse-news"
-        aria-labelledby="browse-news-title"
-        className="relative scroll-mt-[100px] bg-rave-black py-16 md:py-24"
-      >
-        <Container>
-          <Heading
-            title={browseSection?.title ?? 'Browse News'}
-            titleId="browse-news-title"
-            context={browseSection?.description ?? 'Real Stories — A Brighter Tomorrow'}
-          />
+      {browseSection?.enabled !== false && (
+        <section
+          ref={browseRef}
+          id="browse-news"
+          aria-labelledby="browse-news-title"
+          className="relative scroll-mt-[100px] bg-rave-black py-16 md:py-24"
+        >
+          <Container>
+            <Heading
+              title={browseSection?.title ?? 'Browse News'}
+              titleId="browse-news-title"
+              context={browseSection?.description ?? 'Real Stories — A Brighter Tomorrow'}
+            />
 
           <div
             role="radiogroup"
@@ -251,21 +252,23 @@ export default function NewsBrowser({
               </div>
             </motion.div>
           )}
-        </Container>
-      </section>
+          </Container>
+        </section>
+      )}
 
       {/* Grid */}
-      <section
-        ref={gridRef}
-        aria-labelledby="latest-news-title"
-        className="relative bg-rave-black pb-16 md:pb-24"
-      >
-        <Container>
-          <Heading
-            title={latestSection?.title ?? 'Latest News'}
-            titleId="latest-news-title"
-            context={latestSection?.description ?? 'All Stories — Same People, Brighter Tomorrow'}
-          />
+      {latestSection?.enabled !== false && (
+        <section
+          ref={gridRef}
+          aria-labelledby="latest-news-title"
+          className="relative bg-rave-black pb-16 md:pb-24"
+        >
+          <Container>
+            <Heading
+              title={latestSection?.title ?? 'Latest News'}
+              titleId="latest-news-title"
+              context={latestSection?.description ?? 'All Stories — Same People, Brighter Tomorrow'}
+            />
 
           <p aria-live="polite" className="sr-only">
             {visible.length === 1 ? '1 story shown' : `${visible.length} stories shown`}
@@ -296,8 +299,9 @@ export default function NewsBrowser({
               />
             </div>
           )}
-        </Container>
-      </section>
+          </Container>
+        </section>
+      )}
     </>
   );
 }

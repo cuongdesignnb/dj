@@ -34,7 +34,7 @@ function pageFor(products: Product[]): ShopPageData {
   const visual = products[0]?.images[0]?.image ?? { src: '', alt: '' };
   const featured = products.find((product) => product.featured) ?? products[0] ?? null;
   return {
-    hero: { eyebrow: '', titleLines: [], description: '', primaryCta: { label: '', href: '' }, secondaryCta: { label: '', href: '' }, visual, composition: products.flatMap((product) => product.images.slice(0, 1).map((item) => item.image)), sideNotes: [] },
+    hero: { breadcrumb: '', eyebrow: '', titleLines: [], description: '', primaryCta: { label: '', href: '' }, secondaryCta: { label: '', href: '' }, visual, composition: products.flatMap((product) => product.images.slice(0, 1).map((item) => item.image)), sideNotes: [], footNotes: [] },
     featuredProduct: featured,
     featuredHighlights: featured?.featureLabels.map((label) => ({ label, icon: 'star' as const })) ?? [],
     products,
@@ -122,6 +122,7 @@ export class HttpShopRepository implements ShopRepository {
         ...page,
         hero: {
           ...page.hero,
+          breadcrumb: content.hero?.breadcrumb ?? '',
           eyebrow: content.hero?.eyebrow ?? '',
           titleLines: listingTitleLines(content.hero, []),
           description: content.hero?.description ?? '',
@@ -129,6 +130,7 @@ export class HttpShopRepository implements ShopRepository {
           secondaryCta: listingAction(content.hero?.secondary, page.hero.secondaryCta),
           visual,
           sideNotes: content.hero?.sideNotes ?? [],
+          footNotes: content.hero?.footNotes ?? [],
         },
         finalCta: { ...page.finalCta, title: content.finalCta?.title ?? '', description: content.finalCta?.description ?? content.finalCta?.subtitle, primary: listingAction(content.finalCta?.primary, page.finalCta.primary), secondary: content.finalCta?.secondary ? listingAction(content.finalCta.secondary, page.finalCta.secondary ?? page.finalCta.primary) : undefined, background: content.finalCta?.background ?? visual },
       },

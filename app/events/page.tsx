@@ -16,13 +16,27 @@ import { parseFilter } from '@/lib/events/listing-types';
 import EventsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
-import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
+import { publicApiBaseUrl } from '@/lib/api/public';
+import { fetchPublicListingContent, listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const params = await searchParams;
   const hasFilter = Object.entries(params).some(([key, value]) => key !== 'locale' && value !== undefined && value !== '');
-  const seo = await getContentSeo('events', { title: 'Upcoming Events | Connection Rave', description: 'Discover published Connection Rave events and experiences.' });
-  return buildMetadata({ ...seo, path: '/events', indexable: !hasFilter && seo.indexable });
+  const [seo, listing] = await Promise.all([
+    getContentSeo('events', { title: 'Upcoming Events | Connection Rave', description: 'Discover published Connection Rave events and experiences.' }),
+    fetchPublicListingContent(publicApiBaseUrl(), 'events-list'),
+  ]);
+  return buildMetadata({
+    title: listing?.seo?.title ?? seo.title,
+    description: listing?.seo?.description ?? seo.description,
+    image: listing?.seo?.ogImage?.src
+      ? { url: listing.seo.ogImage.src, alt: listing.seo.ogImage.alt, width: listing.seo.ogImage.width, height: listing.seo.ogImage.height }
+      : undefined,
+    path: '/events',
+    canonicalOverride: seo.canonicalOverride,
+    follow: listing?.seo?.follow ?? seo.follow,
+    indexable: !hasFilter && (listing?.seo?.index ?? seo.indexable),
+  });
 }
 
 /**
@@ -89,7 +103,12 @@ export default async function EventsPage({
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <EventsFilterProvider initialFilter={initialFilter}>
-          <EventsHero hero={data.hero} filterLabel={filter.label} filterOptions={filter.options} />
+          <EventsHero
+            hero={data.hero}
+            breadcrumb={data.content?.hero?.breadcrumb}
+            filterLabel={filter.label}
+            filterOptions={filter.options}
+          />
           {featuredSection.enabled !== false && (
             <FeaturedEvent
               event={data.featuredEvent}

@@ -136,6 +136,7 @@ export interface ShopBenefit {
 export interface ShopPageData {
   content?: PublicListingContent;
   hero: {
+    breadcrumb?: string;
     eyebrow: string;
     titleLines: string[];
     description: string;
@@ -146,6 +147,7 @@ export interface ShopPageData {
     /** Transparent product cut-outs layered over the backdrop. */
     composition: MediaAsset[];
     sideNotes: string[];
+    footNotes?: string[];
   };
 
   featuredProduct?: Product | null;

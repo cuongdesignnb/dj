@@ -14,13 +14,27 @@ import type { LineupPageData } from '@/lib/artists/types';
 import LineupError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
-import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
+import { publicApiBaseUrl } from '@/lib/api/public';
+import { fetchPublicListingContent, listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const params = await searchParams;
   const hasFilter = params.country !== undefined;
-  const seo = await getContentSeo('lineup', { title: 'Artist Lineup | Connection Rave', description: 'Meet the published artists connected to Connection Rave events.' });
-  return buildMetadata({ ...seo, path: '/lineup', indexable: !hasFilter && seo.indexable });
+  const [seo, listing] = await Promise.all([
+    getContentSeo('lineup', { title: 'Artist Lineup | Connection Rave', description: 'Meet the published artists connected to Connection Rave events.' }),
+    fetchPublicListingContent(publicApiBaseUrl(), 'lineup-list'),
+  ]);
+  return buildMetadata({
+    title: listing?.seo?.title ?? seo.title,
+    description: listing?.seo?.description ?? seo.description,
+    image: listing?.seo?.ogImage?.src
+      ? { url: listing.seo.ogImage.src, alt: listing.seo.ogImage.alt, width: listing.seo.ogImage.width, height: listing.seo.ogImage.height }
+      : undefined,
+    path: '/lineup',
+    canonicalOverride: seo.canonicalOverride,
+    follow: listing?.seo?.follow ?? seo.follow,
+    indexable: !hasFilter && (listing?.seo?.index ?? seo.indexable),
+  });
 }
 
 async function loadLineup(): Promise<
@@ -77,7 +91,7 @@ export default async function LineupPage({
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
         <PageHero
-          crumbs={[{ label: 'Home', href: '/' }, { label: 'Lineup' }]}
+          crumbs={[{ label: 'Home', href: '/' }, { label: data.content?.hero?.breadcrumb ?? 'Lineup' }]}
           eyebrow={data.hero.eyebrow}
           titleLines={data.hero.titleLines}
           description={data.hero.description}
@@ -93,6 +107,7 @@ export default async function LineupPage({
             { ...data.hero.secondaryCta, tone: 'secondary' },
           ]}
           sideNotes={data.hero.sideNotes}
+          footNotes={data.content?.hero?.footNotes}
           badge={data.hero.badge}
         />
 
