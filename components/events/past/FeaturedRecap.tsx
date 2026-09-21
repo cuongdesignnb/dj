@@ -15,6 +15,8 @@ import type { LucideIcon } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { eventImageReveal, eventsReveal, eventsStagger } from '@/lib/animations';
 import type { ArchiveContentType, PastEventSummary } from '@/lib/events/listing-types';
+import type { PublicListingEmptyState, PublicListingSection } from '@/lib/cms/public-page';
+import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import EventAction from '../EventAction';
 import EventsSectionHeading from '../EventsSectionHeading';
 import { archiveDateLabel, archiveLocationLabel, contentTypeLabel } from '../labels';
@@ -28,8 +30,12 @@ const CONTENT_ICON: Record<ArchiveContentType, LucideIcon> = {
 
 export default function FeaturedRecap({
   recap,
+  section,
+  emptyState,
 }: {
   recap: PastEventSummary | null | undefined;
+  section?: PublicListingSection;
+  emptyState?: PublicListingEmptyState;
 }) {
   const ref = useRef<HTMLElement>(null);
   const posterRef = useRef<HTMLDivElement>(null);
@@ -55,11 +61,18 @@ export default function FeaturedRecap({
         className="bg-rave-black py-16 md:py-24"
       >
         <Container>
-          <EventsSectionHeading title="FEATURED RECAP" titleId="featured-recap-title" />
+          <EventsSectionHeading
+            eyebrow={section?.eyebrow}
+            title={section?.title ?? 'FEATURED RECAP'}
+            titleId="featured-recap-title"
+            context={section?.description}
+          />
           <div className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-12 text-center">
-            <p className="text-sm text-rave-muted sm:text-base">
-              No featured recap yet. Published recaps and galleries will appear here.
-            </p>
+            <ListingEmptyState
+              state={emptyState}
+              fallbackTitle="No featured recap yet."
+              fallbackDescription="Published recaps and galleries will appear here."
+            />
           </div>
         </Container>
       </section>
@@ -81,7 +94,12 @@ export default function FeaturedRecap({
       />
 
       <Container>
-        <EventsSectionHeading title="FEATURED RECAP" titleId="featured-recap-title" />
+        <EventsSectionHeading
+          eyebrow={section?.eyebrow}
+          title={section?.title ?? 'FEATURED RECAP'}
+          titleId="featured-recap-title"
+          context={section?.description}
+        />
 
         <motion.div
           variants={eventsStagger}

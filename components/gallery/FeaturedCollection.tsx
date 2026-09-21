@@ -8,12 +8,15 @@ import { ArrowRight, CalendarRange, Images, Layers } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { galleryImageReveal, galleryReveal, galleryStagger } from '@/lib/animations';
 import type { GalleryCollection } from '@/lib/gallery/types';
+import type { PublicListingSection } from '@/lib/cms/public-page';
 import { categoryLabel, countPhotos, statusLabel } from '@/lib/gallery/helpers';
 
 export default function FeaturedCollection({
   collection,
+  section,
 }: {
   collection: GalleryCollection | null | undefined;
+  section?: PublicListingSection;
 }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -41,7 +44,7 @@ export default function FeaturedCollection({
               id="featured-collection-title"
               className="font-heading text-3xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-4xl md:text-[42px]"
             >
-              Featured Collection
+              {section?.title ?? 'Featured Collection'}
             </h2>
             <span
               aria-hidden
@@ -50,9 +53,7 @@ export default function FeaturedCollection({
             />
           </div>
           <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:pb-2 sm:text-xs">
-            Music <span aria-hidden className="text-rave-red">&times;</span> People{' '}
-            <span aria-hidden className="text-rave-red">&times;</span> Culture{' '}
-            <span aria-hidden className="text-rave-red">&times;</span> A Brighter Tomorrow
+            {section?.description ?? 'Music × People × Culture × A Brighter Tomorrow'}
           </p>
         </div>
 
@@ -100,7 +101,7 @@ export default function FeaturedCollection({
                 variants={galleryReveal}
                 className="font-heading text-[11px] uppercase tracking-[0.28em] text-rave-red sm:text-xs"
               >
-                Featured Album
+                {section?.eyebrow ?? 'Featured Album'}
               </motion.p>
               <motion.h3
                 variants={galleryReveal}

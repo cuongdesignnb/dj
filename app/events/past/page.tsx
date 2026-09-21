@@ -15,6 +15,7 @@ import type { PastEventsPageData } from '@/lib/events/listing-types';
 import { parsePastFilter } from '@/lib/events/listing-types';
 import PastEventsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
+import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export const metadata: Metadata = buildMetadata({ title: 'Past Events | Connection Rave', description: 'Explore published Connection Rave event archive records.', path: '/events/past', indexable: false });
 
@@ -47,7 +48,7 @@ export default async function PastEventsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const [{ filter }, result] = await Promise.all([
+  const [{ filter: initialFilter }, result] = await Promise.all([
     searchParams.then((params) => ({ filter: parsePastFilter(params.filter) })),
     loadPastEventsPage(),
   ]);
@@ -57,23 +58,58 @@ export default async function PastEventsPage({
   }
 
   const data = result.data;
-  const benefitsSection = data.content?.sections?.find((section) => section.key === 'benefits' && section.enabled !== false);
+  const filter = listingFilter(data.content, 'archive-filter', {
+    label: 'Filter archive',
+    options: ['All Recaps', 'Featured', 'Photo Gallery', 'Highlights'],
+  });
+  const featuredSection = listingSection(data.content, 'featured-recap', {
+    title: 'FEATURED RECAP',
+  });
+  const archiveSection = listingSection(data.content, 'archive', {
+    title: 'EVENT ARCHIVE',
+  });
+  const benefitsSection = listingSection(data.content, 'benefits', {
+    title: 'Past event benefits',
+    description: 'Music | People | Culture | A Brighter Tomorrow',
+  });
+  const emptyState = listingEmpty(data.content, {
+    title: 'Nothing to show yet.',
+    description: 'Check back for the latest updates.',
+    cta: { label: 'Back home', href: '/' },
+  });
 
   return (
     <EventsMotion>
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
-        <EventsFilterProvider initialFilter={filter}>
-          <PastEventsHero hero={data.hero} />
-          <FeaturedRecap recap={data.featuredRecap} />
-          <PastEventGrid events={data.events} />
+        <EventsFilterProvider initialFilter={initialFilter}>
+          <PastEventsHero
+            hero={data.hero}
+            filterLabel={filter.label}
+            filterOptions={filter.options}
+          />
+          {featuredSection.enabled !== false && (
+            <FeaturedRecap
+              recap={data.featuredRecap}
+              section={featuredSection}
+              emptyState={emptyState}
+            />
+          )}
+          {archiveSection.enabled !== false && (
+            <PastEventGrid events={data.events} section={archiveSection} emptyState={emptyState} />
+          )}
         </EventsFilterProvider>
-        <EventBenefits
-          benefits={data.benefits}
-          title={benefitsSection?.title ?? ''}
-          titleId="archive-benefits-title"
-          context={benefitsSection?.description ? benefitsSection.description.split('|').map((value) => value.trim()).filter(Boolean) : []}
-        />
+        {benefitsSection.enabled !== false && (
+          <EventBenefits
+            benefits={data.benefits}
+            title={benefitsSection.title}
+            titleId="archive-benefits-title"
+            context={benefitsSection.description
+              ?.split('|')
+              .map((value) => value.trim())
+              .filter(Boolean)}
+          />
+        )}
         <EventsCTA cta={data.finalCta} titleId="past-events-cta-title" />
       </main>
       <EventsFooter footer={data.footer} />

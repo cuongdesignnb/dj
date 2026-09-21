@@ -6,13 +6,23 @@ import Container from '@/components/ui/Container';
 import { eventsStagger } from '@/lib/animations';
 import { matchesFilter } from '@/lib/events/listing-types';
 import type { EventSummary } from '@/lib/events/listing-types';
+import type { PublicListingEmptyState, PublicListingSection } from '@/lib/cms/public-page';
+import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import EventCard from './EventCard';
 import EventsSectionHeading from './EventsSectionHeading';
 import { useEventsFilter } from './EventsFilterProvider';
 
 const GRID_ID = 'all-events-grid';
 
-export default function EventGrid({ events }: { events: EventSummary[] }) {
+export default function EventGrid({
+  events,
+  section,
+  emptyState,
+}: {
+  events: EventSummary[];
+  section?: PublicListingSection;
+  emptyState?: PublicListingEmptyState;
+}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   const { filter } = useEventsFilter();
@@ -30,7 +40,12 @@ export default function EventGrid({ events }: { events: EventSummary[] }) {
       className="relative bg-rave-black py-16 md:py-24"
     >
       <Container>
-        <EventsSectionHeading title="ALL EVENTS" titleId="all-events-title" />
+        <EventsSectionHeading
+          eyebrow={section?.eyebrow}
+          title={section?.title ?? 'ALL EVENTS'}
+          titleId="all-events-title"
+          context={section?.description}
+        />
 
         {/* Announces the result of a filter change to screen readers. */}
         <p aria-live="polite" className="sr-only">
@@ -56,12 +71,11 @@ export default function EventGrid({ events }: { events: EventSummary[] }) {
             id={GRID_ID}
             className="mt-9 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center"
           >
-            <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
-              New events are being prepared.
-            </p>
-            <p className="mt-3 text-sm text-rave-muted sm:text-base">
-              Stay connected for the next announcement.
-            </p>
+            <ListingEmptyState
+              state={emptyState}
+              fallbackTitle="New events are being prepared."
+              fallbackDescription="Stay connected for the next announcement."
+            />
           </div>
         )}
       </Container>

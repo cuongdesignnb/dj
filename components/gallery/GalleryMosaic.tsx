@@ -6,6 +6,8 @@ import { Check } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { galleryStagger } from '@/lib/animations';
 import type { GalleryCategoryFilter, GalleryMediaItem } from '@/lib/gallery/types';
+import type { PublicListingEmptyState, PublicListingSection } from '@/lib/cms/public-page';
+import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import {
   availableCategories,
   categoryLabel,
@@ -30,11 +32,19 @@ export default function GalleryMosaic({
   media,
   initialFilter = 'all',
   previewNote,
+  section,
+  filterLabel = 'Filter gallery by category',
+  filterOptions,
+  emptyState,
 }: {
   media: GalleryMediaItem[];
   initialFilter?: GalleryCategoryFilter;
   /** Short disclaimer shown beside the heading, e.g. the preview status. */
   previewNote?: string;
+  section?: PublicListingSection;
+  filterLabel?: string;
+  filterOptions?: string[];
+  emptyState?: PublicListingEmptyState;
 }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -103,7 +113,7 @@ export default function GalleryMosaic({
               id="gallery-title"
               className="font-heading text-3xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-4xl md:text-[42px]"
             >
-              Gallery
+              {section?.title ?? 'Gallery'}
             </h2>
             <span
               aria-hidden
@@ -112,8 +122,7 @@ export default function GalleryMosaic({
             />
           </div>
           <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:pb-2 sm:text-xs">
-            Gallery Preview <span aria-hidden className="text-rave-red">&mdash;</span> Moments That
-            Inspire
+            {previewNote ?? section?.description ?? 'Gallery Preview — Moments That Inspire'}
           </p>
         </div>
 
@@ -121,7 +130,7 @@ export default function GalleryMosaic({
         <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div
             role="radiogroup"
-            aria-label="Filter gallery by category"
+            aria-label={filterLabel}
             aria-controls={GRID_ID}
             className="flex flex-wrap items-center gap-2.5 sm:gap-3"
           >
@@ -154,7 +163,7 @@ export default function GalleryMosaic({
                   }`}
                 >
                   {active && <Check aria-hidden className="h-3.5 w-3.5" />}
-                  {option === 'all' ? 'All' : categoryLabel(option)}
+                  {filterOptions?.[index] || (option === 'all' ? 'All' : categoryLabel(option))}
                 </button>
               );
             })}
@@ -200,12 +209,11 @@ export default function GalleryMosaic({
             id={GRID_ID}
             className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center"
           >
-            <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
-              The gallery is being prepared.
-            </p>
-            <p className="mt-3 text-sm text-rave-muted sm:text-base">
-              Visual collections will appear here.
-            </p>
+            <ListingEmptyState
+              state={emptyState}
+              fallbackTitle="The gallery is being prepared."
+              fallbackDescription="Visual collections will appear here."
+            />
           </div>
         )}
       </Container>

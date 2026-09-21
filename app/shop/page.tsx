@@ -13,6 +13,7 @@ import type { ShopPageData } from '@/lib/shop/types';
 import ShopError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
+import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 async function loadShop(): Promise<{ data: ShopPageData } | { error: { message: string } }> {
   const selection = getShopRepository();
@@ -46,6 +47,31 @@ export default async function ShopPage({
   }
 
   const data = result.data;
+  const filter = listingFilter(data.content, 'product-filter', {
+    label: 'Filter merchandise by category',
+    options: ['All', 'Apparel', 'Accessories', 'Posters', 'Collectibles'],
+  });
+  const browseSection = listingSection(data.content, 'browse', {
+    title: 'Browse Merchandise',
+    description: 'Same People — A Brighter Tomorrow',
+  });
+  const featuredSection = listingSection(data.content, 'featured', {
+    title: 'Featured Drop',
+    description: 'Limited Quantities — Exclusive Designs',
+  });
+  const catalogSection = listingSection(data.content, 'catalog', {
+    title: 'All Merchandise',
+    description: 'Wear the Movement',
+  });
+  const benefitsSection = listingSection(data.content, 'benefits', {
+    title: 'Why We Create',
+    description: 'Music Connects Us All',
+  });
+  const emptyState = listingEmpty(data.content, {
+    title: 'The merchandise collection is being prepared.',
+    description: 'New products will appear here.',
+    cta: { label: 'Back home', href: '/' },
+  });
 
   return (
     <EventsMotion>
@@ -59,15 +85,23 @@ export default async function ShopPage({
             featured={data.featuredProduct}
             featuredHighlights={data.featuredHighlights}
             initialFilter={parseProductFilter(params.category)}
+            browseSection={browseSection}
+            featuredSection={featuredSection}
+            catalogSection={catalogSection}
+            filterLabel={filter.label}
+            filterOptions={filter.options}
+            emptyState={emptyState}
           />
         </div>
 
-        <ShopBenefits
-          benefits={data.benefits}
-          title="Why We Create"
-          context="Music Connects Us All"
-          titleId="why-we-create-title"
-        />
+        {benefitsSection.enabled !== false && (
+          <ShopBenefits
+            benefits={data.benefits}
+            title={benefitsSection.title}
+            context={benefitsSection.description}
+            titleId="why-we-create-title"
+          />
+        )}
 
         <FinalCtaSection
           cta={{

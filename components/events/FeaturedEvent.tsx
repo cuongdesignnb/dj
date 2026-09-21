@@ -14,11 +14,21 @@ import { CalendarDays, Clock, MapPin, Ticket } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { eventImageReveal, eventsReveal, eventsStagger } from '@/lib/animations';
 import type { EventSummary } from '@/lib/events/listing-types';
+import type { PublicListingEmptyState, PublicListingSection } from '@/lib/cms/public-page';
+import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import EventAction from './EventAction';
 import EventsSectionHeading from './EventsSectionHeading';
 import { dateLabel, scheduleLabel } from './labels';
 
-export default function FeaturedEvent({ event }: { event: EventSummary | null | undefined }) {
+export default function FeaturedEvent({
+  event,
+  section,
+  emptyState,
+}: {
+  event: EventSummary | null | undefined;
+  section?: PublicListingSection;
+  emptyState?: PublicListingEmptyState;
+}) {
   const ref = useRef<HTMLElement>(null);
   const posterRef = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -45,11 +55,18 @@ export default function FeaturedEvent({ event }: { event: EventSummary | null | 
         className="bg-rave-black py-16 md:py-24"
       >
         <Container>
-          <EventsSectionHeading title="FEATURED EVENT" titleId="featured-event-title" />
+          <EventsSectionHeading
+            eyebrow={section?.eyebrow}
+            title={section?.title ?? 'FEATURED EVENT'}
+            titleId="featured-event-title"
+            context={section?.description}
+          />
           <div className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-12 text-center">
-            <p className="text-sm text-rave-muted sm:text-base">
-              No featured event right now. Stay connected for the next announcement.
-            </p>
+            <ListingEmptyState
+              state={emptyState}
+              fallbackTitle="No featured event right now."
+              fallbackDescription="Stay connected for the next announcement."
+            />
           </div>
         </Container>
       </section>
@@ -74,7 +91,12 @@ export default function FeaturedEvent({ event }: { event: EventSummary | null | 
       />
 
       <Container>
-        <EventsSectionHeading title="FEATURED EVENT" titleId="featured-event-title" />
+        <EventsSectionHeading
+          eyebrow={section?.eyebrow}
+          title={section?.title ?? 'FEATURED EVENT'}
+          titleId="featured-event-title"
+          context={section?.description}
+        />
 
         <motion.div
           variants={eventsStagger}

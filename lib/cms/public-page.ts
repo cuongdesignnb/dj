@@ -14,9 +14,9 @@ export interface PublicListingContent {
     primary?: { label?: string; href?: string };
     secondary?: { label?: string; href?: string };
   };
-  filters?: Array<{ key: string; label: string; options: string[] }>;
-  sections?: Array<{ key: string; eyebrow?: string; title: string; description?: string; enabled?: boolean }>;
-  emptyState?: { title: string; description: string; cta?: { label: string; href: string } };
+  filters?: PublicListingFilter[];
+  sections?: PublicListingSection[];
+  emptyState?: PublicListingEmptyState;
   finalCta?: {
     eyebrow?: string;
     title?: string;
@@ -26,6 +26,26 @@ export interface PublicListingContent {
     secondary?: { label?: string; href?: string };
     background?: PublicMedia | null;
   };
+}
+
+export interface PublicListingFilter {
+  key: string;
+  label: string;
+  options: string[];
+}
+
+export interface PublicListingSection {
+  key: string;
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  enabled?: boolean;
+}
+
+export interface PublicListingEmptyState {
+  title: string;
+  description: string;
+  cta?: { label: string; href: string };
 }
 
 export interface PublicMedia {
@@ -120,4 +140,39 @@ export function listingImage(hero: PublicListingContent['hero'], fallback: { src
 
 export function listingAction(value: { label?: string; href?: string } | undefined, fallback: { label: string; href: string }): { label: string; href: string } {
   return value?.label && value.href ? { label: value.label, href: value.href } : fallback;
+}
+
+export function listingSection(
+  content: PublicListingContent | undefined,
+  key: string,
+  fallback: Omit<PublicListingSection, 'key' | 'enabled'>,
+): PublicListingSection {
+  const section = content?.sections?.find((item) => item.key === key);
+  return {
+    key,
+    eyebrow: section?.eyebrow ?? fallback.eyebrow,
+    title: section?.title ?? fallback.title,
+    description: section?.description ?? fallback.description,
+    enabled: section?.enabled !== false,
+  };
+}
+
+export function listingFilter(
+  content: PublicListingContent | undefined,
+  key: string,
+  fallback: Omit<PublicListingFilter, 'key'>,
+): PublicListingFilter {
+  const filter = content?.filters?.find((item) => item.key === key);
+  return {
+    key,
+    label: filter?.label ?? fallback.label,
+    options: filter?.options?.length ? filter.options : fallback.options,
+  };
+}
+
+export function listingEmpty(
+  content: PublicListingContent | undefined,
+  fallback: PublicListingEmptyState,
+): PublicListingEmptyState {
+  return content?.emptyState ?? fallback;
 }

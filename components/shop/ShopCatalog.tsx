@@ -25,6 +25,8 @@ import {
 } from '@/lib/shop/helpers';
 import { formatMoney } from '@/lib/shop/pricing';
 import type { Product, ProductFilter, ShopPageData } from '@/lib/shop/types';
+import type { PublicListingEmptyState, PublicListingSection } from '@/lib/cms/public-page';
+import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import AddToCartButton from './AddToCartButton';
 import ProductCard from './ProductCard';
 import SectionHeading from './SectionHeading';
@@ -160,11 +162,23 @@ export default function ShopCatalog({
   featured,
   featuredHighlights,
   initialFilter = 'all',
+  browseSection,
+  featuredSection,
+  catalogSection,
+  filterLabel: filterAriaLabel = 'Filter merchandise by category',
+  filterOptions,
+  emptyState,
 }: {
   products: Product[];
   featured: Product | null | undefined;
   featuredHighlights: ShopPageData['featuredHighlights'];
   initialFilter?: ProductFilter;
+  browseSection?: PublicListingSection;
+  featuredSection?: PublicListingSection;
+  catalogSection?: PublicListingSection;
+  filterLabel?: string;
+  filterOptions?: string[];
+  emptyState?: PublicListingEmptyState;
 }) {
   const browseRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLElement>(null);
@@ -176,7 +190,7 @@ export default function ShopCatalog({
     () => products.filter((product) => matchesFilter(product, filter)),
     [products, filter],
   );
-  const showFeatured = !!featured && matchesFilter(featured, filter);
+  const showFeatured = !!featured && featuredSection?.enabled !== false && matchesFilter(featured, filter);
 
   const select = (next: ProductFilter) => {
     setFilter(next);
@@ -198,13 +212,13 @@ export default function ShopCatalog({
         <Container>
           <SectionHeading
             id="browse-merchandise-title"
-            title="Browse Merchandise"
-            context="Same People — A Brighter Tomorrow"
+            title={browseSection?.title ?? 'Browse Merchandise'}
+            context={browseSection?.description ?? 'Same People — A Brighter Tomorrow'}
           />
 
           <div
             role="group"
-            aria-label="Filter merchandise by category"
+            aria-label={filterAriaLabel}
             className="mt-6 flex flex-wrap gap-2.5 sm:gap-3"
           >
             {PRODUCT_FILTERS.map((option) => {
@@ -228,7 +242,7 @@ export default function ShopCatalog({
                   ) : (
                     <Icon aria-hidden className="h-4 w-4 text-rave-red" />
                   )}
-                  {filterLabel(option)}
+                  {filterOptions?.[PRODUCT_FILTERS.indexOf(option)] || filterLabel(option)}
                 </button>
               );
             })}
@@ -241,8 +255,8 @@ export default function ShopCatalog({
           <Container>
             <SectionHeading
               id="featured-drop-title"
-              title="Featured Drop"
-              context="Limited Quantities — Exclusive Designs"
+              title={featuredSection?.title ?? 'Featured Drop'}
+              context={featuredSection?.description ?? 'Limited Quantities — Exclusive Designs'}
             />
             <FeaturedProduct
               product={featured}
@@ -261,8 +275,12 @@ export default function ShopCatalog({
         <Container>
           <SectionHeading
             id="all-merchandise-title"
-            title={filter === 'all' ? 'All Merchandise' : filterLabel(filter)}
-            context="Wear the Movement"
+            title={
+              filter === 'all'
+                ? catalogSection?.title ?? 'All Merchandise'
+                : filterOptions?.[PRODUCT_FILTERS.indexOf(filter)] || filterLabel(filter)
+            }
+            context={catalogSection?.description ?? 'Wear the Movement'}
           />
 
           <p role="status" aria-live="polite" className="sr-only">
@@ -287,14 +305,15 @@ export default function ShopCatalog({
               id={GRID_ID}
               className="mt-6 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center"
             >
-              <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
-                {products.length === 0
-                  ? 'The merchandise collection is being prepared.'
-                  : 'Nothing in this category yet.'}
-              </p>
-              <p className="mt-3 text-sm text-rave-muted sm:text-base">
-                New products will appear here.
-              </p>
+              <ListingEmptyState
+                state={emptyState}
+                fallbackTitle={
+                  products.length === 0
+                    ? 'The merchandise collection is being prepared.'
+                    : 'Nothing in this category yet.'
+                }
+                fallbackDescription="New products will appear here."
+              />
             </div>
           )}
         </Container>

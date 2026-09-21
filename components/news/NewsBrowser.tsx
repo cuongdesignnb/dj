@@ -8,10 +8,12 @@ import { ArrowRight, Check, Clock, FileText } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { articleImageReveal, newsReveal, newsStagger } from '@/lib/animations';
 import type { NewsArticle, NewsFilter } from '@/lib/news/types';
+import type { PublicListingEmptyState, PublicListingSection } from '@/lib/cms/public-page';
+import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import {
   availableFilters,
   categoryLabel,
-  filterLabel,
+  filterLabel as newsFilterLabel,
   matchesCategory,
   readingTimeLabel,
   sortByLatest,
@@ -64,10 +66,22 @@ export default function NewsBrowser({
   articles,
   featured,
   initialFilter = 'all',
+  browseSection,
+  featuredSection,
+  latestSection,
+  filterLabel = 'Filter news by category',
+  filterOptions,
+  emptyState,
 }: {
   articles: NewsArticle[];
   featured: NewsArticle | null | undefined;
   initialFilter?: NewsFilter;
+  browseSection?: PublicListingSection;
+  featuredSection?: PublicListingSection;
+  latestSection?: PublicListingSection;
+  filterLabel?: string;
+  filterOptions?: string[];
+  emptyState?: PublicListingEmptyState;
 }) {
   const browseRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLElement>(null);
@@ -84,7 +98,7 @@ export default function NewsBrowser({
     [sorted, filter],
   );
 
-  const showFeatured = !!featured && matchesCategory(featured, filter);
+  const showFeatured = !!featured && featuredSection?.enabled !== false && matchesCategory(featured, filter);
   // The featured story has its own block, so it does not repeat in the grid.
   const gridArticles = showFeatured
     ? visible.filter((article) => article.slug !== featured.slug)
@@ -117,14 +131,14 @@ export default function NewsBrowser({
       >
         <Container>
           <Heading
-            title="Browse News"
+            title={browseSection?.title ?? 'Browse News'}
             titleId="browse-news-title"
-            context="Real Stories — A Brighter Tomorrow"
+            context={browseSection?.description ?? 'Real Stories — A Brighter Tomorrow'}
           />
 
           <div
             role="radiogroup"
-            aria-label="Filter news by category"
+            aria-label={filterLabel}
             aria-controls={GRID_ID}
             className="mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3"
           >
@@ -157,7 +171,7 @@ export default function NewsBrowser({
                   }`}
                 >
                   {active && <Check aria-hidden className="h-3.5 w-3.5" />}
-                  {filterLabel(option)}
+                  {filterOptions?.[index] || newsFilterLabel(option)}
                 </button>
               );
             })}
@@ -190,7 +204,7 @@ export default function NewsBrowser({
                     variants={newsReveal}
                     className="font-heading text-[11px] font-semibold uppercase tracking-[0.26em] text-rave-red sm:text-xs"
                   >
-                    Featured Story
+                    {featuredSection?.eyebrow || featuredSection?.title || 'Featured Story'}
                   </motion.p>
 
                   <motion.h3
@@ -248,9 +262,9 @@ export default function NewsBrowser({
       >
         <Container>
           <Heading
-            title="Latest News"
+            title={latestSection?.title ?? 'Latest News'}
             titleId="latest-news-title"
-            context="All Stories — Same People, Brighter Tomorrow"
+            context={latestSection?.description ?? 'All Stories — Same People, Brighter Tomorrow'}
           />
 
           <p aria-live="polite" className="sr-only">
@@ -275,12 +289,11 @@ export default function NewsBrowser({
               id={GRID_ID}
               className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center"
             >
-              <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
-                New stories are being prepared.
-              </p>
-              <p className="mt-3 text-sm text-rave-muted sm:text-base">
-                Updates will appear here.
-              </p>
+              <ListingEmptyState
+                state={emptyState}
+                fallbackTitle="New stories are being prepared."
+                fallbackDescription="Updates will appear here."
+              />
             </div>
           )}
         </Container>

@@ -40,3 +40,11 @@ to their dedicated modules.
 - `navigation.publish` publishes a menu and invalidates public navigation tags.
 - `content.*` controls page-content records; `settings.*` controls the global
   singleton.
+
+## Page-content editor UX
+
+Page-content records are edited with visual controls in the admin: text areas,
+image URL/alt-text fields, CTA groups, repeaters for cards/FAQ/process steps,
+filter and section builders, visibility toggles, and SEO controls. The storage
+and API payload may remain structured, but raw JSON is not exposed as an input
+to administrators.

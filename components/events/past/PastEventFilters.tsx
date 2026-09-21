@@ -25,24 +25,36 @@ const OPTIONS: FilterOption[] = [
  * upcoming-events bar: arrow keys move, the active chip is marked by a check
  * icon and `aria-checked` as well as colour.
  */
-export default function PastEventFilters({ controls }: { controls?: string }) {
+export default function PastEventFilters({
+  controls,
+  label = 'Filter archive',
+  optionLabels,
+}: {
+  controls?: string;
+  label?: string;
+  optionLabels?: string[];
+}) {
   const { filter, setFilter } = useEventsFilter<PastEventFilter>();
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
+  const options = OPTIONS.map((option, index) => ({
+    ...option,
+    label: optionLabels?.[index] || option.label,
+  }));
 
   const move = (from: number, delta: number) => {
-    const next = (from + delta + OPTIONS.length) % OPTIONS.length;
-    setFilter(OPTIONS[next].value);
+    const next = (from + delta + options.length) % options.length;
+    setFilter(options[next].value);
     buttons.current[next]?.focus();
   };
 
   return (
     <div
       role="radiogroup"
-      aria-label="Filter archive"
+      aria-label={label}
       aria-controls={controls}
       className="flex flex-wrap items-center gap-2.5 sm:gap-3"
     >
-      {OPTIONS.map((option, index) => {
+      {options.map((option, index) => {
         const active = option.value === filter;
         const { Icon } = option;
 

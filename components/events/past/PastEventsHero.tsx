@@ -17,7 +17,15 @@ import EventAction from '../EventAction';
 import EventsBreadcrumb from '../EventsBreadcrumb';
 import PastEventFilters from './PastEventFilters';
 
-export default function PastEventsHero({ hero }: { hero: PastEventsHeroData }) {
+export default function PastEventsHero({
+  hero,
+  filterLabel,
+  filterOptions,
+}: {
+  hero: PastEventsHeroData;
+  filterLabel?: string;
+  filterOptions?: string[];
+}) {
   const ref = useRef<HTMLElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
@@ -95,7 +103,11 @@ export default function PastEventsHero({ hero }: { hero: PastEventsHeroData }) {
               </motion.div>
 
               <motion.div variants={eventsReveal} className="mt-8">
-                <PastEventFilters controls="event-archive-grid" />
+                <PastEventFilters
+                  controls="event-archive-grid"
+                  label={filterLabel}
+                  optionLabels={filterOptions}
+                />
               </motion.div>
             </div>
 

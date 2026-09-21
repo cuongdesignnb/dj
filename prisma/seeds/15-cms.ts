@@ -35,7 +35,52 @@ const bookingContent = {
 
 const listing = (title: string, description: string, ctaLabel: string, ctaHref: string) => ({
   hero: { breadcrumb: title, eyebrow: title, title, description, image: null, sideNotes: [], footNotes: [], primary: action(ctaLabel, ctaHref), secondary: action('Explore events', '/events') },
-  filters: [], sections: [{ key: 'benefits', title: title === 'Past Events' ? 'WHY OUR NIGHTS LAST' : 'WHY ATTEND OUR EVENTS', description: 'Music | People | Culture | A Brighter Tomorrow', enabled: true }], emptyState: { title: 'Nothing to show yet.', description: 'Check back for the latest updates.', cta: action('Back home', '/') },
+  filters: title === 'Events'
+    ? [{ key: 'event-filter', label: 'Filter events', options: ['All Events', 'Featured', 'Tickets Available', 'Coming Soon'] }]
+    : title === 'Past Events'
+      ? [{ key: 'archive-filter', label: 'Filter archive', options: ['All Recaps', 'Featured', 'Photo Gallery', 'Highlights'] }]
+      : title === 'Lineup'
+        ? [{ key: 'country-filter', label: 'Filter artists by country', options: ['All Artists', 'Vietnam', 'Singapore', 'Australia'] }]
+        : title === 'News'
+          ? [{ key: 'category-filter', label: 'Filter news by category', options: ['All News', 'Announcements', 'Event Updates', 'Artist Stories', 'Community', 'Press'] }]
+          : title === 'Gallery'
+            ? [{ key: 'gallery-filter', label: 'Filter gallery by category', options: ['All', 'Crowd', 'Artists', 'Venue', 'Production', 'Video', 'Other'] }]
+            : [{ key: 'product-filter', label: 'Filter merchandise by category', options: ['All', 'Apparel', 'Accessories', 'Posters', 'Collectibles'] }],
+  sections: title === 'Events'
+    ? [
+        { key: 'featured-event', eyebrow: 'Spotlight', title: 'FEATURED EVENT', description: 'The next night to watch.', enabled: true },
+        { key: 'all-events', eyebrow: 'Programme', title: 'ALL EVENTS', description: 'Choose the experience that fits your night.', enabled: true },
+        { key: 'benefits', title: 'WHY ATTEND OUR EVENTS', description: 'Music | People | Culture | A Brighter Tomorrow', enabled: true },
+      ]
+    : title === 'Past Events'
+      ? [
+          { key: 'featured-recap', eyebrow: 'Archive Spotlight', title: 'FEATURED RECAP', description: 'A closer look at the nights we remember.', enabled: true },
+          { key: 'archive', eyebrow: 'Archive', title: 'EVENT ARCHIVE', description: 'Published recaps, galleries and highlights.', enabled: true },
+          { key: 'benefits', title: 'WHY OUR NIGHTS LAST', description: 'Music | People | Culture | A Brighter Tomorrow', enabled: true },
+        ]
+      : title === 'Lineup'
+        ? [
+            { key: 'artists', title: 'Artists', description: 'Same People — Brighter Tomorrow', enabled: true },
+            { key: 'story', eyebrow: 'The Connection', title: 'More Than A Lineup', description: 'The night is built by people who show up for one another.', enabled: true },
+          ]
+        : title === 'News'
+          ? [
+              { key: 'browse', title: 'Browse News', description: 'Real Stories — A Brighter Tomorrow', enabled: true },
+              { key: 'featured', eyebrow: 'Featured Story', title: 'Featured Story', enabled: true },
+              { key: 'latest', title: 'Latest News', description: 'All Stories — Same People, Brighter Tomorrow', enabled: true },
+            ]
+          : title === 'Gallery'
+            ? [
+                { key: 'gallery', title: 'Gallery', description: 'Gallery Preview — Moments That Inspire', enabled: true },
+                { key: 'featured', title: 'Featured Collection', description: 'Music × People × Culture × A Brighter Tomorrow', enabled: true },
+              ]
+            : [
+                { key: 'browse', title: 'Browse Merchandise', description: 'Same People — A Brighter Tomorrow', enabled: true },
+                { key: 'featured', title: 'Featured Drop', description: 'Limited Quantities — Exclusive Designs', enabled: true },
+                { key: 'catalog', title: 'All Merchandise', description: 'Wear the Movement', enabled: true },
+                { key: 'benefits', title: 'Why We Create', description: 'Music Connects Us All', enabled: true },
+              ],
+  emptyState: { title: 'Nothing to show yet.', description: 'Check back for the latest updates.', cta: action('Back home', '/') },
   finalCta: { title: ctaLabel, subtitle: description, primary: action(ctaLabel, ctaHref), background: null },
   seo: seo(`${title} | Connection Rave`, description),
 });

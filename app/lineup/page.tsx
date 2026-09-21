@@ -14,6 +14,7 @@ import type { LineupPageData } from '@/lib/artists/types';
 import LineupError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
+import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const params = await searchParams;
@@ -52,6 +53,24 @@ export default async function LineupPage({
 
   const data = result.data;
   const initialFilter = parseCountryFilter(params.country);
+  const filter = listingFilter(data.content, 'country-filter', {
+    label: 'Filter artists by country',
+    options: ['All Artists', 'Vietnam', 'Singapore', 'Australia'],
+  });
+  const artistsSection = listingSection(data.content, 'artists', {
+    title: 'Artists',
+    description: 'Same People — Brighter Tomorrow',
+  });
+  const storySection = listingSection(data.content, 'story', {
+    eyebrow: data.story.eyebrow,
+    title: data.story.title,
+    description: data.story.description,
+  });
+  const emptyState = listingEmpty(data.content, {
+    title: 'The lineup is being prepared.',
+    description: 'Artist announcements will appear here.',
+    cta: { label: 'Back home', href: '/' },
+  });
 
   return (
     <EventsMotion>
@@ -77,9 +96,20 @@ export default async function LineupPage({
           badge={data.hero.badge}
         />
 
-        <ArtistGrid artists={data.artists} initialFilter={initialFilter} />
+        {artistsSection.enabled !== false && (
+          <ArtistGrid
+            artists={data.artists}
+            initialFilter={initialFilter}
+            section={artistsSection}
+            filterLabel={filter.label}
+            filterOptions={filter.options}
+            emptyState={emptyState}
+          />
+        )}
 
-        <LineupStoryBanner story={data.story} />
+        {storySection.enabled !== false && (
+          <LineupStoryBanner story={data.story} section={storySection} />
+        )}
 
         <FinalCtaSection cta={data.finalCta} titleId="lineup-cta-title" />
       </main>

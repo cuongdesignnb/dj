@@ -27,24 +27,36 @@ const OPTIONS: FilterOption[] = [
  * announce the selected one. The active chip is marked by a check icon and
  * `aria-checked` as well as colour, so the state is never colour-only.
  */
-export default function EventsFilters({ controls }: { controls?: string }) {
+export default function EventsFilters({
+  controls,
+  label = 'Filter events',
+  optionLabels,
+}: {
+  controls?: string;
+  label?: string;
+  optionLabels?: string[];
+}) {
   const { filter, setFilter } = useEventsFilter();
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
+  const options = OPTIONS.map((option, index) => ({
+    ...option,
+    label: optionLabels?.[index] || option.label,
+  }));
 
   const move = (from: number, delta: number) => {
-    const next = (from + delta + OPTIONS.length) % OPTIONS.length;
-    setFilter(OPTIONS[next].value);
+    const next = (from + delta + options.length) % options.length;
+    setFilter(options[next].value);
     buttons.current[next]?.focus();
   };
 
   return (
     <div
       role="radiogroup"
-      aria-label="Filter events"
+      aria-label={label}
       aria-controls={controls}
       className="flex flex-wrap items-center gap-2.5 sm:gap-3"
     >
-      {OPTIONS.map((option, index) => {
+      {options.map((option, index) => {
         const active = option.value === filter;
         const { Icon } = option;
 

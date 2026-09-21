@@ -12,6 +12,7 @@ import { availableCategories } from '@/lib/gallery/helpers';
 import GalleryError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
+import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
@@ -62,6 +63,23 @@ export default async function GalleryPage({
   )
     ? (requested as GalleryCategoryFilter)
     : 'all';
+  const filter = listingFilter(data.content, 'gallery-filter', {
+    label: 'Filter gallery by category',
+    options: ['All', 'Crowd', 'Artists', 'Venue', 'Production', 'Video', 'Other'],
+  });
+  const gallerySection = listingSection(data.content, 'gallery', {
+    title: 'Gallery',
+    description: 'Gallery Preview — Moments That Inspire',
+  });
+  const featuredSection = listingSection(data.content, 'featured', {
+    title: 'Featured Collection',
+    description: 'Music × People × Culture × A Brighter Tomorrow',
+  });
+  const emptyState = listingEmpty(data.content, {
+    title: 'The gallery is being prepared.',
+    description: 'Visual collections will appear here.',
+    cta: { label: 'Back home', href: '/' },
+  });
 
   return (
     <EventsMotion>
@@ -83,16 +101,24 @@ export default async function GalleryPage({
         />
 
         <div id="collections">
-          <GalleryMosaic
-            media={data.previewMedia}
-            initialFilter={initialFilter}
-            // Says plainly what these images are, so nothing reads as a record of
-            // a night that has happened.
-            previewNote="Gallery preview | Not from a past event"
-          />
+          {gallerySection.enabled !== false && (
+            <GalleryMosaic
+              media={data.previewMedia}
+              initialFilter={initialFilter}
+              // Says plainly what these images are, so nothing reads as a record of
+              // a night that has happened.
+              previewNote={gallerySection.description}
+              section={gallerySection}
+              filterLabel={filter.label}
+              filterOptions={filter.options}
+              emptyState={emptyState}
+            />
+          )}
         </div>
 
-        <FeaturedCollection collection={data.featuredCollection} />
+        {featuredSection.enabled !== false && (
+          <FeaturedCollection collection={data.featuredCollection} section={featuredSection} />
+        )}
 
         <FinalCtaSection cta={data.finalCta} titleId="gallery-cta-title" />
       </main>

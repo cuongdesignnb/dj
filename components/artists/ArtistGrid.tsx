@@ -6,6 +6,8 @@ import { Check } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { artistStagger } from '@/lib/animations';
 import type { Artist, ArtistCountryFilter } from '@/lib/artists/types';
+import type { PublicListingEmptyState, PublicListingSection } from '@/lib/cms/public-page';
+import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import {
   ARTIST_COUNTRY_FILTERS,
   countryFilterLabel,
@@ -25,9 +27,17 @@ const GRID_ID = 'artist-grid';
 export default function ArtistGrid({
   artists,
   initialFilter = 'all',
+  section,
+  filterLabel = 'Filter artists by country',
+  filterOptions,
+  emptyState,
 }: {
   artists: Artist[];
   initialFilter?: ArtistCountryFilter;
+  section?: PublicListingSection;
+  filterLabel?: string;
+  filterOptions?: string[];
+  emptyState?: PublicListingEmptyState;
 }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -78,7 +88,7 @@ export default function ArtistGrid({
               id="artists-title"
               className="font-heading text-3xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-4xl md:text-[42px]"
             >
-              Artists
+              {section?.title ?? 'Artists'}
             </h2>
             <span
               aria-hidden
@@ -88,7 +98,7 @@ export default function ArtistGrid({
           </div>
           <div className="flex flex-wrap items-center gap-6 sm:pb-2">
             <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:text-xs">
-              Same People <span aria-hidden className="text-rave-red">&mdash;</span> Brighter Tomorrow
+              {section?.description ?? 'Same People — Brighter Tomorrow'}
             </p>
             <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:text-xs">
               {artists.length} Artists
@@ -99,7 +109,7 @@ export default function ArtistGrid({
         {/* Filters */}
         <div
           role="radiogroup"
-          aria-label="Filter artists by country"
+          aria-label={filterLabel}
           aria-controls={GRID_ID}
           className="mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3"
         >
@@ -133,7 +143,7 @@ export default function ArtistGrid({
               >
                 {/* A check, not just colour, marks the active filter. */}
                 {active && <Check aria-hidden className="h-3.5 w-3.5" />}
-                {countryFilterLabel(option)}
+                {filterOptions?.[index] || countryFilterLabel(option)}
               </button>
             );
           })}
@@ -162,12 +172,11 @@ export default function ArtistGrid({
             id={GRID_ID}
             className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center"
           >
-            <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
-              The lineup is being prepared.
-            </p>
-            <p className="mt-3 text-sm text-rave-muted sm:text-base">
-              Artist announcements will appear here.
-            </p>
+            <ListingEmptyState
+              state={emptyState}
+              fallbackTitle="The lineup is being prepared."
+              fallbackDescription="Artist announcements will appear here."
+            />
           </div>
         )}
       </Container>

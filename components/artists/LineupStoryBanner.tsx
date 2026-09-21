@@ -6,8 +6,15 @@ import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'fr
 import Container from '@/components/ui/Container';
 import { artistReveal, artistStagger } from '@/lib/animations';
 import type { LineupStoryData } from '@/lib/artists/types';
+import type { PublicListingSection } from '@/lib/cms/public-page';
 
-export default function LineupStoryBanner({ story }: { story: LineupStoryData }) {
+export default function LineupStoryBanner({
+  story,
+  section,
+}: {
+  story: LineupStoryData;
+  section?: PublicListingSection;
+}) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   const reduced = useReducedMotion();
@@ -58,20 +65,20 @@ export default function LineupStoryBanner({ story }: { story: LineupStoryData })
               variants={artistReveal}
               className="font-heading text-[11px] uppercase tracking-[0.3em] text-rave-red sm:text-xs"
             >
-              {story.eyebrow}
+              {section?.eyebrow ?? story.eyebrow}
             </motion.p>
             <motion.h2
               id="lineup-story-title"
               variants={artistReveal}
               className="mt-4 font-heading text-3xl font-black uppercase leading-[1.03] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-[52px]"
             >
-              {story.title}
+              {section?.title ?? story.title}
             </motion.h2>
             <motion.p
               variants={artistReveal}
               className="mt-5 max-w-xl text-sm leading-relaxed text-rave-muted sm:text-base"
             >
-              {story.description}
+              {section?.description ?? story.description}
             </motion.p>
           </div>
 

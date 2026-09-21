@@ -12,9 +12,11 @@ import type { EventsHeroData } from '@/lib/events/listing-types';
 
 interface Props {
   hero: EventsHeroData;
+  filterLabel?: string;
+  filterOptions?: string[];
 }
 
-export default function EventsHero({ hero }: Props) {
+export default function EventsHero({ hero, filterLabel, filterOptions }: Props) {
   const ref = useRef<HTMLElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
@@ -94,7 +96,11 @@ export default function EventsHero({ hero }: Props) {
               </motion.div>
 
               <motion.div variants={eventsReveal} className="mt-8">
-                <EventsFilters controls="all-events-grid" />
+                <EventsFilters
+                  controls="all-events-grid"
+                  label={filterLabel}
+                  optionLabels={filterOptions}
+                />
               </motion.div>
             </div>
 

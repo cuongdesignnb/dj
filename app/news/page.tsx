@@ -11,6 +11,7 @@ import type { NewsPageData } from '@/lib/news/types';
 import NewsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
+import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
@@ -51,6 +52,26 @@ export default async function NewsPage({
 
   const data = result.data;
   const initialFilter = parseNewsFilter(params.category);
+  const filter = listingFilter(data.content, 'category-filter', {
+    label: 'Filter news by category',
+    options: ['All News', 'Announcements', 'Event Updates', 'Artist Stories', 'Community', 'Press'],
+  });
+  const browseSection = listingSection(data.content, 'browse', {
+    title: 'Browse News',
+    description: 'Real Stories — A Brighter Tomorrow',
+  });
+  const featuredSection = listingSection(data.content, 'featured', {
+    title: 'Featured Story',
+  });
+  const latestSection = listingSection(data.content, 'latest', {
+    title: 'Latest News',
+    description: 'All Stories — Same People, Brighter Tomorrow',
+  });
+  const emptyState = listingEmpty(data.content, {
+    title: 'New stories are being prepared.',
+    description: 'Updates will appear here.',
+    cta: { label: 'Back home', href: '/' },
+  });
 
   return (
     <EventsMotion>
@@ -75,6 +96,12 @@ export default async function NewsPage({
           articles={data.articles}
           featured={data.featuredArticle}
           initialFilter={initialFilter}
+          browseSection={browseSection}
+          featuredSection={featuredSection}
+          latestSection={latestSection}
+          filterLabel={filter.label}
+          filterOptions={filter.options}
+          emptyState={emptyState}
         />
 
         <FinalCtaSection

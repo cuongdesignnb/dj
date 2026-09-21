@@ -16,6 +16,7 @@ import { parseFilter } from '@/lib/events/listing-types';
 import EventsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
+import { listingEmpty, listingFilter, listingSection } from '@/lib/cms/public-page';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
   const params = await searchParams;
@@ -53,7 +54,7 @@ export default async function EventsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const [{ filter }, result] = await Promise.all([
+  const [{ filter: initialFilter }, result] = await Promise.all([
     searchParams.then((params) => ({ filter: parseFilter(params.filter) })),
     loadEventsPage(),
   ]);
@@ -63,17 +64,53 @@ export default async function EventsPage({
   }
 
   const data = result.data;
+  const filter = listingFilter(data.content, 'event-filter', {
+    label: 'Filter events',
+    options: ['All Events', 'Featured', 'Tickets Available', 'Coming Soon'],
+  });
+  const featuredSection = listingSection(data.content, 'featured-event', {
+    title: 'FEATURED EVENT',
+  });
+  const eventsSection = listingSection(data.content, 'all-events', {
+    title: 'ALL EVENTS',
+  });
+  const benefitsSection = listingSection(data.content, 'benefits', {
+    title: 'WHY ATTEND OUR EVENTS',
+    description: 'Music | People | Culture | A Brighter Tomorrow',
+  });
+  const emptyState = listingEmpty(data.content, {
+    title: 'Nothing to show yet.',
+    description: 'Check back for the latest updates.',
+    cta: { label: 'Back home', href: '/' },
+  });
 
   return (
     <EventsMotion>
       <Header />
       <main id="main" className="min-h-screen bg-rave-black text-white">
-        <EventsFilterProvider initialFilter={filter}>
-          <EventsHero hero={data.hero} />
-          <FeaturedEvent event={data.featuredEvent} />
-          <EventGrid events={data.events} />
+        <EventsFilterProvider initialFilter={initialFilter}>
+          <EventsHero hero={data.hero} filterLabel={filter.label} filterOptions={filter.options} />
+          {featuredSection.enabled !== false && (
+            <FeaturedEvent
+              event={data.featuredEvent}
+              section={featuredSection}
+              emptyState={emptyState}
+            />
+          )}
+          {eventsSection.enabled !== false && (
+            <EventGrid events={data.events} section={eventsSection} emptyState={emptyState} />
+          )}
         </EventsFilterProvider>
-        <EventBenefits benefits={data.benefits} />
+        {benefitsSection.enabled !== false && (
+          <EventBenefits
+            benefits={data.benefits}
+            title={benefitsSection.title}
+            context={benefitsSection.description
+              ?.split('|')
+              .map((value) => value.trim())
+              .filter(Boolean)}
+          />
+        )}
         <EventsCTA cta={data.finalCta} />
       </main>
       <EventsFooter footer={data.footer} />
