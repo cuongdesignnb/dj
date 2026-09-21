@@ -2,7 +2,7 @@
 
 Run date: 2026-09-21
 Repository: `cuongdesignnb/dj`
-Last smoke source: `1f7f380a888003edaf57004619171bb3dc57b436` plus the uncommitted warning-cleanup changes being validated in this run.
+Last smoke source: `f90db63` (validated Docker image and Playwright/Chrome smoke on this source).
 
 ## Production configuration
 
