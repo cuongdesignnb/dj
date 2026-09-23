@@ -59,7 +59,7 @@ function FloatingParticles() {
       {particles.map((p, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full"
+          className="absolute rounded-full will-change-[transform,opacity]"
           style={{
             width: p.width,
             height: p.height,
@@ -90,7 +90,7 @@ function EnhancedLaserBeams() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[3]">
       {/* Laser 1 - Magenta Left */}
       <motion.div
-        className="absolute top-0 left-1/4 w-[2px] h-[150%] bg-gradient-to-b from-rave-magenta via-rave-magenta/50 to-transparent origin-top"
+        className="absolute top-0 left-1/4 w-[2px] h-[150%] bg-gradient-to-b from-rave-magenta via-rave-magenta/50 to-transparent origin-top will-change-[transform,opacity]"
         style={{ filter: 'blur(1px)' }}
         animate={{
           rotate: [-25, 20, -25],
@@ -101,7 +101,7 @@ function EnhancedLaserBeams() {
 
       {/* Laser Glow Effect */}
       <motion.div
-        className="absolute top-0 left-1/4 w-[8px] h-[150%] bg-gradient-to-b from-rave-magenta/20 to-transparent origin-top -translate-x-1/2"
+        className="absolute top-0 left-1/4 w-[8px] h-[150%] bg-gradient-to-b from-rave-magenta/20 to-transparent origin-top -translate-x-1/2 will-change-[transform,opacity]"
         animate={{
           rotate: [-25, 20, -25],
           opacity: [0.1, 0.3, 0.1],
@@ -111,7 +111,7 @@ function EnhancedLaserBeams() {
 
       {/* Laser 2 - Blue Right */}
       <motion.div
-        className="absolute top-0 right-1/4 w-[2px] h-[150%] bg-gradient-to-b from-rave-blue via-rave-blue/50 to-transparent origin-top"
+        className="absolute top-0 right-1/4 w-[2px] h-[150%] bg-gradient-to-b from-rave-blue via-rave-blue/50 to-transparent origin-top will-change-[transform,opacity]"
         style={{ filter: 'blur(1px)' }}
         animate={{
           rotate: [25, -20, 25],
@@ -122,7 +122,7 @@ function EnhancedLaserBeams() {
 
       {/* Laser Glow Effect 2 */}
       <motion.div
-        className="absolute top-0 right-1/4 w-[8px] h-[150%] bg-gradient-to-b from-rave-blue/20 to-transparent origin-top -translate-x-1/2"
+        className="absolute top-0 right-1/4 w-[8px] h-[150%] bg-gradient-to-b from-rave-blue/20 to-transparent origin-top -translate-x-1/2 will-change-[transform,opacity]"
         animate={{
           rotate: [25, -20, 25],
           opacity: [0.1, 0.3, 0.1],
@@ -132,7 +132,7 @@ function EnhancedLaserBeams() {
 
       {/* Laser 3 - Red Center */}
       <motion.div
-        className="absolute top-0 left-1/2 w-[3px] h-[150%] bg-gradient-to-b from-rave-red to-transparent origin-top"
+        className="absolute top-0 left-1/2 w-[3px] h-[150%] bg-gradient-to-b from-rave-red to-transparent origin-top will-change-[transform,opacity]"
         style={{ filter: 'blur(2px)' }}
         animate={{
           rotate: [-10, 15, -10],
@@ -144,7 +144,7 @@ function EnhancedLaserBeams() {
 
       {/* Laser 4 - Purple Accent */}
       <motion.div
-        className="absolute top-0 left-1/3 w-[1px] h-[150%] bg-gradient-to-b from-rave-purple to-transparent origin-top"
+        className="absolute top-0 left-1/3 w-[1px] h-[150%] bg-gradient-to-b from-rave-purple to-transparent origin-top will-change-[transform,opacity]"
         style={{ filter: 'blur(1px)' }}
         animate={{
           rotate: [-35, -15, -35],
@@ -155,7 +155,7 @@ function EnhancedLaserBeams() {
 
       {/* Moving Laser Sweep */}
       <motion.div
-        className="absolute top-0 w-[1px] h-[120%] bg-gradient-to-b from-white/50 to-transparent origin-top"
+        className="absolute top-0 w-[1px] h-[120%] bg-gradient-to-b from-white/50 to-transparent origin-top will-change-[transform,opacity]"
         animate={{
           left: ['0%', '100%'],
           opacity: [0, 0.5, 0],
@@ -188,7 +188,7 @@ function HeroBackground({ image }: { image: string }) {
     >
       {/* Hero background image with pulse */}
       <motion.div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center will-change-[transform,opacity]"
         style={{ backgroundImage: `url(${image})` }}
         animate={{
           scale: [1, 1.02, 1],
@@ -215,20 +215,15 @@ function HeroBackground({ image }: { image: string }) {
 
       {/* Animated ambient glow - bass pulse effect */}
       <motion.div
-        className="absolute inset-0"
-        animate={{
-          background: [
-            'radial-gradient(ellipse at center, rgba(255,23,61,0.08) 0%, transparent 70%)',
-            'radial-gradient(ellipse at center, rgba(255,23,61,0.12) 0%, transparent 70%)',
-            'radial-gradient(ellipse at center, rgba(255,23,61,0.08) 0%, transparent 70%)',
-          ],
-        }}
+        className="absolute inset-0 will-change-[transform,opacity]"
+        style={{ background: 'radial-gradient(ellipse at center, rgba(255,23,61,0.12) 0%, transparent 70%)' }}
+        animate={{ opacity: [0.67, 1, 0.67] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       {/* Intense ambient orbs - multiple floating lights */}
       <motion.div
-        className="absolute w-96 h-96 rounded-full"
+        className="absolute w-96 h-96 rounded-full will-change-[transform,opacity]"
         style={{
           top: '20%',
           left: '10%',
@@ -245,7 +240,7 @@ function HeroBackground({ image }: { image: string }) {
       />
 
       <motion.div
-        className="absolute w-72 h-72 rounded-full"
+        className="absolute w-72 h-72 rounded-full will-change-[transform,opacity]"
         style={{
           top: '30%',
           right: '15%',
@@ -262,7 +257,7 @@ function HeroBackground({ image }: { image: string }) {
       />
 
       <motion.div
-        className="absolute w-64 h-64 rounded-full"
+        className="absolute w-64 h-64 rounded-full will-change-[transform,opacity]"
         style={{
           bottom: '25%',
           left: '30%',
@@ -280,7 +275,7 @@ function HeroBackground({ image }: { image: string }) {
 
       {/* Aurora-like gradient overlay */}
       <motion.div
-        className="absolute inset-0"
+        className="absolute inset-0 will-change-[transform,opacity]"
         style={{
           background: 'linear-gradient(135deg, rgba(255,23,61,0.05) 0%, rgba(139,44,255,0.05) 50%, rgba(46,107,255,0.05) 100%)',
           mixBlendMode: 'screen',
@@ -308,7 +303,7 @@ function DestinyTitle({ text, animation }: { text: string; animation: HomeMedia 
       {Array.from({ length: 4 }).map((_, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full border border-rave-red/35"
+          className="absolute rounded-full border border-rave-red/35 will-change-[transform,opacity]"
           style={{
             width: i === 0 ? 140 : i === 1 ? 200 : i === 2 ? 280 : 350,
             height: i === 0 ? 140 : i === 1 ? 200 : i === 2 ? 280 : 350,
@@ -396,7 +391,7 @@ export default function HeroSection({ event, animation = null }: { event: HomeEv
 
       {/* Scan line effect */}
       <motion.div
-        className="absolute inset-0 pointer-events-none z-20 overflow-hidden"
+        className="absolute inset-0 pointer-events-none z-20 overflow-hidden will-change-[transform,opacity]"
         animate={{
           opacity: [0, 0.03, 0],
         }}

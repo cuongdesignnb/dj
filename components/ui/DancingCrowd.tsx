@@ -27,7 +27,7 @@ function DancingSilhouette({ delay, x, scale = 1, flip = false, variant }: Danci
 
   return (
     <motion.div
-      className="absolute bottom-0 pointer-events-none"
+      className="absolute bottom-0 pointer-events-none will-change-[transform,opacity]"
       style={{ left: `${x}%`, transform: `scale(${scale}) ${flip ? 'scaleX(-1)' : ''}` }}
       animate={selectedMove}
       transition={{
@@ -132,7 +132,7 @@ interface HandsUpSilhouetteProps {
 function HandsUpSilhouette({ delay, x, scale = 1, variant }: HandsUpSilhouetteProps) {
   return (
     <motion.div
-      className="absolute bottom-0 pointer-events-none"
+      className="absolute bottom-0 pointer-events-none will-change-[transform,opacity]"
       style={{ left: `${x}%`, transform: `scale(${scale})` }}
       animate={{
         y: [0, -15, -5, -12, 0],
@@ -240,7 +240,7 @@ export function LaserLights() {
       {beams.map((beam) => (
         <motion.div
           key={beam.id}
-          className="absolute top-0 w-[3px] h-[200%]"
+          className="absolute top-0 w-[3px] h-[200%] will-change-[transform,opacity]"
           style={{
             left: `${10 + beam.id * 12}%`,
             background: `linear-gradient(to bottom, ${beam.color}, transparent)`,
@@ -267,7 +267,7 @@ export function LaserLights() {
 export function DiscoBall() {
   return (
     <motion.div
-      className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+      className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none will-change-[transform,opacity]"
       animate={{
         rotate: 360,
       }}
@@ -289,7 +289,7 @@ export function DiscoBall() {
       {[...Array(6)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-2 h-2 rounded-full bg-white"
+          className="absolute w-2 h-2 rounded-full bg-white will-change-[transform,opacity]"
           style={{
             top: '50%',
             left: '50%',
