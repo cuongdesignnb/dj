@@ -1,0 +1,58 @@
+# Isolated local QA only. Never use these test credentials on a public host.
+name: destiny-gallery-qa
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:43291:3000"
+    # Windows checkouts can carry CRLF in entrypoint.sh; keep the QA boot portable.
+    entrypoint: ["sh", "-c", "npx prisma migrate deploy && exec npm start"]
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      APP_URL: http://127.0.0.1:43291
+      SITE_URL: http://127.0.0.1:43291
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:43291
+      INTERNAL_API_BASE_URL: http://127.0.0.1:3000
+      DATABASE_URL: postgresql://gallery_qa:local-qa-only@postgres:5432/destiny_gallery_qa?schema=public
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: gallery-local-qa-session-secret-not-for-production
+      CSRF_SECRET: gallery-local-qa-csrf-secret-not-for-production
+      MEDIA_DRIVER: local
+      STORAGE_LOCAL_DIR: /app/storage/media
+      ADMIN_SEED_EMAIL: qa-admin@example.test
+      ADMIN_SEED_PASSWORD: Gallery-QA-Only-2026!
+      GALLERY_QA: "1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - gallery_qa_media:/app/storage/media
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: destiny_gallery_qa
+      POSTGRES_USER: gallery_qa
+      POSTGRES_PASSWORD: local-qa-only
+    volumes:
+      - gallery_qa_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gallery_qa -d destiny_gallery_qa"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  gallery_qa_postgres:
+  gallery_qa_media:

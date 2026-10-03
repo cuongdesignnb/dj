@@ -57,6 +57,9 @@ export function revalidatePublicResource(resource: string, slug?: string | null,
     if (previousSlug) addPath(`/news/${previousSlug}`);
   } else if (resource === 'gallery') {
     add(PUBLIC_CACHE_TAGS.gallery);
+    add(PUBLIC_CACHE_TAGS.events);
+    add(PUBLIC_CACHE_TAGS.eventsPast);
+    add(PUBLIC_CACHE_TAGS.home);
     add(slugTag(PUBLIC_CACHE_TAGS.galleryCollection, slug));
     add(slugTag(PUBLIC_CACHE_TAGS.galleryCollection, previousSlug));
     addPath('/gallery');

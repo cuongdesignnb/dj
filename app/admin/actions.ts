@@ -366,6 +366,7 @@ function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Reco
   }
 
   if (resource === 'gallery') {
+    const seo = isRecord(input.seo) ? input.seo : {};
     return {
       slug: textValue(input.slug),
       status: enumValue(input.status),
@@ -376,7 +377,28 @@ function apiPayload(resource: ResourceKey, input: Record<string, unknown>): Reco
       eventId: nullableText(input.eventId),
       featured: Boolean(input.featured),
       coverMediaId: mediaId(input.cover),
+      coverAltText: isRecord(input.cover) ? textValue(input.cover.alt) : null,
       heroMediaId: mediaId(input.hero),
+      heroAltText: isRecord(input.hero) ? textValue(input.hero.alt) : null,
+      items: (Array.isArray(input.items) ? input.items : []).map((raw, index) => {
+        const item = isRecord(raw) ? raw : {};
+        return {
+          type: item.type === 'video' ? 'video' : 'photo',
+          category: textValue(item.category) || 'other',
+          mediaId: mediaId(item.image),
+          altText: isRecord(item.image) ? textValue(item.image.alt) : null,
+          videoUrl: nullableText(item.videoUrl),
+          caption: nullableText(item.caption),
+          featured: Boolean(item.featured),
+          sortOrder: index,
+        };
+      }),
+      seoTitle: nullableText(seo.title),
+      seoDescription: nullableText(seo.description),
+      canonicalOverride: nullableText(seo.canonical),
+      ogMediaId: mediaId(seo.ogImage),
+      indexable: seo.index !== false,
+      followLinks: seo.follow !== false,
     };
   }
 
@@ -469,7 +491,12 @@ export async function saveRecord(
   const repo = await getRepository(resourceKey);
   const payload = apiPayload(resourceKey, input);
   const result = id ? await repo.update(id, payload) : await repo.create(payload);
-  if (!result.ok) return result;
+  if (!result.ok) {
+    if (resourceKey !== 'gallery' || !result.error.fieldErrors) return result;
+    const fieldNames: Record<string, string> = { coverMediaId: 'cover', coverAltText: 'cover', heroMediaId: 'hero', heroAltText: 'hero', seoTitle: 'seo.title', seoDescription: 'seo.description', canonicalOverride: 'seo.canonical', ogMediaId: 'seo.ogImage' };
+    const fieldErrors = Object.fromEntries(Object.entries(result.error.fieldErrors).map(([key, message]) => [fieldNames[key] ?? key.replace(/^(items\.\d+)\.(mediaId|altText)$/, '$1.image'), message]));
+    return { ...result, error: { ...result.error, fieldErrors } };
+  }
   return {
     ok: true,
     data: { id: result.data.id, record: result.data },

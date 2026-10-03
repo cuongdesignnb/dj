@@ -941,7 +941,9 @@ model GalleryAlbum {
   followLinks       Boolean              @default(true) @map("follow_links")
   featured          Boolean              @default(false)
   coverMediaId      String?              @map("cover_media_id") @db.Uuid
+  coverAltText      String?              @map("cover_alt_text")
   heroMediaId       String?              @map("hero_media_id") @db.Uuid
+  heroAltText       String?              @map("hero_alt_text")
   eventId           String?              @map("event_id") @db.Uuid
   venue             String?
   publishedAt       DateTime?            @map("published_at")
@@ -983,6 +985,7 @@ model GalleryMedia {
   externalVideoUrl String?      @map("external_video_url")
   title            String?
   caption          String?
+  altText          String?      @map("alt_text")
   featured         Boolean      @default(false)
   sortOrder        Int          @default(0) @map("sort_order")
   album            GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)

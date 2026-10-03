@@ -235,8 +235,20 @@ export const articleMutationSchema = z.object({
   translations: z.array(z.object({ locale: z.enum(['en', 'vi']), title: z.string().trim().min(1).max(240), excerpt: z.string().trim().max(1000).nullable().optional(), bodyBlocks: z.array(z.unknown()).max(200), quickSummary: z.array(z.string().max(500)).max(20).optional(), readingTimeOverride: z.number().int().positive().nullable().optional() }).strict()).min(1).max(2),
 }).strict();
 
+export const galleryItemMutationSchema = z.object({
+  id: uuid.optional(),
+  type: z.enum(['photo', 'video']).default('photo'),
+  category: z.enum(['crowd', 'artists', 'venue', 'production', 'video', 'other']).default('other'),
+  mediaId: uuid,
+  altText: z.string().trim().max(1000).nullable().optional(),
+  caption: z.string().trim().max(2000).nullable().optional(),
+  videoUrl: z.string().url().refine((value) => value.startsWith('https://'), 'Use an HTTPS video URL.').nullable().optional(),
+  featured: z.boolean().default(false),
+  sortOrder: z.number().int().nonnegative().optional(),
+}).strict();
+
 export const galleryMutationSchema = z.object({
-  slug: z.string().trim().min(2).max(160),
+  slug: z.string().trim().min(2).max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and single hyphens.'),
   status: z.enum(['DRAFT', 'PREVIEW', 'PUBLISHED', 'ARCHIVED']).optional(),
   title: z.string().trim().min(1).max(200),
   subtitle: z.string().trim().max(500).nullable().optional(),
@@ -244,9 +256,20 @@ export const galleryMutationSchema = z.object({
   venue: z.string().trim().max(200).nullable().optional(),
   eventId: uuid.nullable().optional(),
   featured: z.boolean().optional(),
-  coverMediaId: uuid.nullable().optional(),
+  coverMediaId: uuid,
+  coverAltText: z.string().trim().max(1000).nullable().optional(),
   heroMediaId: uuid.nullable().optional(),
+  heroAltText: z.string().trim().max(1000).nullable().optional(),
+  items: z.array(galleryItemMutationSchema).max(500).optional(),
+  seoTitle: z.string().trim().max(70).nullable().optional(),
+  seoDescription: z.string().trim().max(170).nullable().optional(),
+  canonicalOverride: z.string().url().nullable().optional(),
+  ogMediaId: uuid.nullable().optional(),
+  indexable: z.boolean().optional(),
+  followLinks: z.boolean().optional(),
 }).strict();
+
+export const galleryUpdateMutationSchema = galleryMutationSchema.partial();
 
 export const partnerMutationSchema = z.object({
   slug: z.string().trim().min(2).max(120),

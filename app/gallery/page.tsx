@@ -5,6 +5,7 @@ import PageHero from '@/components/shared/PageHero';
 import FinalCtaSection from '@/components/shared/FinalCtaSection';
 import GalleryMosaic from '@/components/gallery/GalleryMosaic';
 import FeaturedCollection from '@/components/gallery/FeaturedCollection';
+import RelatedCollections from '@/components/gallery/RelatedCollections';
 
 import { getGalleryRepository } from '@/lib/gallery/repository';
 import type { GalleryCategoryFilter, GalleryPageData } from '@/lib/gallery/types';
@@ -133,6 +134,10 @@ export default async function GalleryPage({
 
         {featuredSection.enabled !== false && (
           <FeaturedCollection collection={data.featuredCollection} section={featuredSection} />
+        )}
+
+        {gallerySection.enabled !== false && (
+          <RelatedCollections collections={data.collections} title="Albums" />
         )}
 
         <FinalCtaSection cta={data.finalCta} titleId="gallery-cta-title" />

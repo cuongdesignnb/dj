@@ -12,6 +12,7 @@ import { writeAuditLog } from '@/server/audit/log';
 import { readCsrfCookie, requestCsrfToken } from '@/server/security/csrf';
 import { mediaResponse, storeMedia } from '@/server/media/storage';
 import { createBooking, createContact, subscribeNewsletter } from '@/server/services/leads';
+import { galleryAlbumInclude, saveGalleryAlbum } from '@/server/services/gallery';
 import {
   createMerchandiseCheckoutIntent,
   createTicketCheckoutIntent,
@@ -55,7 +56,6 @@ import {
   contactSchema,
   eventMutationSchema,
   faqMutationSchema,
-  galleryMutationSchema,
   loginSchema,
   newsletterSchema,
   paginationSchema,
@@ -597,9 +597,18 @@ function adminRecord(resource: string, row: any) {
       subtitle: translation?.subtitle ?? '',
       description: translation?.description ?? '',
       status: String(row.status).toLowerCase(),
-      cover: mediaRef(row.coverMedia),
-      hero: mediaRef(row.heroMedia),
-      items: row.media ?? [],
+      cover: row.coverMedia ? { ...mediaRef(row.coverMedia), alt: row.coverAltText ?? row.coverMedia.altText } : null,
+      hero: row.heroMedia ? { ...mediaRef(row.heroMedia), alt: row.heroAltText ?? row.heroMedia.altText } : null,
+      venue: row.venue ?? '',
+      eventId: row.eventId ?? '',
+      featured: row.featured,
+      items: (row.media ?? []).map((item: any) => ({
+        id: item.id, type: item.mediaType.toLowerCase() === 'video' ? 'video' : 'photo',
+        category: ['crowd', 'artists', 'venue', 'production', 'video', 'other'].includes(item.category) ? item.category : 'other',
+        image: item.media ? { ...mediaRef(item.media), alt: item.altText ?? item.media.altText } : null,
+        videoUrl: item.externalVideoUrl ?? '', caption: item.caption ?? '', featured: item.featured, sortOrder: item.sortOrder,
+      })),
+      seo: { title: row.seoTitle ?? '', description: row.seoDescription ?? '', canonical: row.canonicalOverride ?? '', ogImage: row.ogMediaId ? { mediaId: row.ogMediaId, src: `/api/v1/media/${row.ogMediaId}`, alt: '' } : null, index: row.indexable, follow: row.followLinks },
       updatedAt: iso(row.updatedAt),
     };
   }
@@ -728,7 +737,19 @@ async function adminList(resource: string, request: Request) {
     return { rows, total };
   }
   if (resource === 'gallery') {
-    const [rows, total] = await Promise.all([db.galleryAlbum.findMany({ skip, take: pageSize, orderBy: { updatedAt: 'desc' }, include: { translations: true, media: { include: { media: true } }, coverMedia: true, heroMedia: true } }), db.galleryAlbum.count()]);
+    const params = query(request);
+    const status = params.get('status')?.toUpperCase();
+    if (status && !['DRAFT', 'PREVIEW', 'PUBLISHED', 'ARCHIVED'].includes(status)) throw validationError({ status: 'Unknown album status.' });
+    const where: Prisma.GalleryAlbumWhereInput = { deletedAt: null, status: status as 'DRAFT' | 'PREVIEW' | 'PUBLISHED' | 'ARCHIVED' | undefined };
+    const search = params.get('search')?.trim();
+    if (search) where.OR = [{ slug: { contains: search, mode: 'insensitive' } }, { translations: { some: { title: { contains: search, mode: 'insensitive' } } } }];
+    if (params.get('featured')) where.featured = params.get('featured') === 'true';
+    const eventId = params.get('eventId');
+    if (eventId) {
+      if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(eventId)) throw validationError({ eventId: 'Select a valid event.' });
+      where.eventId = eventId;
+    }
+    const [rows, total] = await Promise.all([db.galleryAlbum.findMany({ where, skip, take: pageSize, orderBy: { updatedAt: 'desc' }, include: galleryAlbumInclude }), db.galleryAlbum.count({ where })]);
     return { rows, total };
   }
   if (resource === 'partners') {
@@ -946,7 +967,12 @@ async function syncEventRelations(tx: Prisma.TransactionClient, eventId: string,
   }
 }
 
-async function createAdminResource(resource: string, payload: unknown, requestId: string, userId: string) {
+async function createAdminResource(resource: string, payload: unknown, requestId: string, userId: string, permissions: ReadonlySet<string>) {
+  if (resource === 'gallery') {
+    const saved = await saveGalleryAlbum(payload, { actorUserId: userId, requestId, canPublish: permissions.has('gallery.publish') });
+    revalidatePublicResource('gallery', saved.album.slug);
+    return saved.album;
+  }
   if (resource === 'events') {
     const input = parse(eventMutationSchema, payload);
     const row = await db.$transaction(async (tx) => {
@@ -1014,7 +1040,7 @@ async function createAdminResource(resource: string, payload: unknown, requestId
   throw notFound('This admin resource cannot be created through the API yet.');
 }
 
-async function updateAdminResource(resource: string, id: string, payload: unknown, requestId: string, userId: string) {
+async function updateAdminResource(resource: string, id: string, payload: unknown, requestId: string, userId: string, permissions: ReadonlySet<string>) {
   if (resource === 'events') {
     const input = parse(eventMutationSchema, payload);
     const before = await db.event.findUnique({ where: { id }, include: { translations: true } });
@@ -1071,17 +1097,9 @@ async function updateAdminResource(resource: string, id: string, payload: unknow
     return row;
   }
   if (resource === 'gallery') {
-    const input = parse(galleryMutationSchema, payload);
-    const before = await db.galleryAlbum.findUnique({ where: { id }, include: { translations: true } });
-    if (!before) throw notFound();
-    const row = await db.$transaction(async (tx) => {
-      await tx.galleryAlbum.update({ where: { id }, data: { slug: input.slug, status: input.status, venue: input.venue ?? null, eventId: input.eventId ?? null, featured: input.featured, coverMediaId: input.coverMediaId ?? null, heroMediaId: input.heroMediaId ?? null, publishedAt: input.status === 'PUBLISHED' ? (before.publishedAt ?? new Date()) : input.status ? null : undefined } });
-      await rememberPublishedSlug(tx, 'gallery', id, before, input.slug);
-      await tx.galleryTranslation.upsert({ where: { albumId_locale: { albumId: id, locale: 'en' } }, update: { title: input.title, subtitle: input.subtitle ?? null, description: input.description ?? null }, create: { albumId: id, locale: 'en', title: input.title, subtitle: input.subtitle ?? null, description: input.description ?? null } });
-      return tx.galleryAlbum.findUnique({ where: { id }, include: { translations: true, media: { include: { media: true } }, coverMedia: true, heroMedia: true } });
-    });
-    await writeAuditLog({ actorUserId: userId, action: 'update', entityType: 'gallery', entityId: id, before, after: row, requestId });
-    return row;
+    const saved = await saveGalleryAlbum(payload, { actorUserId: userId, requestId, canPublish: permissions.has('gallery.publish') }, id);
+    revalidatePublicResource('gallery', saved.album.slug, saved.previousSlug);
+    return saved.album;
   }
   if (resource === 'partners') {
     const input = parse(partnerMutationSchema, payload);
@@ -1499,8 +1517,8 @@ async function dispatch(request: Request, path: string[], requestId: string) {
     if (!resourceId && request.method === 'POST') {
       assertSameOrigin(request);
       const session = await requirePermission(request, adminResourcePermission(resource, 'create'), true);
-      const row = await createAdminResource(resource, await body(request), requestId, session.user.id);
-      revalidatePublicResource(resource, (row as any)?.slug);
+      const row = await createAdminResource(resource, await body(request), requestId, session.user.id, session.permissions);
+      if (resource !== 'gallery') revalidatePublicResource(resource, (row as any)?.slug);
       return dataResponse(adminRecord(resource, row), { status: 201 });
     }
     if (resourceId && !action && request.method === 'GET') {
@@ -1509,7 +1527,7 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       if (resource === 'artists') { const row = await db.artist.findUnique({ where: { id: resourceId }, include: { translations: true, portraitMedia: true, heroMedia: true, links: true, media: true, eventArtists: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'products') { const row = await db.product.findUnique({ where: { id: resourceId }, include: { translations: true, images: { include: { media: true } }, optionGroups: true, variants: true, category: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'news') { const row = await db.newsArticle.findUnique({ where: { id: resourceId }, include: { translations: true, heroMedia: true, cardMedia: true, tags: { include: { tag: true } } } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
-      if (resource === 'gallery') { const row = await db.galleryAlbum.findUnique({ where: { id: resourceId }, include: { translations: true, media: { include: { media: true } }, coverMedia: true, heroMedia: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
+      if (resource === 'gallery') { const row = await db.galleryAlbum.findUnique({ where: { id: resourceId }, include: galleryAlbumInclude }); if (!row || row.deletedAt) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'partners') { const row = await db.partner.findUnique({ where: { id: resourceId }, include: { translations: true, logoMedia: true, imageMedia: true } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'media') { const row = await db.mediaAsset.findUnique({ where: { id: resourceId } }); if (!row || row.deletedAt) throw notFound(); return dataResponse(adminRecord(resource, row)); }
       if (resource === 'staff') { const row = await db.adminUser.findUnique({ where: { id: resourceId }, include: { userRoles: { include: { role: true } } } }); if (!row) throw notFound(); return dataResponse(adminRecord(resource, row)); }
@@ -1525,8 +1543,8 @@ async function dispatch(request: Request, path: string[], requestId: string) {
     if (resourceId && !action && (request.method === 'PATCH' || request.method === 'PUT')) {
       assertSameOrigin(request);
       const session = await requirePermission(request, adminResourcePermission(resource, 'edit'), true);
-      const row = await updateAdminResource(resource, resourceId, await body(request), requestId, session.user.id);
-      revalidatePublicResource(resource, (row as any)?.slug);
+      const row = await updateAdminResource(resource, resourceId, await body(request), requestId, session.user.id, session.permissions);
+      if (resource !== 'gallery') revalidatePublicResource(resource, (row as any)?.slug);
       return dataResponse(adminRecord(resource, row));
     }
     if (resourceId && !action && request.method === 'DELETE') {
@@ -1539,6 +1557,11 @@ async function dispatch(request: Request, path: string[], requestId: string) {
     if (resourceId && action === 'publish' && request.method === 'POST') {
       assertSameOrigin(request);
       const session = await requirePermission(request, adminResourcePermission(resource, 'publish'), true);
+      if (resource === 'gallery') {
+        const saved = await saveGalleryAlbum({ status: 'PUBLISHED' }, { actorUserId: session.user.id, requestId, canPublish: true, action: 'publish' }, resourceId);
+        revalidatePublicResource('gallery', saved.album.slug, saved.previousSlug);
+        return dataResponse(adminRecord(resource, saved.album));
+      }
       const table = resource === 'events' ? db.event : resource === 'artists' ? db.artist : resource === 'products' ? db.product : resource === 'news' ? db.newsArticle : resource === 'gallery' ? db.galleryAlbum : null;
       if (!table) throw notFound();
       const before = await (table as any).findUnique({ where: { id: resourceId } });
@@ -1551,6 +1574,11 @@ async function dispatch(request: Request, path: string[], requestId: string) {
     if (resourceId && action === 'archive' && request.method === 'POST') {
       assertSameOrigin(request);
       const session = await requirePermission(request, adminResourcePermission(resource, 'publish'), true);
+      if (resource === 'gallery') {
+        const saved = await saveGalleryAlbum({ status: 'ARCHIVED' }, { actorUserId: session.user.id, requestId, canPublish: true, action: 'archive' }, resourceId);
+        revalidatePublicResource('gallery', saved.album.slug, saved.previousSlug);
+        return dataResponse(adminRecord(resource, saved.album));
+      }
       const table = resource === 'events' ? db.event : resource === 'artists' ? db.artist : resource === 'products' ? db.product : resource === 'news' ? db.newsArticle : resource === 'gallery' ? db.galleryAlbum : null;
       if (!table) throw notFound();
       const id = resourceId;

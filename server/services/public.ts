@@ -59,7 +59,7 @@ function eventDto(event: any, locale: Locale) {
       const faqTranslation = translated(item.translations ?? [], locale);
       return faqTranslation ? [{ id: item.id, question: faqTranslation.question, answer: faqTranslation.answer, sortOrder: item.sortOrder }] : [];
     }),
-    gallery: (event.galleryAlbums ?? []).map((album: any) => ({ id: album.id, slug: album.slug, title: translated(album.translations ?? [], locale)?.title ?? album.slug, cover: mediaDto(album.coverMedia), hero: mediaDto(album.heroMedia) })),
+    gallery: (event.galleryAlbums ?? []).filter((album: any) => album.status === 'PUBLISHED' && !album.deletedAt).map((album: any) => ({ id: album.id, slug: album.slug, title: translated(album.translations ?? [], locale)?.title ?? album.slug, cover: mediaDto(album.coverMedia), hero: mediaDto(album.heroMedia) })),
   };
 }
 
@@ -92,7 +92,7 @@ export async function getPublicEvent(slug: string, locale: Locale) {
       vipBooths: { where: { requestable: true }, orderBy: { sortOrder: 'asc' } },
       eventArtists: { orderBy: { sortOrder: 'asc' }, include: { artist: { include: { translations: true, portraitMedia: true } } } },
       faqItems: { orderBy: { sortOrder: 'asc' }, include: { translations: true } },
-      galleryAlbums: { include: { translations: true, coverMedia: true, heroMedia: true } },
+      galleryAlbums: { where: { status: 'PUBLISHED', deletedAt: null }, include: { translations: true, coverMedia: true, heroMedia: true } },
     },
   });
   return event ? eventDto(event, locale) : null;
@@ -220,7 +220,22 @@ export async function getPublicNews(slug: string, locale: Locale) {
 
 function galleryDto(album: any, locale: Locale) {
   const translation = translated(album.translations, locale);
-  return { id: album.id, slug: album.slug, status: album.status.toLowerCase(), featured: album.featured, title: translation?.title ?? album.slug, subtitle: translation?.subtitle ?? null, description: translation?.description ?? null, venue: album.venue, cover: mediaDto(album.coverMedia), hero: mediaDto(album.heroMedia), event: album.event ? { id: album.event.id, slug: album.event.slug, title: translated(album.event.translations, locale)?.title ?? album.event.slug } : null, media: album.media.map((item: any, index: number) => ({ id: item.id, type: item.mediaType.toLowerCase() === 'video' ? 'video' : 'photo', category: (item.category ?? 'other').toLowerCase(), title: item.title, caption: item.caption, featured: item.featured, sortOrder: item.sortOrder ?? index, video: item.externalVideoUrl ? { provider: item.videoProvider?.toLowerCase() ?? 'mp4', url: item.externalVideoUrl } : null, image: mediaDto(item.media), thumbnail: mediaDto(item.media) })), seoTitle: album.seoTitle ?? translation?.seoTitle ?? null, seoDescription: album.seoDescription ?? translation?.seoDescription ?? null, ogMediaId: album.ogMediaId ?? null, canonicalOverride: album.canonicalOverride ?? null, indexable: album.indexable !== false, followLinks: album.followLinks !== false };
+  const image = (asset: Parameters<typeof mediaDto>[0], alt?: string | null) => {
+    const dto = mediaDto(asset);
+    return dto ? { ...dto, alt: alt ?? dto.alt } : null;
+  };
+  const event = album.event?.status === 'PUBLISHED' && !album.event.deletedAt ? album.event : null;
+  return {
+    id: album.id, slug: album.slug, status: album.status.toLowerCase(), featured: album.featured,
+    title: translation?.title ?? album.slug, subtitle: translation?.subtitle ?? null, description: translation?.description ?? null,
+    venue: album.venue, cover: image(album.coverMedia, album.coverAltText), hero: image(album.heroMedia, album.heroAltText),
+    eventId: event?.id ?? null, eventSlug: event?.slug ?? null, eventHref: event ? `/events/${event.slug}` : null,
+    event: event ? { id: event.id, slug: event.slug, title: translated(event.translations, locale)?.title ?? event.slug } : null,
+    categories: [...new Set(album.media.map((item: any) => (item.category ?? 'other').toLowerCase()))],
+    media: album.media.map((item: any, index: number) => ({ id: item.id, type: item.mediaType.toLowerCase() === 'video' ? 'video' : 'photo', category: (item.category ?? 'other').toLowerCase(), title: item.title, caption: item.caption, featured: item.featured, sortOrder: item.sortOrder ?? index, video: item.externalVideoUrl ? { provider: item.videoProvider?.toLowerCase() ?? 'mp4', url: item.externalVideoUrl } : null, image: image(item.media, item.altText), thumbnail: image(item.media, item.altText) })),
+    seoTitle: album.seoTitle ?? translation?.seoTitle ?? null, seoDescription: album.seoDescription ?? translation?.seoDescription ?? null,
+    ogMediaId: album.ogMediaId ?? null, canonicalOverride: album.canonicalOverride ?? null, indexable: album.indexable !== false, followLinks: album.followLinks !== false,
+  };
 }
 
 export async function listPublicGallery(locale: Locale) {

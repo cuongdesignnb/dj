@@ -20,8 +20,10 @@ import { statusLabel } from '@/lib/gallery/helpers';
  */
 export default function RelatedCollections({
   collections,
+  title = 'More Collections',
 }: {
   collections: GalleryCollection[];
+  title?: string;
 }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -44,7 +46,7 @@ export default function RelatedCollections({
               id="more-collections-title"
               className="font-heading text-3xl font-black uppercase leading-[1.05] tracking-tight text-white sm:text-4xl md:text-[42px]"
             >
-              More Collections
+              {title}
             </h2>
             <span
               aria-hidden

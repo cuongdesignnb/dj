@@ -1,5 +1,6 @@
 import 'server-only';
 import { db } from '@/server/db/client';
+import type { Prisma } from '@prisma/client';
 
 function safeJson(value: unknown) {
   if (value === undefined) return undefined;
@@ -20,8 +21,8 @@ export async function writeAuditLog(input: {
   before?: unknown;
   after?: unknown;
   requestId: string;
-}) {
-  await db.auditLog.create({
+}, client: Pick<Prisma.TransactionClient, 'auditLog'> = db) {
+  await client.auditLog.create({
     data: {
       actorUserId: input.actorUserId ?? null,
       action: input.action,

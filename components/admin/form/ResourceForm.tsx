@@ -112,6 +112,8 @@ export default function ResourceForm({
   const creating = target.kind === 'resource' && target.id === null;
   const slugTouched = useRef(!creating || !!initial.slug);
   const formRef = useRef<HTMLFormElement>(null);
+  const submitLock = useRef(false);
+  const savedId = useRef(target.kind === 'resource' ? target.id : null);
 
   const tabs = useMemo(() => {
     if (!schema.tabs?.length) return null;
@@ -173,7 +175,7 @@ export default function ResourceForm({
   );
 
   const sectionOf = (key: string): FormSection | null =>
-    schema.sections.find((s) => s.fields.some((f) => f.key === key)) ?? null;
+    schema.sections.find((s) => s.fields.some((f) => f.key === key || key.startsWith(`${f.key}.`))) ?? null;
 
   const reveal = (fieldErrors: Record<string, string>) => {
     const first = Object.keys(fieldErrors)[0];
@@ -188,7 +190,7 @@ export default function ResourceForm({
   };
 
   const submit = async (intent: 'save' | 'publish') => {
-    if (readOnly || saving) return;
+    if (readOnly || submitLock.current) return;
     const clientErrors = validateValues(schema, values);
     if (Object.keys(clientErrors).length) {
       setErrors(clientErrors);
@@ -196,17 +198,24 @@ export default function ResourceForm({
       reveal(clientErrors);
       return;
     }
+    submitLock.current = true;
     setSaving(intent);
     let result: ActionResult<{ id: string; record: Values }>;
-    if (target.kind === 'resource') {
-      result = await saveRecord(target.resourceKey, target.id, values, intent);
-    } else {
-      const r = await saveSingleton(target.key, values);
-      result = r.ok ? { ok: true, data: { id: target.key, record: r.data }, message: r.message } : r;
+    try {
+      if (target.kind === 'resource') {
+        result = await saveRecord(target.resourceKey, savedId.current, values, intent);
+      } else {
+        const r = await saveSingleton(target.key, values);
+        result = r.ok ? { ok: true, data: { id: target.key, record: r.data }, message: r.message } : r;
+      }
+    } catch {
+      result = { ok: false, error: { message: 'Could not save. Your changes are still here; please try again.' } };
+    } finally {
+      submitLock.current = false;
+      setSaving(null);
     }
-    setSaving(null);
     if (!result.ok) {
-      const fieldErrors = result.error.fieldErrors ?? {};
+      const fieldErrors = result.error.fieldErrors ?? { body: result.error.message };
       setErrors(fieldErrors);
       toast('error', result.error.message);
       reveal(fieldErrors);
@@ -214,6 +223,7 @@ export default function ResourceForm({
     }
     setErrors({});
     const record = result.data.record;
+    if (target.kind === 'resource') savedId.current = result.data.id;
     setValues(record);
     setSaved(record);
     toast('success', result.message ?? 'Saved.');
