@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@keyframes navigation-progress-travel {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(350%); }
+}
+.navigation-progress > span { animation: navigation-progress-travel 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .navigation-progress > span { animation: none; width: 100%; }
+}
+
 @source "../app/**/*.{js,ts,jsx,tsx}";
 @source "../components/**/*.{js,ts,jsx,tsx}";
 

@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { ArrowRight, CalendarDays, Clock, FileText, Tag } from 'lucide-react';
 import type { NewsArticle } from '@/lib/news/types';
 import {

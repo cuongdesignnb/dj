@@ -114,7 +114,7 @@ export class HttpTicketsRepository implements TicketsRepository {
         highlighted: row.highlighted,
         availability: { status: row.availabilityStatus?.toLowerCase() === 'available' ? 'available' : row.availabilityStatus?.toLowerCase() === 'sold_out' ? 'sold-out' : 'unknown' },
       })),
-      provider: ticketPayload.settings.externalProviderEnabled ? { providerName: ticketPayload.settings.providerName, checkoutUrl: ticketPayload.settings.providerUrl, eventExternalId: ticketPayload.settings.providerEventId, unavailableNote: content.provider?.unavailableNote } : { mode: 'unavailable', unavailableNote: content.provider?.unavailableNote },
+      provider: ticketPayload.settings.ticketExternalProviderEnabled ? { providerName: ticketPayload.settings.ticketProviderName, checkoutUrl: ticketPayload.settings.ticketProviderUrl, eventExternalId: ticketPayload.settings.ticketProviderEventId, unavailableNote: content.provider?.unavailableNote } : { mode: 'unavailable', unavailableNote: content.provider?.unavailableNote },
       hero: content.hero,
       selector: content.selector,
       trustItems: content.trustItems,

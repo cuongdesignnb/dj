@@ -30,6 +30,7 @@ function isPlausiblePhone(value: string): boolean {
 export function validateBookingRequest(
   input: Partial<BookingRequestInput>,
   pkg: VipPackage,
+  options: { allowBoothlessRequest?: boolean } = {},
 ): { ok: boolean; errors: BookingFieldErrors } {
   const errors: BookingFieldErrors = {};
 
@@ -57,9 +58,11 @@ export function validateBookingRequest(
   const groupSize = input.groupSize ?? 0;
   if (!Number.isInteger(groupSize) || groupSize < 1) {
     errors.groupSize = 'Please enter how many people are in your group.';
+  } else if (groupSize > pkg.capacity) {
+    errors.groupSize = `This package supports up to ${pkg.capacity} people.`;
   }
 
-  if (!input.preferredBoothId) {
+  if (!input.preferredBoothId && !options.allowBoothlessRequest) {
     errors.preferredBoothId = 'Please choose a preferred booth.';
   }
 
@@ -82,12 +85,11 @@ export function validateBookingRequest(
 }
 
 /**
- * A group larger than the package is a warning, not an error — the team can
- * still review it, so submission is never blocked on this alone.
+ * Match the server capacity limit; larger groups must contact the organiser.
  */
 export function groupSizeWarning(groupSize: number, pkg: VipPackage): string | null {
   if (groupSize > pkg.capacity) {
-    return `This package is designed for up to ${pkg.capacity} people. Add a note and the team will review your request.`;
+    return `This package supports up to ${pkg.capacity} people. Contact the organiser for a larger group.`;
   }
   return null;
 }

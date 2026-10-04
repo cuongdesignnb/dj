@@ -2,13 +2,13 @@
 
 import { useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { galleryReveal, galleryStagger } from '@/lib/animations';
 import type { GalleryCollection } from '@/lib/gallery/types';
-import { statusLabel } from '@/lib/gallery/helpers';
+import { countPhotos, countVideos, statusLabel } from '@/lib/gallery/helpers';
 
 /**
  * Other collections to browse.
@@ -21,9 +21,11 @@ import { statusLabel } from '@/lib/gallery/helpers';
 export default function RelatedCollections({
   collections,
   title = 'More Collections',
+  description,
 }: {
   collections: GalleryCollection[];
   title?: string;
+  description?: string;
 }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -34,6 +36,7 @@ export default function RelatedCollections({
   return (
     <section
       ref={ref}
+      data-testid="album-catalogue"
       aria-labelledby="more-collections-title"
       className="relative bg-rave-deep py-16 md:py-24"
     >
@@ -55,7 +58,7 @@ export default function RelatedCollections({
             />
           </div>
           <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:pb-2 sm:text-xs">
-            Explore More <span aria-hidden className="text-rave-red">&times;</span> Connection Rave
+            {description ?? 'Explore published collections'}
           </p>
         </div>
 
@@ -66,7 +69,7 @@ export default function RelatedCollections({
           className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           {collections.map((collection) => (
-            <motion.li key={collection.slug} variants={galleryReveal}>
+            <motion.li key={collection.slug} variants={galleryReveal} data-album-slug={collection.slug}>
               <Link
                 href={`/gallery/${collection.slug}`}
                 className="group/card relative block aspect-[16/10] overflow-hidden rounded-[16px] border border-white/[0.08] transition-[border-color,box-shadow] duration-300 hover:border-rave-red/60 hover:shadow-[0_20px_50px_rgba(255,23,61,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
@@ -102,7 +105,8 @@ export default function RelatedCollections({
                     {collection.title}
                   </span>
                   <span className="mt-1.5 inline-flex items-center gap-1.5 font-heading text-[10px] uppercase tracking-[0.2em] text-white/70">
-                    {statusLabel(collection)}
+                    {countPhotos(collection)} {countPhotos(collection) === 1 ? 'photo' : 'photos'}
+                    {countVideos(collection) ? ` · ${countVideos(collection)} videos` : ''} · {statusLabel(collection)}
                     <ArrowRight
                       aria-hidden
                       className="h-3 w-3 transition-transform duration-300 group-hover/card:translate-x-1"
@@ -110,6 +114,7 @@ export default function RelatedCollections({
                   </span>
                 </span>
               </Link>
+              {collection.eventHref && <Link href={collection.eventHref} className="mt-3 inline-block text-sm text-rave-muted underline">View Event</Link>}
             </motion.li>
           ))}
         </motion.ul>

@@ -1,0 +1,290 @@
+{
+  "capturedAt": "2026-10-04T01:26:28.819Z",
+  "productionBaseline": "53f113c57305a9c615f87396e42bc705ba1731ef",
+  "scope": "Published DESTINY/ECHO Gallery assets referenced by the allowed public API; not the global authenticated Media Library inventory.",
+  "productionWritesPerformed": false,
+  "endpoints": [
+    {
+      "path": "/api/health",
+      "status": 200,
+      "bodyUnchanged": false,
+      "album": null
+    },
+    {
+      "path": "/api/health/ready",
+      "status": 200,
+      "bodyUnchanged": false,
+      "album": null
+    },
+    {
+      "path": "/api/v1/gallery",
+      "status": 200,
+      "bodyUnchanged": true,
+      "album": null
+    },
+    {
+      "path": "/api/v1/gallery/destiny",
+      "status": 200,
+      "bodyUnchanged": true,
+      "album": {
+        "id": "bfbbd795-c19b-4c9d-bc5e-fe1e06eac064",
+        "slug": "destiny",
+        "placements": 15
+      }
+    },
+    {
+      "path": "/api/v1/gallery/echo",
+      "status": 200,
+      "bodyUnchanged": true,
+      "album": {
+        "id": "e61b23d6-c1dc-4630-924e-c6b8f2b776dd",
+        "slug": "echo",
+        "placements": 9
+      }
+    },
+    {
+      "path": "/api/v1/events/destiny",
+      "status": 200,
+      "bodyUnchanged": true,
+      "album": null
+    },
+    {
+      "path": "/api/v1/events/destiny/vip",
+      "status": 200,
+      "bodyUnchanged": true,
+      "album": null
+    },
+    {
+      "path": "/api/v1/events/destiny/tickets",
+      "status": 200,
+      "bodyUnchanged": true,
+      "album": null
+    }
+  ],
+  "verifiedPlacementsBefore": 24,
+  "verifiedPlacementsAfter": 24,
+  "uniqueGalleryAssetsBefore": 24,
+  "uniqueGalleryAssetsAfter": 24,
+  "albumLoss": 0,
+  "placementLoss": 0,
+  "mediaFileLoss": 0,
+  "healthBodyNote": "Health timestamps/latencies vary; both checks remain HTTP 200. Content endpoint bodies compare exactly.",
+  "assets": [
+    {
+      "url": "/api/v1/media/1b7c9cd4-414f-4cc5-a04b-cb8705dca327",
+      "status": 200,
+      "bytes": 8092564,
+      "sha256": "065e2d4c23c5218b17dc9276213f18b986a2965413379649eb65a9c3a17267f4",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/98f880ed-e38b-4034-8f35-ee85324f4459",
+      "status": 200,
+      "bytes": 2279926,
+      "sha256": "3d72d5301a234645e9182fb3bdfcf7d24f0aedf14fd348b39e372ef3643e9715",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/3679d7d4-b66f-4327-af74-845bd38076d7",
+      "status": 200,
+      "bytes": 5977055,
+      "sha256": "bb41aed6a08e259755cf919d4b63f88de1797f579d9de2b32b0b274b7c2952cb",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/38b6be04-8d8e-42b8-bef1-0b7f642f6f28",
+      "status": 200,
+      "bytes": 6411517,
+      "sha256": "29a3f2451c40fd477e2c0bb9249a316f4201b1877c62715f5379edf02bb301c1",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/be3f56c9-75c6-4bb4-9ba8-aad42b25853f",
+      "status": 200,
+      "bytes": 6483211,
+      "sha256": "fd30ae06288c1e496bf15c0a68750de1b8dc0ac5442c3a3b19c471ffb2b4ef55",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/584cf910-42b9-4b8c-b31f-87aff924b4b4",
+      "status": 200,
+      "bytes": 5744144,
+      "sha256": "2c79224a81d74631e4cdb5b421e53433781793ea239456505d8a5e2e13812ccb",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/1c280576-8ace-47fd-a9f9-9786c9f62447",
+      "status": 200,
+      "bytes": 2407516,
+      "sha256": "fee4edbb3daf70a29d47bd5f65d6379640819cccad22f1554701d64ac88883e3",
+      "mime": "image/png",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/7d2faf45-bdbb-4d85-a7af-072c5d9aefc6",
+      "status": 200,
+      "bytes": 1381756,
+      "sha256": "5f59e490fe34cbffb192a39241971b55e66ac2c589c8019a55ad129ea06e5137",
+      "mime": "image/png",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/b509c695-3ccf-4089-b983-7ea99662be0a",
+      "status": 200,
+      "bytes": 2849122,
+      "sha256": "c21dd891010ce0ee88e0e8cc1e1dbf18ecdb5c60148e62c79b83c1df2528e11b",
+      "mime": "image/png",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+      "status": 200,
+      "bytes": 144928,
+      "sha256": "d4bcfd3297ed3e821ab23a0c8008a262348a88b7e09e1395d12ad24afebb9a48",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/12e814d8-b5cc-480e-871b-ebc3c22aecf5",
+      "status": 200,
+      "bytes": 166233,
+      "sha256": "219261efdaafef377ef4de3cb6d014e144dd718e085e486a79d3b69dc984703b",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/2856a6f9-306f-4ff6-8be8-96e454525628",
+      "status": 200,
+      "bytes": 200030,
+      "sha256": "fbaff0fb2cf76b2e8806f683d4589de92b53e9a6496baae5acbe113398862030",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/7e2c3025-f2c4-40aa-a21b-310294b48361",
+      "status": 200,
+      "bytes": 168336,
+      "sha256": "a2a3f4cd249caecad533f2d951cb0f34d0fef4ca8fd978d809ecdfe761cc0f7b",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/c0bc9ca8-1eb2-4be4-9c7a-a06103290acd",
+      "status": 200,
+      "bytes": 127954,
+      "sha256": "b87369c12f498a44654f1426c61d04d69cf6e7b5ff1cbff9ddc653697dded7dc",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/43a14561-bbbf-4d4d-ab6d-89225d7d8615",
+      "status": 200,
+      "bytes": 258170,
+      "sha256": "6ad0571bc8369ebe3c8cb5e5b4cabdfa9f356fd022d3f121ba086ebbda23adf4",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/f26aa012-64ad-494b-9812-aba8a1681c00",
+      "status": 200,
+      "bytes": 228203,
+      "sha256": "09643df2c6027693af6666970c02efe023404e2e8c64234c0e9e762794300745",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/27f3ab72-6ce4-494c-a635-0eb693b33e2d",
+      "status": 200,
+      "bytes": 172875,
+      "sha256": "cfbcb3f5ef0f72720b742dcee19670fbc8007d46b3398320ca00afa4ab598b74",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/36df9c28-f1f0-4474-b6b8-b9c1a5a26f21",
+      "status": 200,
+      "bytes": 227295,
+      "sha256": "3f4c1623bac98a8860f91ce75c692c0e408f1ec9c3aa2072c20000ddffc9fceb",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/60538ef9-fb9a-4a86-9f0c-b1a390ae953a",
+      "status": 200,
+      "bytes": 210821,
+      "sha256": "7a96c928f5a93284e119f798a8f7f034e0830d945267607e7e8b07ba37e4f532",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/15034e3d-1d5a-480b-a69d-61ea01add4f9",
+      "status": 200,
+      "bytes": 147706,
+      "sha256": "204ab1fc167080be09d03f649fdac1444d25f952130b5b03b131973367c2dcc2",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/f63f872c-0b2f-4425-abbe-961d8eb4f0ca",
+      "status": 200,
+      "bytes": 124487,
+      "sha256": "afc14c17cee10264b8d1b39d22b47e5246db747843414c33c493d4fff7470d12",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/a3adadeb-f149-4f29-9251-45a2eb00daf8",
+      "status": 200,
+      "bytes": 102573,
+      "sha256": "e38b1520d4bb9268f494ed71d72f68e8cd29a2d9c1b08e6fe768db6ac886ed88",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/e09c6cdd-c4eb-4f2e-80e4-8fec70db0575",
+      "status": 200,
+      "bytes": 82277,
+      "sha256": "948194192099f7405dbfe3d4436be30ed7ea85ff5ffa45751fb31ab0b158e3c9",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    },
+    {
+      "url": "/api/v1/media/c05e975c-7796-4082-9c91-3bd394088c64",
+      "status": 200,
+      "bytes": 263076,
+      "sha256": "a8e247f3b789889bb49ec0abed71d970841e1ba8f56a521dc8bdf4a1bd8eb870",
+      "mime": "image/jpeg",
+      "afterStatus": 200,
+      "unchanged": true
+    }
+  ]
+}

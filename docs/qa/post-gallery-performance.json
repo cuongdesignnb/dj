@@ -1,0 +1,207 @@
+{
+  "environment": "isolated Node 22 Docker / Chrome loopback:43291",
+  "state": "VIP_DISABLED",
+  "note": "TTFB is streamed shell time; total includes SSR response completion. Not a production before/after speed claim.",
+  "probes": [
+    {
+      "route": "/tables",
+      "sample": 1,
+      "ttfbSeconds": 0.008526,
+      "totalSeconds": 0.029,
+      "bytes": 29597
+    },
+    {
+      "route": "/tables",
+      "sample": 2,
+      "ttfbSeconds": 0.008059,
+      "totalSeconds": 0.008691,
+      "bytes": 25960
+    },
+    {
+      "route": "/tables",
+      "sample": 3,
+      "ttfbSeconds": 0.009772,
+      "totalSeconds": 0.010454,
+      "bytes": 25960
+    },
+    {
+      "route": "/book-now",
+      "sample": 1,
+      "ttfbSeconds": 0.007426,
+      "totalSeconds": 0.007943,
+      "bytes": 26269
+    },
+    {
+      "route": "/book-now",
+      "sample": 2,
+      "ttfbSeconds": 0.007169,
+      "totalSeconds": 0.007692,
+      "bytes": 26269
+    },
+    {
+      "route": "/book-now",
+      "sample": 3,
+      "ttfbSeconds": 0.006929,
+      "totalSeconds": 0.007776,
+      "bytes": 26269
+    },
+    {
+      "route": "/gallery",
+      "sample": 1,
+      "ttfbSeconds": 0.008755,
+      "totalSeconds": 0.032439,
+      "bytes": 102722
+    },
+    {
+      "route": "/gallery",
+      "sample": 2,
+      "ttfbSeconds": 0.01272,
+      "totalSeconds": 0.013984,
+      "bytes": 102396
+    },
+    {
+      "route": "/gallery",
+      "sample": 3,
+      "ttfbSeconds": 0.014125,
+      "totalSeconds": 0.016383,
+      "bytes": 102396
+    }
+  ],
+  "calls": [
+    {
+      "route": "/api/v1/events/destiny/vip",
+      "method": "GET",
+      "status": 200,
+      "duration": 4
+    },
+    {
+      "route": "/api/v1/events/destiny",
+      "method": "GET",
+      "status": 200,
+      "duration": 12
+    },
+    {
+      "route": "/api/v1/page-content/booking%3A1a827145-58a9-4c53-94ae-8fad9e842c00",
+      "method": "GET",
+      "status": 200,
+      "duration": 2
+    },
+    {
+      "route": "/api/v1/page-content/tables%3A1a827145-58a9-4c53-94ae-8fad9e842c00",
+      "method": "GET",
+      "status": 200,
+      "duration": 1
+    },
+    {
+      "route": "/api/v1/gallery",
+      "method": "GET",
+      "status": 200,
+      "duration": 8
+    }
+  ],
+  "images": [
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": null,
+      "srcset": false
+    },
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/_next/image?url=%2Fassets%2Fhero-crowd.jpg&w=3840&q=75",
+      "sizes": "(max-width: 640px) 100vw, 33vw",
+      "loading": "lazy",
+      "srcset": true
+    },
+    {
+      "src": "/_next/image?url=%2Fassets%2Fhero-crowd.jpg&w=3840&q=75",
+      "sizes": "(max-width: 640px) 100vw, 33vw",
+      "loading": "lazy",
+      "srcset": true
+    },
+    {
+      "src": "/_next/image?url=%2Fassets%2Fhero-crowd.jpg&w=3840&q=75",
+      "sizes": "(max-width: 640px) 100vw, 33vw",
+      "loading": "lazy",
+      "srcset": true
+    },
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/tote.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/cap.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/cutout-poster.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/cutout-hoodie.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/cutout-tee.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    },
+    {
+      "src": "/merch/sticker-pack.svg",
+      "sizes": null,
+      "loading": "lazy",
+      "srcset": false
+    }
+  ],
+  "navigation": {
+    "ttfbMs": 12.899999999441206,
+    "responseMs": 17.399999999441206,
+    "domContentLoadedMs": 83.90000000037253
+  },
+  "observedOn": "2026-10-04",
+  "applicationBuildSha256": "bdfb77f0976444babb656a360bfc6c60af8b1e310166d9590182863c2dc5b314"
+}

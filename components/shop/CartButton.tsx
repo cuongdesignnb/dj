@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ShoppingBag, Trash2, X } from 'lucide-react';
 import { sessionCartAdapter, useCartLines } from '@/lib/cart/adapter';

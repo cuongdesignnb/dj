@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { shopReveal } from '@/lib/animations';

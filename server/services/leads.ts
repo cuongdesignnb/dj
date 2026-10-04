@@ -1,6 +1,6 @@
 import 'server-only';
 import { db } from '@/server/db/client';
-import { notFound, validationError } from '@/server/errors';
+import { conflict, notFound, validationError } from '@/server/errors';
 import type { z } from 'zod';
 import { bookingSchema, contactSchema, newsletterSchema } from '@/server/validators/api';
 
@@ -14,10 +14,13 @@ export async function createBooking(input: BookingInput) {
     : { slug: input.eventId };
   const event = await db.event.findFirst({ where: { ...eventLookup, status: 'PUBLISHED', deletedAt: null }, include: { vipPackages: true, vipBooths: true } });
   if (!event) throw notFound('Event not found.');
+  if (!event.vipEnabled || !event.vipBookingEnabled) throw conflict('VIP booking requests are not available yet.');
 
-  const vipPackage = input.vipPackageId ? event.vipPackages.find((row) => row.id === input.vipPackageId) : null;
-  if (input.vipPackageId && !vipPackage) throw validationError({ vipPackageId: 'Select a valid VIP package for this event.' });
-  const booth = input.preferredBoothId ? event.vipBooths.find((row) => row.id === input.preferredBoothId && row.requestable && row.availabilityStatus === 'AVAILABLE') : null;
+  const vipPackage = event.vipPackages.find((row) => row.id === input.vipPackageId && row.enabled);
+  if (!vipPackage) throw validationError({ vipPackageId: 'Select an active VIP package for this event.' });
+  const allowBoothlessRequest = event.vipAvailabilityMode === 'REQUEST_ONLY' && vipPackage.paymentMode === 'REQUEST_ONLY';
+  if (!input.preferredBoothId && !allowBoothlessRequest) throw validationError({ preferredBoothId: 'Select an available booth for this event.' });
+  const booth = input.preferredBoothId ? event.vipBooths.find((row) => row.id === input.preferredBoothId && row.enabled && row.requestable && row.availabilityStatus === 'AVAILABLE') : null;
   if (input.preferredBoothId && !booth) throw validationError({ preferredBoothId: 'Select an available booth for this event.' });
   if (vipPackage && input.groupSize > vipPackage.capacity) throw validationError({ groupSize: `This package supports up to ${vipPackage.capacity} people.` });
 
@@ -28,7 +31,7 @@ export async function createBooking(input: BookingInput) {
   if (vipPackage) {
     const allowed = await db.vipPackageBottle.findMany({ where: { vipPackageId: vipPackage.id, bottleOptionId: { in: input.bottleIds } } });
     if (allowed.length !== input.bottleIds.length) throw validationError({ bottleIds: 'One or more bottles are not available for this package.' });
-    if (input.bottleIds.length > vipPackage.includedBottleCount) throw validationError({ bottleIds: `Select no more than ${vipPackage.includedBottleCount} bottles.` });
+    if (input.bottleIds.length < vipPackage.minBottleSelection || input.bottleIds.length > Math.min(vipPackage.maxBottleSelection, vipPackage.includedBottleCount)) throw validationError({ bottleIds: `Select between ${vipPackage.minBottleSelection} and ${Math.min(vipPackage.maxBottleSelection, vipPackage.includedBottleCount)} bottles.` });
   }
 
   return db.$transaction(async (tx) => {

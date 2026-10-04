@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
 import Container from '@/components/ui/Container';

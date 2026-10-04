@@ -1,8 +1,8 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight,
@@ -89,6 +89,7 @@ export default function BookingRequestForm({
   const [errors, setErrors] = useState<BookingFieldErrors>({});
   const [limitMessage, setLimitMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [result, setResult] = useState<BookingRequestResult | null>(null);
@@ -122,12 +123,11 @@ export default function BookingRequestForm({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (submitting) return;
+    if (submittingRef.current || result?.status === 'received') return;
 
     const input: BookingRequestInput = {
       eventId: data.event.id,
-      packageId: data.package.id,
-      experienceType: 'vip-table',
+      vipPackageId: data.package.id,
       fullName: fullName.trim(),
       email: email.trim(),
       phone: phone.trim(),
@@ -137,13 +137,14 @@ export default function BookingRequestForm({
       specialRequests: specialRequests.trim() || undefined,
     };
 
-    const validation = validateBookingRequest(input, data.package);
+    const validation = validateBookingRequest(input, data.package, { allowBoothlessRequest: data.allowBoothlessRequest });
     setErrors(validation.errors);
     if (!validation.ok) {
       setResult(null);
       return;
     }
 
+    submittingRef.current = true;
     setSubmitting(true);
     setResult(null);
     try {
@@ -163,6 +164,7 @@ export default function BookingRequestForm({
         message: 'Could not send your request. Please try again shortly.',
       });
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -173,8 +175,7 @@ export default function BookingRequestForm({
     const validation = validateBookingRequest(
       {
         eventId: input.eventId,
-        packageId: input.vipPackageId,
-        experienceType: 'vip-table',
+        vipPackageId: input.vipPackageId,
         fullName: input.customerName,
         email: input.customerEmail,
         phone: input.phone ?? '',
@@ -382,12 +383,13 @@ export default function BookingRequestForm({
                     className="mb-2 flex items-center gap-2 text-sm text-rave-muted"
                   >
                     <MapPin aria-hidden className="h-4 w-4 text-rave-red" />
-                    {content.boothLabel} <span className="text-rave-red">*</span>
+                    {content.boothLabel} {!data.allowBoothlessRequest && <span className="text-rave-red">*</span>}
                   </label>
                   <select
                     id={ids.booth}
                     name="preferredBooth"
-                    required
+                    required={!data.allowBoothlessRequest}
+                    disabled={!data.booths.some((booth) => booth.requestable)}
                     value={boothId ?? ''}
                     onChange={(e) => {
                       setBoothId(e.target.value || null);
@@ -399,7 +401,7 @@ export default function BookingRequestForm({
                     }
                     className={`${INPUT_CLASS} appearance-none ${errors.preferredBoothId ? 'border-rave-red' : 'border-white/[0.12] hover:border-white/25'}`}
                   >
-                    <option value="">Select a booth</option>
+                    <option value="">{data.allowBoothlessRequest ? 'No booth preference — team to review' : 'Select a booth'}</option>
                     {data.booths
                       .filter((booth) => booth.requestable)
                       .map((booth) => (
@@ -476,7 +478,7 @@ export default function BookingRequestForm({
 
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || result?.status === 'received'}
                   className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgba(255,23,61,0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-wait disabled:opacity-70 sm:text-base"
                 >
                   <span>{submitting ? '…' : content.submitLabel}</span>
@@ -487,7 +489,7 @@ export default function BookingRequestForm({
                 </button>
               </div>
 
-              {data.package.paymentMode !== 'request-only' && (
+              {data.squareEnabled && data.package.paymentMode !== 'request-only' && (
                 <div className="mt-4 rounded-[14px] border border-rave-red/30 bg-rave-red/[0.06] p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-rave-muted">

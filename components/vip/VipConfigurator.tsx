@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Clock, MapPin, Users, Wine } from 'lucide-react';
 import Container from '@/components/ui/Container';
@@ -57,9 +57,11 @@ function SectionHeading({
 export default function VipConfigurator({
   data,
   initialSelection,
+  canRequest,
 }: {
   data: VipPageData;
   initialSelection: VipSelection;
+  canRequest: boolean;
 }) {
   const reduced = useReducedMotion();
   const [boothId, setBoothId] = useState<string | null>(initialSelection.boothId ?? null);
@@ -105,12 +107,12 @@ export default function VipConfigurator({
                 context="Select Your Preferred Area"
               />
               <div className="mt-8">
-                <ClubMap
+                {data.booths.length ? <ClubMap
                   booths={data.booths}
                   selectedBoothId={boothId}
                   onSelect={setBoothId}
                   disclaimer={data.mapDisclaimer}
-                />
+                /> : <p className="rounded-2xl border border-white/10 p-8 text-rave-muted">Booth selection is not available yet. {canRequest ? 'You may send a request without a booth preference.' : 'Booking requests are not open.'}</p>}
               </div>
             </div>
 
@@ -122,7 +124,7 @@ export default function VipConfigurator({
                     id="booth-package-title"
                     className="font-heading text-2xl font-black uppercase tracking-tight text-white sm:text-[26px]"
                   >
-                    Booth Package
+                    {data.package.name}
                   </h2>
                   <p className="text-right font-heading text-[9px] uppercase leading-tight tracking-[0.22em] text-rave-muted sm:text-[10px]">
                     Premium Nights
@@ -221,21 +223,21 @@ export default function VipConfigurator({
                   {bottleIds.length} of {data.package.maxBottleSelections} bottles selected.
                 </p>
 
-                <motion.div whileHover={reduced ? undefined : { y: -2 }} className="mt-6">
+                {canRequest && <motion.div whileHover={reduced ? undefined : { y: -2 }} className="mt-6">
                   <Link
                     href={bookingUrl}
                     className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgba(255,23,61,0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
                   >
-                    <span>Request This Booth</span>
+                    <span>{data.booths.length ? 'Request This Booth' : 'Send VIP Request'}</span>
                     <ArrowRight
                       aria-hidden
                       className="h-4 w-4 transition-transform group-hover/cta:translate-x-1"
                     />
                   </Link>
-                </motion.div>
-                <p className="mt-2 text-center text-xs text-rave-muted/80">
+                </motion.div>}
+                {canRequest && <p className="mt-2 text-center text-xs text-rave-muted/80">
                   Sends a request. Availability is confirmed by the team.
-                </p>
+                </p>}
               </div>
             </aside>
           </div>

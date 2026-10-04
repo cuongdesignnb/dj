@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Oswald } from "next/font/google";
+import { Suspense } from 'react';
+import NavigationFeedback from '@/components/shared/NavigationFeedback';
 import "./globals.css";
 import MouseGlow from "@/components/ui/MouseGlow";
 import { canonicalUrl } from '@/lib/seo/canonical';
@@ -52,6 +54,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-rave-black text-white antialiased font-body">
         <MouseGlow />
+        <Suspense fallback={null}><NavigationFeedback /></Suspense>
         {[organizationSchema(), websiteSchema()].map((schema, index) => (
           <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) ?? '' }} />
         ))}

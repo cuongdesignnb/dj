@@ -83,6 +83,7 @@ import {
   getPublicPageContent,
   getTicketSettings,
   getVipSettings,
+  getEventReadiness,
   listBottleOptions,
   listTicketTiers,
   listVipBooths,
@@ -1272,7 +1273,7 @@ async function dispatch(request: Request, path: string[], requestId: string) {
   if (root === 'events' && request.method === 'GET') {
     if (second === 'past') return dataResponse(await listPublicEvents(locale, true));
     if (second && third === 'tickets') { const result = await getPublicTickets(second); if (!result) throw notFound('Event not found.'); return dataResponse({ settings: result.event, tiers: result.rows.map((row) => ({ id: row.id, name: row.name, description: row.description, priceMinor: row.priceMinor, currency: row.currency, badge: row.badge, purchasableOnline: row.purchasableOnline && result.event.ticketOnlineSalesEnabled, purchasableAtDoor: row.purchasableAtDoor && result.event.ticketDoorSalesEnabled, availabilityStatus: row.availabilityStatus, capacity: row.capacity, soldQuantity: row.soldQuantity, minQuantity: row.minQuantity, maxQuantity: row.maxQuantity, defaultQuantity: row.defaultQuantity, highlighted: row.highlighted, providerName: row.providerName ?? result.event.ticketProviderName, providerExternalId: row.providerExternalId ?? result.event.ticketProviderEventId, providerUrl: row.providerUrl ?? result.event.ticketProviderUrl })) }); }
-    if (second && third === 'vip') { const result = await getPublicVip(second); if (!result) throw notFound('Event not found.'); return dataResponse({ settings: result.event, packages: result.packages.map((row) => ({ id: row.id, name: row.name, description: row.description, priceMinor: row.priceMinor, currency: row.currency, paymentMode: row.paymentMode.toLowerCase().replace('_', '-'), deposit: row.depositAmountMinor == null ? null : { amountMinor: row.depositAmountMinor, currency: row.currency }, capacity: row.capacity, includedBottleCount: row.includedBottleCount, minBottleSelections: row.minBottleSelection, maxBottleSelections: row.maxBottleSelection, bottles: row.packageBottles.map((item) => ({ id: item.bottleOption.id, name: item.bottleOption.name, description: item.bottleOption.description, category: item.bottleOption.category, image: item.bottleOption.media ? { src: item.bottleOption.media.publicUrl, alt: item.bottleOption.media.altText, width: item.bottleOption.media.width, height: item.bottleOption.media.height } : null })) })), booths: result.booths.map((booth) => ({ id: booth.id, label: booth.label ?? booth.code, zone: booth.zone?.toLowerCase(), x: booth.x ? Number(booth.x) : 50, y: booth.y ? Number(booth.y) : 50, requestable: booth.requestable, availability: booth.availabilityStatus.toLowerCase() })) }); }
+if (second && third === 'vip') { const result = await getPublicVip(second); if (!result) throw notFound('Event not found.'); return dataResponse({ settings: result.event, packages: result.packages.map((row) => ({ id: row.id, name: row.name, description: row.description, priceMinor: row.priceMinor, currency: row.currency, paymentMode: row.paymentMode.toLowerCase().replace('_', '-'), deposit: row.depositAmountMinor == null ? null : { amountMinor: row.depositAmountMinor, currency: row.currency }, capacity: row.capacity, includedBottleCount: row.includedBottleCount, minBottleSelections: row.minBottleSelection, maxBottleSelections: row.maxBottleSelection, bottles: row.packageBottles.map((item) => ({ id: item.bottleOption.id, name: item.bottleOption.name, description: item.bottleOption.description, category: item.bottleOption.category, image: item.bottleOption.media ? { src: item.bottleOption.media.publicUrl, alt: item.bottleOption.media.altText, width: item.bottleOption.media.width, height: item.bottleOption.media.height } : null })) })), booths: result.booths.map((booth) => ({ id: booth.id, label: booth.label ?? booth.code, zone: booth.zone?.toLowerCase(), x: booth.x ? Number(booth.x) : 50, y: booth.y ? Number(booth.y) : 50, requestable: booth.requestable, availability: booth.availabilityStatus === 'AVAILABLE' ? 'available' : booth.availabilityStatus === 'ON_REQUEST' ? 'on-request' : booth.availabilityStatus === 'UNKNOWN' ? 'unknown' : 'unavailable' })) }); }
     if (second) { const event = await getPublicEvent(second, locale); if (!event) throw notFound('Event not found.'); return dataResponse(event); }
     return dataResponse(await listPublicEvents(locale));
   }
@@ -1384,6 +1385,10 @@ async function dispatch(request: Request, path: string[], requestId: string) {
       const resourceId = path[5];
       const viewPermission = 'events.view';
       const editPermission = 'events.edit';
+      if (resource === 'readiness' && request.method === 'GET') {
+        await requirePermission(request, viewPermission);
+        return dataResponse(await getEventReadiness(eventId, eventModule as 'vip' | 'tickets'));
+      }
       if (eventModule === 'tickets' && resource === 'settings') {
         if (request.method === 'GET') { await requirePermission(request, viewPermission); return dataResponse(await getTicketSettings(eventId)); }
         if (request.method === 'PATCH' || request.method === 'PUT') { assertSameOrigin(request); const session = await requirePermission(request, editPermission, true); const result = await updateTicketSettings(eventId, await body(request)); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'ticket_settings', entityId: eventId, after: result, requestId }); revalidatePublicResource('events', eventId); return dataResponse(result); }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import Image from 'next/image';
 import { motion, useInView, useReducedMotion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import {

@@ -43,7 +43,7 @@ export class HttpGalleryRepository implements GalleryRepository {
     try {
       response = await fetch(url, {
         headers: { accept: 'application/json' },
-        next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.gallery] },
+        next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.gallery, PUBLIC_CACHE_TAGS.events] },
       });
     } catch {
       return {
@@ -100,7 +100,7 @@ export class HttpGalleryRepository implements GalleryRepository {
       data: {
         content,
         hero: { eyebrow: content.hero?.eyebrow ?? '', titleLines: listingTitleLines(content.hero, []), description: content.hero?.description ?? '', visual, sideNotes: content.hero?.sideNotes ?? [], primaryCta: listingAction(content.hero?.primary, { label: '', href: '' }), secondaryCta: listingAction(content.hero?.secondary, { label: '', href: '' }) },
-        previewMedia: featured?.media ?? [],
+        previewMedia: (featured?.media ?? []).slice(0, 6),
         featuredCollection: featured,
         collections,
         finalCta: { title: content.finalCta?.title ?? '', subtitle: content.finalCta?.description ?? content.finalCta?.subtitle, primary: listingAction(content.finalCta?.primary, { label: '', href: '' }), secondary: content.finalCta?.secondary ? listingAction(content.finalCta.secondary, { label: '', href: '' }) : undefined, background: content.finalCta?.background ?? visual },

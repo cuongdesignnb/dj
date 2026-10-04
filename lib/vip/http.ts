@@ -15,6 +15,7 @@ import type {
   VipHeroContent,
   VipMapContent,
   VipProcessStep,
+  VipPageState,
 } from './types';
 
 // Normalizes an API payload into VipPageData.
@@ -62,7 +63,7 @@ function money(value: unknown): Money | null {
 function eventContext(value: unknown): VipEventContext | null {
   if (!isRecord(value)) return null;
   const title = str(value.title);
-  if (!title) return null;
+  if (!title || !str(value.id) || !str(value.slug)) return null;
   return {
     id: str(value.id, title),
     slug: str(value.slug, str(value.id, title)),
@@ -81,16 +82,22 @@ function vipPackage(value: unknown): VipPackage | null {
   if (!isRecord(value)) return null;
   const id = str(value.id);
   const price = money(value.price);
-  if (!id || !price) return null;
-  const maxBottles = Math.max(1, Math.trunc(num(value.maxBottleSelections, 3)));
-  const paymentMode = value.paymentMode === 'full-payment' || value.paymentMode === 'deposit'
-    ? value.paymentMode
-    : 'request-only';
+  const capacity = value.capacity;
+  const minBottles = value.minBottleSelections;
+  const maxBottles = value.maxBottleSelections;
+  const included = value.includedBottleCount;
+  const paymentMode = value.paymentMode;
+  if (!id || !price || !str(value.name)
+    || typeof capacity !== 'number' || !Number.isSafeInteger(capacity) || capacity < 1
+    || typeof minBottles !== 'number' || !Number.isSafeInteger(minBottles) || minBottles < 0
+    || typeof maxBottles !== 'number' || !Number.isSafeInteger(maxBottles) || maxBottles < minBottles
+    || typeof included !== 'number' || !Number.isSafeInteger(included) || included < maxBottles
+    || !['request-only', 'full-payment', 'deposit'].includes(str(paymentMode))) return null;
   return {
     id,
     name: str(value.name, 'Booth Package'),
     price,
-    paymentMode,
+    paymentMode: paymentMode as VipPackage['paymentMode'],
     deposit: money(value.deposit),
     capacity: Math.max(1, Math.trunc(num(value.capacity, 1))),
     includedBottleCount: Math.max(0, Math.trunc(num(value.includedBottleCount, 0))),
@@ -293,6 +300,9 @@ export function normalizeVipPage(raw: unknown): VipPageData | null {
 
   return {
     event,
+    bookingEnabled: raw.bookingEnabled === true,
+    allowBoothlessRequest: raw.allowBoothlessRequest === true,
+    squareEnabled: raw.squareEnabled === true,
     package: pkg,
     booths,
     bottles,
@@ -311,4 +321,46 @@ export function normalizeVipPage(raw: unknown): VipPageData | null {
     bookingCta,
     footer: footer(raw.footer),
   };
+}
+
+/** Classify the real API contract before requiring a package for the interactive UI. */
+export function normalizeVipState(eventRaw: unknown, vipRaw: unknown, tablesRaw: unknown, bookingRaw: unknown): VipPageState {
+  const invalid = (): VipPageState => ({ kind: 'invalid-response', message: 'We received data this page could not read.' });
+  if (!isRecord(eventRaw) || !isRecord(vipRaw) || !isRecord(vipRaw.settings)
+    || !Array.isArray(vipRaw.packages) || !Array.isArray(vipRaw.booths)) return invalid();
+  const settings = vipRaw.settings;
+  const event = eventContext({
+    id: eventRaw.id, slug: eventRaw.slug, title: eventRaw.title, subtitle: eventRaw.eyebrow,
+    venue: isRecord(eventRaw.venue) ? [eventRaw.venue.name, eventRaw.venue.city].filter((v) => typeof v === 'string').join(', ') : '',
+    date: eventRaw.startAt, dateStatus: str(eventRaw.dateStatus).toLowerCase(),
+    schedule: eventRaw.startAt, scheduleStatus: str(eventRaw.scheduleStatus).toLowerCase(),
+    image: eventRaw.poster ?? eventRaw.hero,
+  });
+  if (!event || settings.id !== event.id || typeof settings.vipEnabled !== 'boolean'
+    || typeof settings.vipBookingEnabled !== 'boolean' || !str(settings.vipAvailabilityMode)) return invalid();
+  const content = { tables: isRecord(tablesRaw) ? tablesRaw : null, booking: isRecord(bookingRaw) ? bookingRaw : null };
+  const context = { event, content };
+  if (!settings.vipEnabled) return { kind: 'vip-disabled', ...context };
+  if (!content.tables || !content.booking) return { kind: 'not-configured', reason: 'content', ...context };
+  if (!vipRaw.packages.length) return { kind: 'no-active-package', ...context };
+  const pkg = vipRaw.packages[0];
+  if (!isRecord(pkg) || !Array.isArray(pkg.bottles)) return invalid();
+  const normalizedPackage = vipPackage({ ...pkg, price: { amountMinor: pkg.priceMinor, currency: pkg.currency } });
+  if (!normalizedPackage || vipRaw.booths.some((v) => !booth(v)) || pkg.bottles.some((v) => !bottle(v))) return invalid();
+  const allowBoothlessRequest = settings.vipAvailabilityMode === 'REQUEST_ONLY' && normalizedPackage.paymentMode === 'request-only';
+  const data = normalizeVipPage({
+    event, package: { ...pkg, price: normalizedPackage.price }, booths: vipRaw.booths,
+    bottles: pkg.bottles.map((item, index) => ({ ...item, tint: ['#A6A6B2', '#F3B35A', '#E46A6A', '#8AC3FF', '#B78CFF', '#7BE0B2'][index % 6] })),
+    tablesContent: content.tables, bookingContent: content.booking,
+    infoItems: content.tables.infoItems, faq: content.tables.faq,
+    processSteps: content.booking.processSteps, bookingNotes: content.booking.bookingNotes, bookingFaq: content.booking.faq,
+    bookingEnabled: settings.vipBookingEnabled, allowBoothlessRequest, squareEnabled: settings.vipSquareEnabled,
+  });
+  if (!data) return invalid();
+  // Backend accepts only AVAILABLE booths. Keep the map labels but disable other booth selections.
+  data.booths = data.booths.map((item) => ({ ...item, requestable: item.requestable && item.availability === 'available' }));
+  if (!data.bookingEnabled) return { kind: 'booking-disabled', data, canRequest: false };
+  if (!data.booths.length) return { kind: 'no-booths', data, canRequest: allowBoothlessRequest };
+  if (!data.booths.some((item) => item.requestable)) return { kind: 'no-availability', data, canRequest: false };
+  return { kind: 'ready', data, canRequest: true };
 }

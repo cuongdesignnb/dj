@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, LoaderCircle } from 'lucide-react';
 import { createCheckoutSession } from '@/app/cart/actions';

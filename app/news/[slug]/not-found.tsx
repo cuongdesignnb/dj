@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import Header from '@/components/home/Header';
 
 /** Shown for a slug that does not match any article. */

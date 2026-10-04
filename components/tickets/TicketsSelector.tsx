@@ -60,20 +60,17 @@ export default function TicketsSelector({
 
   if (tiers.length === 0) {
     return (
-      <section ref={ref} aria-labelledby="ticket-options-title" className="bg-rave-black py-16 md:py-24">
+      <section ref={ref} id="ticket-options" data-testid="ticket-empty-state" aria-labelledby="ticket-options-title" className="bg-rave-black py-16 md:py-24">
         <Container>
           <h2
             id="ticket-options-title"
             className="font-heading text-3xl font-black uppercase tracking-tight text-white sm:text-4xl"
           >
-              {content.emptyTitle}
+              {content.emptyTitle || 'Ticket release details are coming soon.'}
           </h2>
           <div className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center">
             <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
-              Ticket information is being prepared.
-            </p>
-            <p className="mt-3 text-sm text-rave-muted sm:text-base">
-              {content.emptyDescription}
+              {content.emptyDescription || 'Ticket release details will appear here when confirmed by the organiser.'}
             </p>
           </div>
         </Container>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useInView } from 'framer-motion';
 import { ArrowLeft, Check, Expand, Images, Layers, Play } from 'lucide-react';
 import Container from '@/components/ui/Container';
@@ -222,9 +222,6 @@ export default function CollectionView({ collection }: { collection: GalleryColl
                   {collection.description}
                 </p>
               )}
-              <p className="mt-3 text-sm leading-relaxed text-rave-muted">
-                Media on this page can later be connected to a CMS for future updates.
-              </p>
 
               <dl className="mt-5 flex flex-col gap-3 border-t border-white/[0.08] pt-5 text-sm">
                 <div className="flex items-center justify-between gap-3">

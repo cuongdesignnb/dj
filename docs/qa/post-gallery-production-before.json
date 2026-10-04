@@ -1,0 +1,1505 @@
+[
+  {
+    "path": "/api/health",
+    "status": 200,
+    "ms": 341,
+    "body": {
+      "data": {
+        "status": "ok",
+        "service": "destiny-rave",
+        "timestamp": "2026-10-04T00:25:47.431Z"
+      }
+    }
+  },
+  {
+    "path": "/api/health/ready",
+    "status": 200,
+    "ms": 214,
+    "body": {
+      "data": {
+        "status": "ready",
+        "checks": {
+          "postgres": "ok",
+          "redis": "ok"
+        },
+        "timestamp": "2026-10-04T00:25:47.678Z"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/gallery",
+    "status": 200,
+    "ms": 200,
+    "body": {
+      "data": [
+        {
+          "id": "e61b23d6-c1dc-4630-924e-c6b8f2b776dd",
+          "slug": "echo",
+          "status": "published",
+          "featured": false,
+          "title": "ECHO",
+          "subtitle": null,
+          "description": null,
+          "venue": null,
+          "cover": {
+            "src": "/api/v1/media/1b7c9cd4-414f-4cc5-a04b-cb8705dca327",
+            "alt": "Crowd and stage at ECHO",
+            "width": null,
+            "height": null
+          },
+          "hero": null,
+          "eventId": null,
+          "eventSlug": null,
+          "eventHref": null,
+          "event": null,
+          "categories": [
+            "other"
+          ],
+          "media": [
+            {
+              "id": "6346bb7c-46a1-46ea-aa0a-b2f7bf1fe30c",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "DJ at the decks at ECHO",
+              "featured": false,
+              "sortOrder": 0,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/98f880ed-e38b-4034-8f35-ee85324f4459",
+                "alt": "DJ at the decks at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/98f880ed-e38b-4034-8f35-ee85324f4459",
+                "alt": "DJ at the decks at ECHO",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "22471f8e-e6a0-477f-93af-0da0a5c012bb",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Stage under purple lasers at ECHO",
+              "featured": false,
+              "sortOrder": 1,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/3679d7d4-b66f-4327-af74-845bd38076d7",
+                "alt": "Stage under purple lasers at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/3679d7d4-b66f-4327-af74-845bd38076d7",
+                "alt": "Stage under purple lasers at ECHO",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "ddc1e5a8-f5ba-4cb9-afed-d6aa03c36615",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "DJ portrait at ECHO",
+              "featured": false,
+              "sortOrder": 2,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/38b6be04-8d8e-42b8-bef1-0b7f642f6f28",
+                "alt": "DJ portrait at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/38b6be04-8d8e-42b8-bef1-0b7f642f6f28",
+                "alt": "DJ portrait at ECHO",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "829be256-9381-49c5-a6ca-5645ee562676",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Crowd and stage at ECHO",
+              "featured": false,
+              "sortOrder": 3,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/1b7c9cd4-414f-4cc5-a04b-cb8705dca327",
+                "alt": "Crowd and stage at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/1b7c9cd4-414f-4cc5-a04b-cb8705dca327",
+                "alt": "Crowd and stage at ECHO",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "a27b46b2-321f-462a-b1d8-bd008910ebe5",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Two DJs performing at ECHO",
+              "featured": false,
+              "sortOrder": 4,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/be3f56c9-75c6-4bb4-9ba8-aad42b25853f",
+                "alt": "Two DJs performing at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/be3f56c9-75c6-4bb4-9ba8-aad42b25853f",
+                "alt": "Two DJs performing at ECHO",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "75159944-9e4c-4176-bab9-f233a9a96fcb",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Live DJ set at ECHO",
+              "featured": false,
+              "sortOrder": 5,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/584cf910-42b9-4b8c-b31f-87aff924b4b4",
+                "alt": "Live DJ set at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/584cf910-42b9-4b8c-b31f-87aff924b4b4",
+                "alt": "Live DJ set at ECHO",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "05a1c956-224c-4c0c-9521-0d6a2c18c5d2",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "ECHO audience group",
+              "featured": false,
+              "sortOrder": 6,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/1c280576-8ace-47fd-a9f9-9786c9f62447",
+                "alt": "ECHO audience group",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/1c280576-8ace-47fd-a9f9-9786c9f62447",
+                "alt": "ECHO audience group",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "6d89dd0b-568c-476c-ad3b-bf470efd07f8",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Group portrait at ECHO",
+              "featured": false,
+              "sortOrder": 7,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/7d2faf45-bdbb-4d85-a7af-072c5d9aefc6",
+                "alt": "Group portrait at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/7d2faf45-bdbb-4d85-a7af-072c5d9aefc6",
+                "alt": "Group portrait at ECHO",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "60b45c17-494c-4d69-b070-df267f062e85",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Crowd at ECHO",
+              "featured": false,
+              "sortOrder": 8,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/b509c695-3ccf-4089-b983-7ea99662be0a",
+                "alt": "Crowd at ECHO",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/b509c695-3ccf-4089-b983-7ea99662be0a",
+                "alt": "Crowd at ECHO",
+                "width": null,
+                "height": null
+              }
+            }
+          ],
+          "seoTitle": null,
+          "seoDescription": null,
+          "ogMediaId": null,
+          "canonicalOverride": null,
+          "indexable": true,
+          "followLinks": true
+        },
+        {
+          "id": "bfbbd795-c19b-4c9d-bc5e-fe1e06eac064",
+          "slug": "destiny",
+          "status": "published",
+          "featured": false,
+          "title": "DESTINY",
+          "subtitle": null,
+          "description": null,
+          "venue": null,
+          "cover": {
+            "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+            "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+            "width": null,
+            "height": null
+          },
+          "hero": null,
+          "eventId": "08f78da3-8c86-4ff0-b09c-35d9530fdea1",
+          "eventSlug": "destiny",
+          "eventHref": "/events/destiny",
+          "event": {
+            "id": "08f78da3-8c86-4ff0-b09c-35d9530fdea1",
+            "slug": "destiny",
+            "title": "DESTINY"
+          },
+          "categories": [
+            "other"
+          ],
+          "media": [
+            {
+              "id": "7d82e616-3911-4320-8027-76134b515e62",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Backstage portrait at DESTINY",
+              "featured": false,
+              "sortOrder": 0,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/12e814d8-b5cc-480e-871b-ebc3c22aecf5",
+                "alt": "Backstage portrait at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/12e814d8-b5cc-480e-871b-ebc3c22aecf5",
+                "alt": "Backstage portrait at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "56e0a86c-1235-4c8b-856c-6bd3ad6aa493",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Audience at DESTINY",
+              "featured": false,
+              "sortOrder": 1,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/2856a6f9-306f-4ff6-8be8-96e454525628",
+                "alt": "Audience at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/2856a6f9-306f-4ff6-8be8-96e454525628",
+                "alt": "Audience at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "fc046866-989b-4d53-92e5-d9d4b18f3054",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "At the DJ booth during DESTINY",
+              "featured": false,
+              "sortOrder": 2,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/7e2c3025-f2c4-40aa-a21b-310294b48361",
+                "alt": "At the DJ booth during DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/7e2c3025-f2c4-40aa-a21b-310294b48361",
+                "alt": "At the DJ booth during DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "a5d0a8ee-c5be-4da4-bbf0-ef14f2b8f4c5",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "DJ booth performance at DESTINY",
+              "featured": false,
+              "sortOrder": 3,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/c0bc9ca8-1eb2-4be4-9c7a-a06103290acd",
+                "alt": "DJ booth performance at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/c0bc9ca8-1eb2-4be4-9c7a-a06103290acd",
+                "alt": "DJ booth performance at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "baab5b61-6de9-4c8e-932f-b197dfa7c481",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Guests at DESTINY",
+              "featured": false,
+              "sortOrder": 4,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/43a14561-bbbf-4d4d-ab6d-89225d7d8615",
+                "alt": "Guests at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/43a14561-bbbf-4d4d-ab6d-89225d7d8615",
+                "alt": "Guests at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "ec3d93b1-ad66-48ea-93a5-5761616e5b97",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Portrait at DESTINY",
+              "featured": false,
+              "sortOrder": 5,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/f26aa012-64ad-494b-9812-aba8a1681c00",
+                "alt": "Portrait at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/f26aa012-64ad-494b-9812-aba8a1681c00",
+                "alt": "Portrait at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "fa4f11c4-3c99-4c64-93ab-6a6be86dab36",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Group of guests at DESTINY",
+              "featured": false,
+              "sortOrder": 6,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/27f3ab72-6ce4-494c-a635-0eb693b33e2d",
+                "alt": "Group of guests at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/27f3ab72-6ce4-494c-a635-0eb693b33e2d",
+                "alt": "Group of guests at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "6dd7f58d-c860-4e48-ad3d-e4338334522a",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Group at the DJ booth at DESTINY",
+              "featured": false,
+              "sortOrder": 7,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/36df9c28-f1f0-4474-b6b8-b9c1a5a26f21",
+                "alt": "Group at the DJ booth at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/36df9c28-f1f0-4474-b6b8-b9c1a5a26f21",
+                "alt": "Group at the DJ booth at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "9e7b0184-95e4-47b1-9a34-7f44a153cfab",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "DJ booth and crowd at DESTINY",
+              "featured": false,
+              "sortOrder": 8,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/60538ef9-fb9a-4a86-9f0c-b1a390ae953a",
+                "alt": "DJ booth and crowd at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/60538ef9-fb9a-4a86-9f0c-b1a390ae953a",
+                "alt": "DJ booth and crowd at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "10bad6ec-7d01-4372-a2ec-e5eb644cf3cd",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "Live DJ performance at DESTINY under cyan stage lighting",
+              "featured": false,
+              "sortOrder": 9,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+                "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+                "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "f9e9d645-d889-4d8b-ae57-bfe5f2d57dd6",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "DESTINY guest group portrait",
+              "featured": false,
+              "sortOrder": 10,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/15034e3d-1d5a-480b-a69d-61ea01add4f9",
+                "alt": "DESTINY guest group portrait",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/15034e3d-1d5a-480b-a69d-61ea01add4f9",
+                "alt": "DESTINY guest group portrait",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "a75f1d55-fce0-43f0-ba78-18467bbd50a8",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "DJ at the decks at DESTINY",
+              "featured": false,
+              "sortOrder": 11,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/f63f872c-0b2f-4425-abbe-961d8eb4f0ca",
+                "alt": "DJ at the decks at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/f63f872c-0b2f-4425-abbe-961d8eb4f0ca",
+                "alt": "DJ at the decks at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "40600ade-79a0-4d0e-8b1e-6cbbc20e3f19",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "DJ performance under blue lights at DESTINY",
+              "featured": false,
+              "sortOrder": 12,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/a3adadeb-f149-4f29-9251-45a2eb00daf8",
+                "alt": "DJ performance under blue lights at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/a3adadeb-f149-4f29-9251-45a2eb00daf8",
+                "alt": "DJ performance under blue lights at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "986ff0d9-4435-4e2c-b1ff-b09655ad7cdb",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "On the microphone at DESTINY",
+              "featured": false,
+              "sortOrder": 13,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/e09c6cdd-c4eb-4f2e-80e4-8fec70db0575",
+                "alt": "On the microphone at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/e09c6cdd-c4eb-4f2e-80e4-8fec70db0575",
+                "alt": "On the microphone at DESTINY",
+                "width": null,
+                "height": null
+              }
+            },
+            {
+              "id": "40f5aaf2-9a39-46b2-a148-e1f3bd195409",
+              "type": "photo",
+              "category": "other",
+              "title": null,
+              "caption": "MAYA stage screen at DESTINY",
+              "featured": false,
+              "sortOrder": 14,
+              "video": null,
+              "image": {
+                "src": "/api/v1/media/c05e975c-7796-4082-9c91-3bd394088c64",
+                "alt": "MAYA stage screen at DESTINY",
+                "width": null,
+                "height": null
+              },
+              "thumbnail": {
+                "src": "/api/v1/media/c05e975c-7796-4082-9c91-3bd394088c64",
+                "alt": "MAYA stage screen at DESTINY",
+                "width": null,
+                "height": null
+              }
+            }
+          ],
+          "seoTitle": null,
+          "seoDescription": null,
+          "ogMediaId": null,
+          "canonicalOverride": null,
+          "indexable": true,
+          "followLinks": true
+        }
+      ]
+    }
+  },
+  {
+    "path": "/api/v1/gallery/destiny",
+    "status": 200,
+    "ms": 230,
+    "body": {
+      "data": {
+        "id": "bfbbd795-c19b-4c9d-bc5e-fe1e06eac064",
+        "slug": "destiny",
+        "status": "published",
+        "featured": false,
+        "title": "DESTINY",
+        "subtitle": null,
+        "description": null,
+        "venue": null,
+        "cover": {
+          "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+          "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+          "width": null,
+          "height": null
+        },
+        "hero": null,
+        "eventId": "08f78da3-8c86-4ff0-b09c-35d9530fdea1",
+        "eventSlug": "destiny",
+        "eventHref": "/events/destiny",
+        "event": {
+          "id": "08f78da3-8c86-4ff0-b09c-35d9530fdea1",
+          "slug": "destiny",
+          "title": "DESTINY"
+        },
+        "categories": [
+          "other"
+        ],
+        "media": [
+          {
+            "id": "7d82e616-3911-4320-8027-76134b515e62",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Backstage portrait at DESTINY",
+            "featured": false,
+            "sortOrder": 0,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/12e814d8-b5cc-480e-871b-ebc3c22aecf5",
+              "alt": "Backstage portrait at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/12e814d8-b5cc-480e-871b-ebc3c22aecf5",
+              "alt": "Backstage portrait at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "56e0a86c-1235-4c8b-856c-6bd3ad6aa493",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Audience at DESTINY",
+            "featured": false,
+            "sortOrder": 1,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/2856a6f9-306f-4ff6-8be8-96e454525628",
+              "alt": "Audience at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/2856a6f9-306f-4ff6-8be8-96e454525628",
+              "alt": "Audience at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "fc046866-989b-4d53-92e5-d9d4b18f3054",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "At the DJ booth during DESTINY",
+            "featured": false,
+            "sortOrder": 2,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/7e2c3025-f2c4-40aa-a21b-310294b48361",
+              "alt": "At the DJ booth during DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/7e2c3025-f2c4-40aa-a21b-310294b48361",
+              "alt": "At the DJ booth during DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "a5d0a8ee-c5be-4da4-bbf0-ef14f2b8f4c5",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "DJ booth performance at DESTINY",
+            "featured": false,
+            "sortOrder": 3,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/c0bc9ca8-1eb2-4be4-9c7a-a06103290acd",
+              "alt": "DJ booth performance at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/c0bc9ca8-1eb2-4be4-9c7a-a06103290acd",
+              "alt": "DJ booth performance at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "baab5b61-6de9-4c8e-932f-b197dfa7c481",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Guests at DESTINY",
+            "featured": false,
+            "sortOrder": 4,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/43a14561-bbbf-4d4d-ab6d-89225d7d8615",
+              "alt": "Guests at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/43a14561-bbbf-4d4d-ab6d-89225d7d8615",
+              "alt": "Guests at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "ec3d93b1-ad66-48ea-93a5-5761616e5b97",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Portrait at DESTINY",
+            "featured": false,
+            "sortOrder": 5,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/f26aa012-64ad-494b-9812-aba8a1681c00",
+              "alt": "Portrait at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/f26aa012-64ad-494b-9812-aba8a1681c00",
+              "alt": "Portrait at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "fa4f11c4-3c99-4c64-93ab-6a6be86dab36",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Group of guests at DESTINY",
+            "featured": false,
+            "sortOrder": 6,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/27f3ab72-6ce4-494c-a635-0eb693b33e2d",
+              "alt": "Group of guests at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/27f3ab72-6ce4-494c-a635-0eb693b33e2d",
+              "alt": "Group of guests at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "6dd7f58d-c860-4e48-ad3d-e4338334522a",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Group at the DJ booth at DESTINY",
+            "featured": false,
+            "sortOrder": 7,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/36df9c28-f1f0-4474-b6b8-b9c1a5a26f21",
+              "alt": "Group at the DJ booth at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/36df9c28-f1f0-4474-b6b8-b9c1a5a26f21",
+              "alt": "Group at the DJ booth at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "9e7b0184-95e4-47b1-9a34-7f44a153cfab",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "DJ booth and crowd at DESTINY",
+            "featured": false,
+            "sortOrder": 8,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/60538ef9-fb9a-4a86-9f0c-b1a390ae953a",
+              "alt": "DJ booth and crowd at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/60538ef9-fb9a-4a86-9f0c-b1a390ae953a",
+              "alt": "DJ booth and crowd at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "10bad6ec-7d01-4372-a2ec-e5eb644cf3cd",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Live DJ performance at DESTINY under cyan stage lighting",
+            "featured": false,
+            "sortOrder": 9,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+              "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+              "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "f9e9d645-d889-4d8b-ae57-bfe5f2d57dd6",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "DESTINY guest group portrait",
+            "featured": false,
+            "sortOrder": 10,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/15034e3d-1d5a-480b-a69d-61ea01add4f9",
+              "alt": "DESTINY guest group portrait",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/15034e3d-1d5a-480b-a69d-61ea01add4f9",
+              "alt": "DESTINY guest group portrait",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "a75f1d55-fce0-43f0-ba78-18467bbd50a8",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "DJ at the decks at DESTINY",
+            "featured": false,
+            "sortOrder": 11,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/f63f872c-0b2f-4425-abbe-961d8eb4f0ca",
+              "alt": "DJ at the decks at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/f63f872c-0b2f-4425-abbe-961d8eb4f0ca",
+              "alt": "DJ at the decks at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "40600ade-79a0-4d0e-8b1e-6cbbc20e3f19",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "DJ performance under blue lights at DESTINY",
+            "featured": false,
+            "sortOrder": 12,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/a3adadeb-f149-4f29-9251-45a2eb00daf8",
+              "alt": "DJ performance under blue lights at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/a3adadeb-f149-4f29-9251-45a2eb00daf8",
+              "alt": "DJ performance under blue lights at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "986ff0d9-4435-4e2c-b1ff-b09655ad7cdb",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "On the microphone at DESTINY",
+            "featured": false,
+            "sortOrder": 13,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/e09c6cdd-c4eb-4f2e-80e4-8fec70db0575",
+              "alt": "On the microphone at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/e09c6cdd-c4eb-4f2e-80e4-8fec70db0575",
+              "alt": "On the microphone at DESTINY",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "40f5aaf2-9a39-46b2-a148-e1f3bd195409",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "MAYA stage screen at DESTINY",
+            "featured": false,
+            "sortOrder": 14,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/c05e975c-7796-4082-9c91-3bd394088c64",
+              "alt": "MAYA stage screen at DESTINY",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/c05e975c-7796-4082-9c91-3bd394088c64",
+              "alt": "MAYA stage screen at DESTINY",
+              "width": null,
+              "height": null
+            }
+          }
+        ],
+        "seoTitle": null,
+        "seoDescription": null,
+        "ogMediaId": null,
+        "canonicalOverride": null,
+        "indexable": true,
+        "followLinks": true
+      }
+    }
+  },
+  {
+    "path": "/api/v1/gallery/echo",
+    "status": 200,
+    "ms": 200,
+    "body": {
+      "data": {
+        "id": "e61b23d6-c1dc-4630-924e-c6b8f2b776dd",
+        "slug": "echo",
+        "status": "published",
+        "featured": false,
+        "title": "ECHO",
+        "subtitle": null,
+        "description": null,
+        "venue": null,
+        "cover": {
+          "src": "/api/v1/media/1b7c9cd4-414f-4cc5-a04b-cb8705dca327",
+          "alt": "Crowd and stage at ECHO",
+          "width": null,
+          "height": null
+        },
+        "hero": null,
+        "eventId": null,
+        "eventSlug": null,
+        "eventHref": null,
+        "event": null,
+        "categories": [
+          "other"
+        ],
+        "media": [
+          {
+            "id": "6346bb7c-46a1-46ea-aa0a-b2f7bf1fe30c",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "DJ at the decks at ECHO",
+            "featured": false,
+            "sortOrder": 0,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/98f880ed-e38b-4034-8f35-ee85324f4459",
+              "alt": "DJ at the decks at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/98f880ed-e38b-4034-8f35-ee85324f4459",
+              "alt": "DJ at the decks at ECHO",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "22471f8e-e6a0-477f-93af-0da0a5c012bb",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Stage under purple lasers at ECHO",
+            "featured": false,
+            "sortOrder": 1,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/3679d7d4-b66f-4327-af74-845bd38076d7",
+              "alt": "Stage under purple lasers at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/3679d7d4-b66f-4327-af74-845bd38076d7",
+              "alt": "Stage under purple lasers at ECHO",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "ddc1e5a8-f5ba-4cb9-afed-d6aa03c36615",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "DJ portrait at ECHO",
+            "featured": false,
+            "sortOrder": 2,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/38b6be04-8d8e-42b8-bef1-0b7f642f6f28",
+              "alt": "DJ portrait at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/38b6be04-8d8e-42b8-bef1-0b7f642f6f28",
+              "alt": "DJ portrait at ECHO",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "829be256-9381-49c5-a6ca-5645ee562676",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Crowd and stage at ECHO",
+            "featured": false,
+            "sortOrder": 3,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/1b7c9cd4-414f-4cc5-a04b-cb8705dca327",
+              "alt": "Crowd and stage at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/1b7c9cd4-414f-4cc5-a04b-cb8705dca327",
+              "alt": "Crowd and stage at ECHO",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "a27b46b2-321f-462a-b1d8-bd008910ebe5",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Two DJs performing at ECHO",
+            "featured": false,
+            "sortOrder": 4,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/be3f56c9-75c6-4bb4-9ba8-aad42b25853f",
+              "alt": "Two DJs performing at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/be3f56c9-75c6-4bb4-9ba8-aad42b25853f",
+              "alt": "Two DJs performing at ECHO",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "75159944-9e4c-4176-bab9-f233a9a96fcb",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Live DJ set at ECHO",
+            "featured": false,
+            "sortOrder": 5,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/584cf910-42b9-4b8c-b31f-87aff924b4b4",
+              "alt": "Live DJ set at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/584cf910-42b9-4b8c-b31f-87aff924b4b4",
+              "alt": "Live DJ set at ECHO",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "05a1c956-224c-4c0c-9521-0d6a2c18c5d2",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "ECHO audience group",
+            "featured": false,
+            "sortOrder": 6,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/1c280576-8ace-47fd-a9f9-9786c9f62447",
+              "alt": "ECHO audience group",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/1c280576-8ace-47fd-a9f9-9786c9f62447",
+              "alt": "ECHO audience group",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "6d89dd0b-568c-476c-ad3b-bf470efd07f8",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Group portrait at ECHO",
+            "featured": false,
+            "sortOrder": 7,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/7d2faf45-bdbb-4d85-a7af-072c5d9aefc6",
+              "alt": "Group portrait at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/7d2faf45-bdbb-4d85-a7af-072c5d9aefc6",
+              "alt": "Group portrait at ECHO",
+              "width": null,
+              "height": null
+            }
+          },
+          {
+            "id": "60b45c17-494c-4d69-b070-df267f062e85",
+            "type": "photo",
+            "category": "other",
+            "title": null,
+            "caption": "Crowd at ECHO",
+            "featured": false,
+            "sortOrder": 8,
+            "video": null,
+            "image": {
+              "src": "/api/v1/media/b509c695-3ccf-4089-b983-7ea99662be0a",
+              "alt": "Crowd at ECHO",
+              "width": null,
+              "height": null
+            },
+            "thumbnail": {
+              "src": "/api/v1/media/b509c695-3ccf-4089-b983-7ea99662be0a",
+              "alt": "Crowd at ECHO",
+              "width": null,
+              "height": null
+            }
+          }
+        ],
+        "seoTitle": null,
+        "seoDescription": null,
+        "ogMediaId": null,
+        "canonicalOverride": null,
+        "indexable": true,
+        "followLinks": true
+      }
+    }
+  },
+  {
+    "path": "/api/v1/events/destiny",
+    "status": 200,
+    "ms": 205,
+    "body": {
+      "data": {
+        "id": "08f78da3-8c86-4ff0-b09c-35d9530fdea1",
+        "slug": "destiny",
+        "status": "PUBLISHED",
+        "lifecycleStatus": "UPCOMING",
+        "dateStatus": "TBA",
+        "scheduleStatus": "TBC",
+        "startAt": null,
+        "endAt": null,
+        "venue": {
+          "name": "Metro City",
+          "city": "Perth",
+          "region": null,
+          "country": "Australia",
+          "address": null,
+          "mapUrl": null
+        },
+        "featured": false,
+        "title": "DESTINY",
+        "eyebrow": "MUSIC MEETS SOUL",
+        "shortDescription": "Music, culture and people connect in Perth.",
+        "description": "DESTINY is a high-energy nightlife experience where music, culture and people meet on the dancefloor.",
+        "poster": {
+          "src": "/api/v1/media/4d1da8ef-b82e-4231-9d12-e81439025155",
+          "alt": "DESTINY official event poster, 30 May 2026 at Metro City",
+          "width": null,
+          "height": null
+        },
+        "hero": {
+          "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+          "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+          "width": null,
+          "height": null
+        },
+        "seoTitle": "DESTINY | Connection Rave — Perth",
+        "seoDescription": "DESTINY is a Connection Rave music experience at Metro City, Perth. Date and schedule to be announced.",
+        "ogMediaId": null,
+        "canonicalOverride": null,
+        "indexable": true,
+        "followLinks": true,
+        "genres": [
+          "EDM",
+          "Hardstyle",
+          "Techno",
+          "Vinahouse"
+        ],
+        "lineup": [
+          {
+            "id": "e4e65888-f958-4cf0-bb11-cd0a94e292cb",
+            "slug": "ryal",
+            "name": "RYAL",
+            "country": "VIETNAM",
+            "portrait": {
+              "src": "/api/v1/media/8dacab34-a200-4adb-8c0d-5937e38ae7b7",
+              "alt": "RYAL in the DESTINY artist promotional poster",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 0
+          },
+          {
+            "id": "f33f1b91-904f-4a54-a8c5-ed015427435e",
+            "slug": "nicole-chen",
+            "name": "NICOLE CHEN",
+            "country": "SINGAPORE",
+            "portrait": {
+              "src": "/api/v1/media/30d8166a-eccb-4cc8-a64d-49a3f37cf560",
+              "alt": "Nicole Chen in the DESTINY artist promotional poster",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 1
+          },
+          {
+            "id": "a7e1d932-6590-4ea4-9b75-5eb8c55111db",
+            "slug": "kickcheeze",
+            "name": "KICKCHEEZE",
+            "country": "AUSTRALIA",
+            "portrait": {
+              "src": "/assets/artist-kickcheeze.jpg",
+              "alt": "KICKCHEEZE — AUSTRALIA lineup portrait",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 2
+          },
+          {
+            "id": "3425315d-f66e-4b9c-9247-69f0d006e4ae",
+            "slug": "bi-hi",
+            "name": "BI HI",
+            "country": "VIETNAM",
+            "portrait": {
+              "src": "/assets/artist-bi-hi.jpg",
+              "alt": "BI HI — VIETNAM lineup portrait",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 3
+          },
+          {
+            "id": "44b847c4-46a8-4a2a-abef-bb195ab762be",
+            "slug": "rysal",
+            "name": "RYSAL",
+            "country": "AUSTRALIA",
+            "portrait": {
+              "src": "/assets/artist-rysal.jpg",
+              "alt": "RYSAL — AUSTRALIA lineup portrait",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 4
+          },
+          {
+            "id": "fe404be8-b7c0-4666-90bc-733b3ff7dd21",
+            "slug": "maya",
+            "name": "MAYA",
+            "country": "SINGAPORE",
+            "portrait": {
+              "src": "/api/v1/media/b66c1cac-4b2b-4243-861e-575f1fa11a39",
+              "alt": "",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 5
+          },
+          {
+            "id": "32a4bffe-2d8c-4874-aea5-02821a610edf",
+            "slug": "mico",
+            "name": "MICO",
+            "country": "AUSTRALIA",
+            "portrait": {
+              "src": "/assets/artist-mico.jpg",
+              "alt": "MICO — AUSTRALIA lineup portrait",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 6
+          },
+          {
+            "id": "47b93294-9fc1-4f58-a6a2-d55cadb7b6e1",
+            "slug": "ems",
+            "name": "EMS",
+            "country": "AUSTRALIA",
+            "portrait": {
+              "src": "/assets/artist-ems.jpg",
+              "alt": "EMS — AUSTRALIA lineup portrait",
+              "width": null,
+              "height": null
+            },
+            "sortOrder": 7
+          }
+        ],
+        "tickets": [],
+        "ticketSettings": {
+          "enabled": true,
+          "saleStatus": "COMING_SOON",
+          "currency": "AUD",
+          "onlineSalesEnabled": true,
+          "doorSalesEnabled": false,
+          "capacityTracking": true,
+          "squarePaymentEnabled": false,
+          "externalProviderEnabled": false,
+          "providerName": null,
+          "providerUrl": null,
+          "providerEventId": null
+        },
+        "vip": {
+          "enabled": false,
+          "bookingEnabled": true,
+          "availabilityMode": "REQUEST_ONLY",
+          "currency": "AUD",
+          "squarePaymentEnabled": false,
+          "packages": [],
+          "booths": []
+        },
+        "faqs": [
+          {
+            "id": "00000000-0000-0000-0000-000000000101",
+            "question": "Where can I buy tickets?",
+            "answer": "Ticket release details will be published here when confirmed by the organiser.",
+            "sortOrder": 0
+          },
+          {
+            "id": "00000000-0000-0000-0000-000000000102",
+            "question": "How do VIP table requests work?",
+            "answer": "VIP table requests are reviewed by the organiser; confirmed package details will be published here.",
+            "sortOrder": 1
+          },
+          {
+            "id": "00000000-0000-0000-0000-000000000103",
+            "question": "When will the schedule be announced?",
+            "answer": "The schedule will be published here once it is confirmed by the organiser.",
+            "sortOrder": 2
+          }
+        ],
+        "gallery": [
+          {
+            "id": "bfbbd795-c19b-4c9d-bc5e-fe1e06eac064",
+            "slug": "destiny",
+            "title": "DESTINY",
+            "cover": {
+              "src": "/api/v1/media/4b44b5db-2379-4da8-a562-dcfd6ef31c8b",
+              "alt": "Live DJ performance at DESTINY under cyan stage lighting",
+              "width": null,
+              "height": null
+            },
+            "hero": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "path": "/api/v1/events/destiny/vip",
+    "status": 200,
+    "ms": 216,
+    "body": {
+      "data": {
+        "settings": {
+          "id": "08f78da3-8c86-4ff0-b09c-35d9530fdea1",
+          "vipEnabled": false,
+          "vipBookingEnabled": true,
+          "vipAvailabilityMode": "REQUEST_ONLY",
+          "vipCurrency": "AUD",
+          "vipSquareEnabled": false,
+          "vipBooths": []
+        },
+        "packages": [],
+        "booths": []
+      }
+    }
+  },
+  {
+    "path": "/api/v1/events/destiny/tickets",
+    "status": 200,
+    "ms": 192,
+    "body": {
+      "data": {
+        "settings": {
+          "id": "08f78da3-8c86-4ff0-b09c-35d9530fdea1",
+          "ticketingEnabled": true,
+          "ticketSaleStatus": "COMING_SOON",
+          "ticketCurrency": "AUD",
+          "ticketOnlineSalesEnabled": true,
+          "ticketDoorSalesEnabled": false,
+          "ticketCapacityTracking": true,
+          "ticketSquareEnabled": false,
+          "ticketExternalProviderEnabled": false,
+          "ticketProviderName": null,
+          "ticketProviderUrl": null,
+          "ticketProviderEventId": null
+        },
+        "tiers": []
+      }
+    }
+  }
+]

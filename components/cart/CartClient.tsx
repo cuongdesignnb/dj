@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Info, ShoppingBag } from 'lucide-react';
 import Container from '@/components/ui/Container';

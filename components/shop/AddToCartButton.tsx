@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Check, ShoppingCart } from 'lucide-react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { sessionCartAdapter } from '@/lib/cart/adapter';
 import { cartInputFor } from '@/lib/cart/input';
 import type { CartAdapter } from '@/lib/cart/types';

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -9,34 +9,17 @@ import PageHero from '@/components/shared/PageHero';
 import VipInfoGrid from '@/components/vip/VipInfoGrid';
 import BookingRequestForm from '@/components/vip/BookingRequestForm';
 
-import { getVipRepository } from '@/lib/vip/repository';
+import { loadVipPage } from '@/lib/vip/page';
 import { parseVipSelection } from '@/lib/vip/selection';
-import type { VipPageData } from '@/lib/vip/types';
-import BookNowError from './error';
+import VipStateNotice, { VipAvailabilityNotice } from '@/components/vip/VipStateNotice';
 import { buildMetadata } from '@/lib/seo/metadata';
 
 export async function generateMetadata(): Promise<ReturnType<typeof buildMetadata>> {
   const result = await loadVipPage();
   const title = 'VIP Booking Request | Connection Rave';
   const description = 'Send a VIP table booking request and share your preferred booth, group size and bottle selection.';
-  if ('error' in result) return buildMetadata({ title, description, path: '/book-now', indexable: false, follow: false });
-  return buildMetadata({ title: `${result.data.event.title} VIP Booking Request | Connection Rave`, description, path: '/book-now', indexable: false, follow: false });
-}
-
-async function loadVipPage(): Promise<
-  { data: VipPageData } | { error: { message: string } }
-> {
-  const selection = getVipRepository();
-  if (!selection.ok) {
-    return { error: { message: selection.error.message } };
-  }
-
-  const result = await selection.repository.getVipPage();
-  if (!result.ok) {
-    return { error: { message: result.error.message } };
-  }
-
-  return { data: result.data };
+  const event = 'data' in result ? result.data.event : 'event' in result ? result.event : null;
+  return buildMetadata({ title: event ? `${event.title} VIP Booking Request | Connection Rave` : title, description, path: '/book-now', indexable: false, follow: false });
 }
 
 /** Experience switch in the hero. Tickets is a link out; VIP Table is this page. */
@@ -70,9 +53,7 @@ export default async function BookNowPage({
 }) {
   const [params, result] = await Promise.all([searchParams, loadVipPage()]);
 
-  if ('error' in result) {
-    return <BookNowError errorMessage={result.error.message} />;
-  }
+  if (!('data' in result) || !result.canRequest) return <VipStateNotice state={result} page="booking" />;
 
   const data = result.data;
   // Unknown booth or bottle ids are dropped here, so a tampered link cannot
@@ -113,6 +94,7 @@ export default async function BookNowPage({
           <ExperienceTabs labels={data.bookingTabs} />
         </PageHero>
 
+        <VipAvailabilityNotice state={result} />
         <BookingRequestForm data={data} content={data.bookingForm} initialSelection={initialSelection} />
 
         <VipInfoGrid

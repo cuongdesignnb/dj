@@ -194,7 +194,8 @@ export default function GalleryMosaic({
                 key={item.id}
                 item={item}
                 onOpen={openMedia}
-                priority={position === 0}
+                // The album catalogue is above this optional preview; do not preload its originals.
+                priority={false}
                 className={tileClass(position)}
                 sizes={
                   position === 0

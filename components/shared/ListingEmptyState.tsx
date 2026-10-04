@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import type { PublicListingEmptyState } from '@/lib/cms/public-page';
 
 export default function ListingEmptyState({

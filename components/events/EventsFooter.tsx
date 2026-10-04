@@ -2,7 +2,7 @@
 
 import type { ReactElement } from 'react';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';

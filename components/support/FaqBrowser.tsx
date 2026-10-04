@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredValue, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useInView } from 'framer-motion';
 import { MessageCircleQuestion } from 'lucide-react';
 import Container from '@/components/ui/Container';

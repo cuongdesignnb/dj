@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Clock, Crown, Headset, Map, Ticket, Users, Wine } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';

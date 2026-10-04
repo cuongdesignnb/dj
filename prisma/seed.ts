@@ -39,7 +39,7 @@ async function main() {
     await seedSettings(context);
     await seedAdminUser(context, roles);
     await seedCms(context, event.id);
-  });
+  }, { maxWait: 10_000, timeout: 120_000 });
 
   console.log(`[seed] bootstrap complete (preview content: ${preview ? 'enabled' : 'disabled'}).`);
 }

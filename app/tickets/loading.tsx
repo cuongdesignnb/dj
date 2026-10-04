@@ -1,4 +1,5 @@
 import Container from '@/components/ui/Container';
+import { RouteLoadingMarker } from '@/components/shared/NavigationFeedback';
 
 /**
  * Skeleton mirroring the /tickets layout so nothing jumps when content lands.
@@ -12,6 +13,7 @@ export default function Loading() {
       aria-label="Loading ticket information"
     >
       <div className="h-[84px]" />
+      <RouteLoadingMarker />
       <Container>
         <div className="pt-6">
           <div className="h-3 w-32 rounded-full bg-white/[0.06]" />

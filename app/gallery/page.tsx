@@ -10,6 +10,9 @@ import RelatedCollections from '@/components/gallery/RelatedCollections';
 import { getGalleryRepository } from '@/lib/gallery/repository';
 import type { GalleryCategoryFilter, GalleryPageData } from '@/lib/gallery/types';
 import { availableCategories } from '@/lib/gallery/helpers';
+import { countPhotos } from '@/lib/gallery/helpers';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
+import Container from '@/components/ui/Container';
 import GalleryError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
 import { getContentSeo } from '@/lib/seo/content';
@@ -86,6 +89,9 @@ export default async function GalleryPage({
     title: 'Gallery',
     description: 'Gallery Preview — Moments That Inspire',
   });
+  const albumsSection = listingSection(data.content, 'albums', {
+    title: 'Albums', description: 'Explore all published collections.',
+  });
   const featuredSection = listingSection(data.content, 'featured', {
     title: 'Featured Collection',
     description: 'Music × People × Culture × A Brighter Tomorrow',
@@ -117,7 +123,14 @@ export default async function GalleryPage({
         />
 
         <div id="collections">
+          {albumsSection.enabled !== false && <RelatedCollections collections={data.collections} title={albumsSection.title} description={albumsSection.description} />}
+          {data.collections.length === 0 && <Container><section className="py-16"><h2 className="font-heading text-3xl uppercase">{emptyState.title}</h2><p className="mt-3 text-rave-muted">{emptyState.description}</p></section></Container>}
+        </div>
+
+        <div id="gallery-preview">
           {gallerySection.enabled !== false && (
+            <>
+            {data.featuredCollection && <Container><div data-testid="gallery-preview-label" className="pt-12"><h2 className="font-heading text-2xl uppercase">Previewing: {data.featuredCollection.title}</h2><p className="mt-2 text-rave-muted">{countPhotos(data.featuredCollection)} photos in this album · <Link href={`/gallery/${data.featuredCollection.slug}`} className="underline">Open album</Link></p></div></Container>}
             <GalleryMosaic
               media={data.previewMedia}
               initialFilter={initialFilter}
@@ -129,15 +142,12 @@ export default async function GalleryPage({
               filterOptions={filter.options}
               emptyState={emptyState}
             />
+            </>
           )}
         </div>
 
         {featuredSection.enabled !== false && (
           <FeaturedCollection collection={data.featuredCollection} section={featuredSection} />
-        )}
-
-        {gallerySection.enabled !== false && (
-          <RelatedCollections collections={data.collections} title="Albums" />
         )}
 
         <FinalCtaSection cta={data.finalCta} titleId="gallery-cta-title" />

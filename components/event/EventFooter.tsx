@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useReducedMotion } from 'framer-motion';
 import Container from '@/components/ui/Container';
 import { cardStagger, cardItem, lineReveal } from '@/lib/events/motion';

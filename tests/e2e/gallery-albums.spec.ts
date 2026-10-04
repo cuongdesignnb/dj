@@ -98,7 +98,11 @@ test('real admin form saves Draft, reloads, publishes, reorders/removes images a
   expect((await getAlbum(id)).items).toHaveLength(2);
   expect((await (await admin.get(`/api/v1/admin/gallery?search=${albumSlug}`)).json()).data.total).toBe(1);
   expect((await request.get(`/api/v1/gallery/${albumSlug}`)).status()).toBe(404);
-  expect((await page.goto(`/gallery/${albumSlug}`))!.status()).toBe(404);
+  const draftResponse = await page.goto(`/gallery/${albumSlug}`);
+  expect([200, 404]).toContain(draftResponse!.status()); // Next loading boundaries can stream notFound after HTTP headers.
+  await expect(page.getByRole('heading', { name: 'Collection Not Found', exact: true })).toBeVisible();
+  await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
+  await expect(page.locator('#collection-media-grid')).toHaveCount(0);
   expect(JSON.stringify((await (await request.get('/api/v1/events/destiny')).json()).data.gallery)).not.toContain(albumSlug);
 
   await page.goto(`/admin/gallery/${id}/edit`);
@@ -150,13 +154,17 @@ test('real admin form saves Draft, reloads, publishes, reorders/removes images a
   await page.getByRole('combobox', { name: /^Status/ }).selectOption('draft');
   await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
   await expect.poll(async () => (await getAlbum(id)).status).toBe('draft');
-  expect((await page.goto(`/gallery/${albumSlug}`))!.status()).toBe(404);
+  const unpublishedResponse = await page.goto(`/gallery/${albumSlug}`);
+  expect([200, 404]).toContain(unpublishedResponse!.status());
+  await expect(page.getByRole('heading', { name: 'Collection Not Found', exact: true })).toBeVisible();
+  await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
+  await expect(page.locator('#collection-media-grid')).toHaveCount(0);
   expect((await request.get(`/api/v1/gallery/${albumSlug}`)).status()).toBe(404);
   await page.goto('/gallery');
   await expect(page.locator(`a[href="/gallery/${albumSlug}"]`)).toHaveCount(0);
 });
 
-test('real API saves 15 existing images consistently and invalid mutations leave the album unchanged', async ({ request }) => {
+test('real API saves 15 existing images consistently and invalid mutations leave the album unchanged', async ({ request, page }) => {
   const albumSlug = slug('fifteen');
   const images = media.filter((item) => item.kind !== 'document').slice(0, 15);
   expect(images).toHaveLength(15);
@@ -184,7 +192,11 @@ test('real API saves 15 existing images consistently and invalid mutations leave
   expect(published.media[0].image.alt).toBe('Placement alt 14');
   expect((await admin.patch(`/api/v1/admin/gallery/${created.id}`, { data: { slug: `${albumSlug}-renamed` } })).status()).toBe(200);
   expect((await request.get(`/api/v1/gallery/${albumSlug}`)).status()).toBe(404);
-  expect((await request.get(`/gallery/${albumSlug}`, { maxRedirects: 0 })).status()).toBe(308);
+  const renamedResponse = await request.get(`/gallery/${albumSlug}`, { maxRedirects: 0 });
+  expect([200, 308]).toContain(renamedResponse.status()); // A loading boundary can stream Next's permanent meta redirect.
+  await page.goto(`/gallery/${albumSlug}`);
+  await expect(page).toHaveURL(new RegExp(`/gallery/${albumSlug}-renamed$`));
+  await expect(page.locator('#collection-media-grid img').first()).toHaveAttribute('alt', 'Placement alt 14');
   expect((await admin.post(`/api/v1/admin/gallery/${created.id}/archive`)).status()).toBe(200);
   expect((await request.get(`/api/v1/gallery/${albumSlug}-renamed`)).status()).toBe(404);
 });

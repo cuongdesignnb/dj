@@ -166,6 +166,9 @@ export interface VipFooterData {
 
 export interface VipPageData {
   event: VipEventContext;
+  bookingEnabled: boolean;
+  allowBoothlessRequest: boolean;
+  squareEnabled: boolean;
   package: VipPackage;
   booths: VipBooth[];
   bottles: VipBottle[];
@@ -198,8 +201,7 @@ export interface VipSelection {
 
 export interface BookingRequestInput {
   eventId: string;
-  packageId: string;
-  experienceType: 'vip-table';
+  vipPackageId: string;
   fullName: string;
   email: string;
   phone: string;
@@ -208,6 +210,18 @@ export interface BookingRequestInput {
   bottleIds: string[];
   specialRequests?: string;
 }
+
+export interface VipStateContext {
+  event: VipEventContext;
+  content: { tables: Record<string, unknown> | null; booking: Record<string, unknown> | null };
+}
+
+/** Business configuration is not an API error. Only readable, enabled data can accept requests. */
+export type VipPageState =
+  | ({ kind: 'vip-disabled' | 'no-active-package' } & VipStateContext)
+  | ({ kind: 'not-configured'; reason: 'content' } & VipStateContext)
+  | { kind: 'ready' | 'booking-disabled' | 'no-booths' | 'no-availability'; data: VipPageData; canRequest: boolean }
+  | { kind: 'service-unavailable' | 'invalid-response'; message: string };
 
 export interface BookingRequestResult {
   requestId?: string;

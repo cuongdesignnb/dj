@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion } from 'framer-motion';
 import { ArrowRight, Gem, Shirt, Star } from 'lucide-react';
 import { shopReveal, shopStagger } from '@/lib/animations';

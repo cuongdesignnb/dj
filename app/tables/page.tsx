@@ -9,32 +9,15 @@ import PageHero from '@/components/shared/PageHero';
 import VipConfigurator from '@/components/vip/VipConfigurator';
 import VipInfoGrid from '@/components/vip/VipInfoGrid';
 
-import { getVipRepository } from '@/lib/vip/repository';
+import { loadVipPage } from '@/lib/vip/page';
 import { parseVipSelection } from '@/lib/vip/selection';
-import type { VipPageData } from '@/lib/vip/types';
-import TablesError from './error';
+import VipStateNotice, { VipAvailabilityNotice } from '@/components/vip/VipStateNotice';
 import { buildMetadata } from '@/lib/seo/metadata';
-
-async function loadVipPage(): Promise<
-  { data: VipPageData } | { error: { message: string } }
-> {
-  const selection = getVipRepository();
-  if (!selection.ok) {
-    return { error: { message: selection.error.message } };
-  }
-
-  const result = await selection.repository.getVipPage();
-  if (!result.ok) {
-    return { error: { message: result.error.message } };
-  }
-
-  return { data: result.data };
-}
 
 export async function generateMetadata(): Promise<Metadata> {
   const result = await loadVipPage();
-  if ('error' in result) return buildMetadata({ title: 'VIP Tables | Connection Rave', description: 'VIP table information from Connection Rave.', path: '/tables', indexable: false });
-  const event = result.data.event;
+  const event = 'data' in result ? result.data.event : 'event' in result ? result.event : null;
+  if (!event) return buildMetadata({ title: 'VIP Tables | Connection Rave', description: 'VIP table information from Connection Rave.', path: '/tables', indexable: false });
   return buildMetadata({ title: `${event.title} VIP Tables | Connection Rave`, description: `Review VIP table and bottle information for ${event.title}. Availability is confirmed directly with the team.`, path: '/tables', image: event.image.src ? { url: event.image.src, alt: event.image.alt, width: event.image.width, height: event.image.height } : null, indexable: true });
 }
 
@@ -49,9 +32,7 @@ export default async function TablesPage({
 }) {
   const [params, result] = await Promise.all([searchParams, loadVipPage()]);
 
-  if ('error' in result) {
-    return <TablesError errorMessage={result.error.message} />;
-  }
+  if (!('data' in result)) return <VipStateNotice state={result} page="tables" />;
 
   const data = result.data;
   // Lets /tables itself be deep-linked with a selection, and keeps a round trip
@@ -86,15 +67,16 @@ export default async function TablesPage({
           ]}
           visual={data.tablesHero.image?.src ? data.tablesHero.image : data.event.image}
           titleId="tables-hero-title"
-          actions={[
+          actions={result.canRequest ? [
             { label: data.tablesCta.primary.label, href: data.tablesCta.primary.href, tone: 'primary' },
             ...(data.tablesCta.secondary ? [{ label: data.tablesCta.secondary.label, href: data.tablesCta.secondary.href, tone: 'secondary' as const }] : []),
-          ]}
+          ] : []}
           sideNotes={data.tablesHero.sideNotes}
           footNotes={data.tablesHero.footNotes}
         />
 
-        <VipConfigurator data={data} initialSelection={initialSelection} />
+        <VipAvailabilityNotice state={result} />
+        <VipConfigurator data={data} initialSelection={initialSelection} canRequest={result.canRequest} />
 
         <VipInfoGrid
           items={data.infoItems}
@@ -110,7 +92,7 @@ export default async function TablesPage({
           context={data.tablesMap.faqContext}
         />
 
-        <FinalCtaSection cta={data.tablesCta} titleId="tables-cta-title" />
+        {result.canRequest && <FinalCtaSection cta={data.tablesCta} titleId="tables-cta-title" />}
       </main>
       <EventsFooter footer={data.footer} />
     </EventsMotion>

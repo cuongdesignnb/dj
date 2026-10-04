@@ -342,6 +342,30 @@ export async function getVipSettings(eventId: string) {
   return { eventId: event.id, vipEnabled: event.vipEnabled, paymentMode: defaultPackage ? (await db.vipPackage.findUnique({ where: { id: defaultPackage.id }, select: { paymentMode: true } }))?.paymentMode ?? 'REQUEST_ONLY' : 'REQUEST_ONLY', availabilityMode: event.vipAvailabilityMode, bookingEnabled: event.vipBookingEnabled, defaultPackageId: defaultPackage?.id ?? null, requestExpiryMinutes: event.vipRequestExpiryMinutes, boothHoldMinutes: event.vipBoothHoldMinutes, currency: event.vipCurrency, squarePaymentEnabled: event.vipSquareEnabled };
 }
 
+/** Read-only operational summary. Counts/statuses never switch features on or seed content. */
+export async function getEventReadiness(eventId: string, mode: 'vip' | 'tickets') {
+  const event = await ensureEvent(eventId);
+  const contentKeys = mode === 'vip' ? [`tables:${eventId}`, `booking:${eventId}`] : [`tickets:${eventId}`];
+  const contents = await db.pageContent.findMany({ where: { key: { in: contentKeys } }, select: { key: true, status: true } });
+  const contentStatus = (key: string) => contents.find((row) => row.key === key)?.status ?? 'MISSING';
+  const warnings: string[] = [];
+  if (mode === 'tickets') {
+    const activeTiers = await db.ticketTier.count({ where: { eventId, enabled: true } });
+    if (event.ticketingEnabled && !activeTiers) warnings.push('Ticketing is enabled but no active ticket tiers exist. Configure tiers before announcing a release.');
+    return { facts: { 'Ticketing enabled': event.ticketingEnabled, 'Sale status': event.ticketSaleStatus, 'Active tiers': activeTiers, 'Square enabled': event.ticketSquareEnabled, 'External provider configured': event.ticketExternalProviderEnabled && Boolean(event.ticketProviderUrl), 'Tickets content': contentStatus(contentKeys[0]) }, warnings };
+  }
+  const [activePackages, activeBooths, bottleOptions] = await Promise.all([
+    db.vipPackage.count({ where: { eventId, enabled: true } }),
+    db.vipBooth.count({ where: { eventId, enabled: true, requestable: true } }),
+    db.bottleOption.count({ where: { enabled: true } }),
+  ]);
+  if (event.vipBookingEnabled && !event.vipEnabled) warnings.push('Booking is enabled but VIP is disabled. The public booking form stays closed until VIP is enabled.');
+  if (event.vipEnabled && !activePackages) warnings.push('VIP is enabled but no active package exists. Enable and check a package to show its details.');
+  if (activePackages && !activeBooths) warnings.push('Active package exists but no booths are configured. Request-only packages may accept a request without a booth; other modes require a booth.');
+  for (const key of contentKeys) if (contentStatus(key) !== 'PUBLISHED') warnings.push(`${key.startsWith('tables:') ? 'Tables' : 'Booking'} content is not published. Review it in the content editor.`);
+  return { facts: { 'VIP enabled': event.vipEnabled, 'Booking enabled': event.vipBookingEnabled, 'Availability mode': event.vipAvailabilityMode, 'Active packages': activePackages, 'Active booths': activeBooths, 'Bottle options': bottleOptions, 'Tables content': contentStatus(contentKeys[0]), 'Booking content': contentStatus(contentKeys[1]) }, warnings };
+}
+
 export async function updateVipSettings(eventId: string, input: unknown) {
   await ensureEvent(eventId);
   const value = vipSettingsInput.parse(input);

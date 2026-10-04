@@ -7,9 +7,8 @@ import { Minus, Plus } from 'lucide-react';
 /**
  * Stepper for group size.
  *
- * No upper bound is imposed: the package is designed for a certain number, but
- * a larger group is something the team can review, not something the form
- * should refuse. Exceeding it surfaces a warning beside the field instead.
+ * Exceeding package capacity surfaces a validation error in the form.
+ * The service remains authoritative and larger groups must contact the organiser.
  */
 export default function GroupSizeControl({
   value,

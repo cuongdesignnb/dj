@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { ArrowRight, CalendarDays, Clock, MapPin, Music2, Ticket } from 'lucide-react';
 import Container from '@/components/ui/Container';

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
 import type { NewsArticle } from '@/lib/news/types';

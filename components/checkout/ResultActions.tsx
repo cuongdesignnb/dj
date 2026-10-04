@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useTransition } from 'react';
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, RefreshCw } from 'lucide-react';
 import { sessionCartAdapter } from '@/lib/cart/adapter';

@@ -71,7 +71,8 @@ const listing = (title: string, description: string, ctaLabel: string, ctaHref: 
             ]
           : title === 'Gallery'
             ? [
-                { key: 'gallery', title: 'Gallery', description: 'Gallery Preview — Moments That Inspire', enabled: true },
+                { key: 'albums', title: 'Albums', description: 'Explore all published collections.', enabled: true },
+                { key: 'gallery', title: 'Gallery Preview', description: 'Preview a collection, then open its album for all photos.', enabled: true },
                 { key: 'featured', title: 'Featured Collection', description: 'Music × People × Culture × A Brighter Tomorrow', enabled: true },
               ]
             : [

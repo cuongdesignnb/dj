@@ -135,8 +135,7 @@ export default async function GalleryCollectionPage({
           cta={{
             title: `EXPLORE THE ${collection.title} EXPERIENCE`,
             subtitle: 'Same people. A brighter tomorrow.',
-            primary: { label: 'View Event', href: collection.eventHref ?? '/event' },
-            secondary: { label: 'Get Tickets', href: '/tickets' },
+            primary: collection.eventHref ? { label: 'View Event', href: collection.eventHref } : { label: 'Browse Albums', href: '/gallery#collections' },
             background: page?.ok ? page.data.finalCta.background : undefined,
           }}
           titleId="collection-cta-title"

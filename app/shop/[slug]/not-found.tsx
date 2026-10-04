@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import Header from '@/components/home/Header';
 
 /** Shown when a known slug no longer resolves to a product. */
