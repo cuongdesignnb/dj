@@ -27,6 +27,14 @@ describe('VIP business-state classifier', () => {
     const raw = vip(); raw.packages = [];
     expect(normalizeVipState(event, raw, content, content).kind).toBe('no-active-package');
   });
+  it('uses the explicitly selected default instead of the first active package', () => {
+    const raw = vip(); raw.packages.push({ ...pkg, id: 'selected-package', name: 'Selected Package' });
+    expect(normalizeVipState(event, { ...raw, settings: { ...raw.settings, vipDefaultPackageId: 'selected-package' } }, content, content)).toMatchObject({ kind: 'ready', data: { package: { id: 'selected-package' } } });
+  });
+  it('a disabled/missing selected default does not silently fall back to another package', () => {
+    const raw = vip();
+    expect(normalizeVipState(event, { ...raw, settings: { ...raw.settings, vipDefaultPackageId: 'disabled-package' } }, content, content).kind).toBe('no-active-package');
+  });
   it('missing published CMS content is configuration, not malformed API data', () => {
     expect(normalizeVipState(event, vip(), null, content)).toMatchObject({ kind: 'not-configured', reason: 'content' });
   });

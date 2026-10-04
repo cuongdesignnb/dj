@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { db } from '@/server/db/client';
 import { notFound, validationError } from '@/server/errors';
+import { databaseUuid } from '@/server/validators/identifiers';
 import { isPageContentKey, pageContentSchema } from '@/lib/cms/page-content';
 import { isSafeCustomUrl, isValidAnchor, STATIC_ROUTES, type InternalRoute } from '@/lib/navigation/route-registry';
 
@@ -333,13 +334,19 @@ export async function deleteTicketTier(eventId: string, tierId: string) {
 }
 
 const vipSettingsInput = z.object({
-  vipEnabled: z.boolean().optional(), paymentMode: z.enum(['REQUEST_ONLY', 'FULL_PAYMENT', 'DEPOSIT']).optional(), availabilityMode: z.string().max(40).optional(), bookingEnabled: z.boolean().optional(), defaultPackageId: z.string().uuid().nullable().optional(), requestExpiryMinutes: z.number().int().positive().optional(), boothHoldMinutes: z.number().int().positive().optional(), currency: currency.optional(), squarePaymentEnabled: z.boolean().optional(),
+  vipEnabled: z.boolean().optional(), paymentMode: z.enum(['REQUEST_ONLY', 'FULL_PAYMENT', 'DEPOSIT']).optional(), availabilityMode: z.string().max(40).optional(), bookingEnabled: z.boolean().optional(), defaultPackageId: databaseUuid.nullable().optional(), requestExpiryMinutes: z.number().int().positive().optional(), boothHoldMinutes: z.number().int().positive().optional(), currency: currency.optional(), squarePaymentEnabled: z.boolean().optional(),
 });
+
+function parseVipInput<T>(schema: z.ZodType<T>, input: unknown): T {
+  const parsed = schema.safeParse(input);
+  if (!parsed.success) throw validationError(Object.fromEntries(parsed.error.issues.map((issue) => [issue.path.join('.') || 'data', issue.message])), 'Some VIP fields need attention.');
+  return parsed.data;
+}
 
 export async function getVipSettings(eventId: string) {
   const event = await ensureEvent(eventId);
-  const defaultPackage = event.vipDefaultPackageId ? await db.vipPackage.findFirst({ where: { id: event.vipDefaultPackageId, eventId }, select: { id: true, name: true } }) : null;
-  return { eventId: event.id, vipEnabled: event.vipEnabled, paymentMode: defaultPackage ? (await db.vipPackage.findUnique({ where: { id: defaultPackage.id }, select: { paymentMode: true } }))?.paymentMode ?? 'REQUEST_ONLY' : 'REQUEST_ONLY', availabilityMode: event.vipAvailabilityMode, bookingEnabled: event.vipBookingEnabled, defaultPackageId: defaultPackage?.id ?? null, requestExpiryMinutes: event.vipRequestExpiryMinutes, boothHoldMinutes: event.vipBoothHoldMinutes, currency: event.vipCurrency, squarePaymentEnabled: event.vipSquareEnabled };
+  const defaultPackage = event.vipDefaultPackageId ? await db.vipPackage.findFirst({ where: { id: event.vipDefaultPackageId, eventId }, select: { id: true, paymentMode: true } }) : null;
+  return { eventId: event.id, vipEnabled: event.vipEnabled, paymentMode: defaultPackage?.paymentMode ?? 'REQUEST_ONLY', availabilityMode: event.vipAvailabilityMode, bookingEnabled: event.vipBookingEnabled, defaultPackageId: event.vipDefaultPackageId, requestExpiryMinutes: event.vipRequestExpiryMinutes, boothHoldMinutes: event.vipBoothHoldMinutes, currency: event.vipCurrency, squarePaymentEnabled: event.vipSquareEnabled };
 }
 
 /** Read-only operational summary. Counts/statuses never switch features on or seed content. */
@@ -354,38 +361,62 @@ export async function getEventReadiness(eventId: string, mode: 'vip' | 'tickets'
     if (event.ticketingEnabled && !activeTiers) warnings.push('Ticketing is enabled but no active ticket tiers exist. Configure tiers before announcing a release.');
     return { facts: { 'Ticketing enabled': event.ticketingEnabled, 'Sale status': event.ticketSaleStatus, 'Active tiers': activeTiers, 'Square enabled': event.ticketSquareEnabled, 'External provider configured': event.ticketExternalProviderEnabled && Boolean(event.ticketProviderUrl), 'Tickets content': contentStatus(contentKeys[0]) }, warnings };
   }
-  const [activePackages, activeBooths, bottleOptions] = await Promise.all([
+  const [activePackages, activeBooths, bottleOptions, defaultPackage] = await Promise.all([
     db.vipPackage.count({ where: { eventId, enabled: true } }),
     db.vipBooth.count({ where: { eventId, enabled: true, requestable: true } }),
     db.bottleOption.count({ where: { enabled: true } }),
+    event.vipDefaultPackageId ? db.vipPackage.findFirst({ where: { id: event.vipDefaultPackageId, eventId }, include: { _count: { select: { packageBottles: true } } } }) : null,
   ]);
   if (event.vipBookingEnabled && !event.vipEnabled) warnings.push('Booking is enabled but VIP is disabled. The public booking form stays closed until VIP is enabled.');
   if (event.vipEnabled && !activePackages) warnings.push('VIP is enabled but no active package exists. Enable and check a package to show its details.');
   if (activePackages && !activeBooths) warnings.push('Active package exists but no booths are configured. Request-only packages may accept a request without a booth; other modes require a booth.');
+  if (event.vipDefaultPackageId && !defaultPackage) warnings.push('The selected default package is no longer available for this event. Choose an existing package.');
+  if (defaultPackage && !defaultPackage.enabled) warnings.push('The selected default package is disabled. Public VIP stays unavailable; it will not silently switch to another package.');
   for (const key of contentKeys) if (contentStatus(key) !== 'PUBLISHED') warnings.push(`${key.startsWith('tables:') ? 'Tables' : 'Booking'} content is not published. Review it in the content editor.`);
-  return { facts: { 'VIP enabled': event.vipEnabled, 'Booking enabled': event.vipBookingEnabled, 'Availability mode': event.vipAvailabilityMode, 'Active packages': activePackages, 'Active booths': activeBooths, 'Bottle options': bottleOptions, 'Tables content': contentStatus(contentKeys[0]), 'Booking content': contentStatus(contentKeys[1]) }, warnings };
+  return { facts: { 'VIP enabled': event.vipEnabled, 'Booking enabled': event.vipBookingEnabled, 'Availability mode': event.vipAvailabilityMode, 'Active packages': activePackages, 'Active booths': activeBooths, 'Bottle options': bottleOptions, 'Default package': defaultPackage?.name ?? (event.vipDefaultPackageId ? 'Unavailable' : 'None'), 'Default package enabled': defaultPackage?.enabled ?? false, 'Default package assigned bottles': defaultPackage?._count.packageBottles ?? 0, 'Tables content': contentStatus(contentKeys[0]), 'Booking content': contentStatus(contentKeys[1]) }, warnings };
 }
 
 export async function updateVipSettings(eventId: string, input: unknown) {
-  await ensureEvent(eventId);
-  const value = vipSettingsInput.parse(input);
-  if (value.defaultPackageId) { const pkg = await db.vipPackage.findFirst({ where: { id: value.defaultPackageId, eventId } }); if (!pkg) throw validationError({ defaultPackageId: 'Package does not belong to this event.' }); }
-  const row = await db.event.update({ where: { id: eventId }, data: { vipEnabled: value.vipEnabled, vipAvailabilityMode: value.availabilityMode, vipBookingEnabled: value.bookingEnabled, vipDefaultPackageId: value.defaultPackageId, vipRequestExpiryMinutes: value.requestExpiryMinutes, vipBoothHoldMinutes: value.boothHoldMinutes, vipCurrency: value.currency, vipSquareEnabled: value.squarePaymentEnabled } });
-  if (value.paymentMode && value.defaultPackageId) await db.vipPackage.update({ where: { id: value.defaultPackageId }, data: { paymentMode: value.paymentMode } });
-  return getVipSettings(row.id);
+  const value = parseVipInput(vipSettingsInput, input);
+  const event = await ensureEvent(eventId);
+  await db.$transaction(async (tx) => {
+    const packageId = value.defaultPackageId === undefined ? event.vipDefaultPackageId : value.defaultPackageId;
+    if (packageId) {
+      const pkg = await tx.vipPackage.findFirst({ where: { id: packageId, eventId } });
+      if (!pkg) throw validationError({ defaultPackageId: 'Choose a package belonging to this event.' });
+    }
+    await tx.event.update({ where: { id: eventId }, data: { vipEnabled: value.vipEnabled, vipAvailabilityMode: value.availabilityMode, vipBookingEnabled: value.bookingEnabled, vipDefaultPackageId: value.defaultPackageId, vipRequestExpiryMinutes: value.requestExpiryMinutes, vipBoothHoldMinutes: value.boothHoldMinutes, vipCurrency: value.currency, vipSquareEnabled: value.squarePaymentEnabled } });
+    if (value.paymentMode && packageId) await tx.vipPackage.update({ where: { id: packageId }, data: { paymentMode: value.paymentMode } });
+  });
+  return getVipSettings(eventId);
 }
 
-const vipPackageInput = z.object({ id: z.string().uuid().optional(), name: z.string().trim().min(1).max(160), description: z.string().max(20_000).nullable().optional(), priceMinor: z.number().int().min(0), depositAmountMinor: z.number().int().min(0).nullable().optional(), currency, capacity: z.number().int().positive(), includedBottleCount: z.number().int().min(0), minBottleSelection: z.number().int().min(0).optional(), maxBottleSelection: z.number().int().min(0).optional(), enabled: z.boolean().optional(), sortOrder: z.number().int().min(0).optional(), paymentMode: z.enum(['REQUEST_ONLY', 'FULL_PAYMENT', 'DEPOSIT']).optional(), bottleOptionIds: z.array(z.string().uuid()).optional() });
+export const vipPackageInput = z.object({ id: databaseUuid.optional(), name: z.string().trim().min(1).max(160), description: z.string().max(20_000).nullable().optional(), priceMinor: z.number().int().min(0).max(2_147_483_647), depositAmountMinor: z.number().int().min(0).max(2_147_483_647).nullable().optional(), currency, capacity: z.number().int().positive(), includedBottleCount: z.number().int().min(0), minBottleSelection: z.number().int().min(0).optional(), maxBottleSelection: z.number().int().min(0).optional(), enabled: z.boolean().optional(), sortOrder: z.number().int().min(0).optional(), paymentMode: z.enum(['REQUEST_ONLY', 'FULL_PAYMENT', 'DEPOSIT']).optional(), bottleOptionIds: z.array(databaseUuid).max(100).optional() });
 
 export async function listVipPackages(eventId: string) { await ensureEvent(eventId); return db.vipPackage.findMany({ where: { eventId }, orderBy: { sortOrder: 'asc' }, include: { packageBottles: { include: { bottleOption: true } } } }); }
 export async function saveVipPackage(eventId: string, input: unknown) {
-  await ensureEvent(eventId); const value = vipPackageInput.parse(input);
-  const data = { name: value.name, description: value.description ?? null, priceMinor: value.priceMinor, depositAmountMinor: value.depositAmountMinor ?? null, currency: value.currency, capacity: value.capacity, includedBottleCount: value.includedBottleCount, minBottleSelection: value.minBottleSelection ?? 0, maxBottleSelection: value.maxBottleSelection ?? 3, enabled: value.enabled ?? true, sortOrder: value.sortOrder ?? 0, paymentMode: value.paymentMode ?? 'REQUEST_ONLY' as const };
-  const row = value.id ? await db.vipPackage.updateMany({ where: { id: value.id, eventId }, data }) : null;
-  if (value.id && !row?.count) throw notFound('VIP package not found.');
-  const packageRow = value.id ? await db.vipPackage.findUniqueOrThrow({ where: { id: value.id } }) : await db.vipPackage.create({ data: { eventId, ...data } });
-  if (value.bottleOptionIds) { const bottles = await db.bottleOption.findMany({ where: { id: { in: value.bottleOptionIds } }, select: { id: true } }); if (bottles.length !== value.bottleOptionIds.length) throw validationError({ bottleOptionIds: 'One or more bottle options do not exist.' }); await db.vipPackageBottle.deleteMany({ where: { vipPackageId: packageRow.id } }); if (value.bottleOptionIds.length) await db.vipPackageBottle.createMany({ data: value.bottleOptionIds.map((bottleOptionId) => ({ vipPackageId: packageRow.id, bottleOptionId })) }); }
-  return db.vipPackage.findUniqueOrThrow({ where: { id: packageRow.id }, include: { packageBottles: { include: { bottleOption: true } } } });
+  const value = parseVipInput(vipPackageInput, input);
+  await ensureEvent(eventId);
+  return db.$transaction(async (tx) => {
+    const existing = value.id ? await tx.vipPackage.findFirst({ where: { id: value.id, eventId } }) : null;
+    if (value.id && !existing) throw notFound('VIP package not found.');
+    const min = value.minBottleSelection ?? existing?.minBottleSelection ?? 0;
+    const max = value.maxBottleSelection ?? existing?.maxBottleSelection ?? Math.min(3, value.includedBottleCount);
+    if (min > max || max > value.includedBottleCount) throw validationError({ maxBottleSelection: 'Bottle selection limits must satisfy minimum ≤ maximum ≤ included bottles.' });
+    if (value.bottleOptionIds !== undefined) {
+      if (new Set(value.bottleOptionIds).size !== value.bottleOptionIds.length) throw validationError({ bottleOptionIds: 'Choose each bottle option only once.' });
+      const bottles = await tx.bottleOption.findMany({ where: { id: { in: value.bottleOptionIds } }, select: { id: true } });
+      if (bottles.length !== value.bottleOptionIds.length) throw validationError({ bottleOptionIds: 'One or more selected bottle options no longer exist.' });
+    }
+    const data = { name: value.name, description: value.description, priceMinor: value.priceMinor, depositAmountMinor: value.depositAmountMinor, currency: value.currency, capacity: value.capacity, includedBottleCount: value.includedBottleCount, minBottleSelection: min, maxBottleSelection: max, enabled: value.enabled, sortOrder: value.sortOrder, paymentMode: value.paymentMode };
+    const packageRow = existing ? await tx.vipPackage.update({ where: { id: existing.id }, data }) : await tx.vipPackage.create({ data: { eventId, ...data } });
+    // Omission preserves every existing relation; an explicit [] deliberately clears selection.
+    if (value.bottleOptionIds !== undefined) {
+      await tx.vipPackageBottle.deleteMany({ where: { vipPackageId: packageRow.id } });
+      if (value.bottleOptionIds.length) await tx.vipPackageBottle.createMany({ data: value.bottleOptionIds.map((bottleOptionId) => ({ vipPackageId: packageRow.id, bottleOptionId })) });
+    }
+    return tx.vipPackage.findUniqueOrThrow({ where: { id: packageRow.id }, include: { packageBottles: { include: { bottleOption: true } } } });
+  });
 }
 
 export async function deleteVipPackage(eventId: string, packageId: string) {

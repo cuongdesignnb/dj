@@ -106,7 +106,7 @@ export async function getPublicTickets(slug: string) {
 }
 
 export async function getPublicVip(slug: string) {
-  const event = await db.event.findFirst({ where: { slug, status: 'PUBLISHED', deletedAt: null }, select: { id: true, vipEnabled: true, vipBookingEnabled: true, vipAvailabilityMode: true, vipCurrency: true, vipSquareEnabled: true, vipBooths: { where: { requestable: true, enabled: true }, orderBy: { sortOrder: 'asc' } } } });
+  const event = await db.event.findFirst({ where: { slug, status: 'PUBLISHED', deletedAt: null }, select: { id: true, vipEnabled: true, vipBookingEnabled: true, vipAvailabilityMode: true, vipCurrency: true, vipSquareEnabled: true, vipDefaultPackageId: true, vipBooths: { where: { requestable: true, enabled: true }, orderBy: { sortOrder: 'asc' } } } });
   if (!event) return null;
   const packages = await db.vipPackage.findMany({ where: { eventId: event.id, enabled: true }, orderBy: { sortOrder: 'asc' }, include: { packageBottles: { include: { bottleOption: { include: { media: true } } } } } });
   return { event, packages, booths: event.vipBooths };

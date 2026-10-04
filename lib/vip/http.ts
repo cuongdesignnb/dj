@@ -343,7 +343,12 @@ export function normalizeVipState(eventRaw: unknown, vipRaw: unknown, tablesRaw:
   if (!settings.vipEnabled) return { kind: 'vip-disabled', ...context };
   if (!content.tables || !content.booking) return { kind: 'not-configured', reason: 'content', ...context };
   if (!vipRaw.packages.length) return { kind: 'no-active-package', ...context };
-  const pkg = vipRaw.packages[0];
+  const defaultId = settings.vipDefaultPackageId;
+  if (defaultId != null && (typeof defaultId !== 'string' || !defaultId)) return invalid();
+  // An explicit disabled/missing default is configuration, never a silent switch
+  // to another active package. None retains the existing first-active behavior.
+  const pkg = defaultId ? vipRaw.packages.find((item) => isRecord(item) && item.id === defaultId) : vipRaw.packages[0];
+  if (defaultId && !pkg) return { kind: 'no-active-package', ...context };
   if (!isRecord(pkg) || !Array.isArray(pkg.bottles)) return invalid();
   const normalizedPackage = vipPackage({ ...pkg, price: { amountMinor: pkg.priceMinor, currency: pkg.currency } });
   if (!normalizedPackage || vipRaw.booths.some((v) => !booth(v)) || pkg.bottles.some((v) => !bottle(v))) return invalid();

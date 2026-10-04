@@ -1,0 +1,149 @@
+{
+  "checkedDate": "2026-10-04",
+  "sourceBaseline": {
+    "branch": "codex/post-gallery-uat",
+    "sha": "b0834d8edd08880681e5cab30eb955b4b8a3b5bd",
+    "productionShaSource": "User supplied deployment baseline; not inferred from a health endpoint"
+  },
+  "candidateBranch": "codex/vip-package-admin-save",
+  "candidateSha": "Resolve verified pushed HEAD from origin/codex/vip-package-admin-save; exact SHA in final report",
+  "production": {
+    "writes": false,
+    "deployed": false,
+    "publicOnly": true,
+    "hashMethod": "SHA256 of PowerShell parsed response converted back to JSON with ConvertTo-Json -Depth 100 -Compress, UTF8",
+    "responses": [
+      {
+        "path": "/api/v1/events/destiny/vip",
+        "beforeSha256": "2481316178ae985be36d0fa018cec632149f1b9aef70c817ab185a2fbaf1360e",
+        "afterSha256": "2481316178ae985be36d0fa018cec632149f1b9aef70c817ab185a2fbaf1360e",
+        "status": 200,
+        "identical": true,
+        "vipEnabled": true,
+        "bookingEnabled": true,
+        "availabilityMode": "REQUEST_ONLY",
+        "squareEnabled": false,
+        "activePackages": 0,
+        "activeBooths": 0
+      },
+      {
+        "path": "/api/v1/gallery/destiny",
+        "beforeSha256": "ace3dc57ca825a04b184b53d716e5da31d58db6e041874d5709714f59047c7d5",
+        "afterSha256": "ace3dc57ca825a04b184b53d716e5da31d58db6e041874d5709714f59047c7d5",
+        "status": 200,
+        "identical": true,
+        "albumId": "bfbbd795-c19b-4c9d-bc5e-fe1e06eac064",
+        "mediaCount": 15
+      },
+      {
+        "path": "/api/v1/gallery/echo",
+        "beforeSha256": "75663796c70d811bd002f5e3006719a707ee26d021d53515c35d9a54fd97e727",
+        "afterSha256": "75663796c70d811bd002f5e3006719a707ee26d021d53515c35d9a54fd97e727",
+        "status": 200,
+        "identical": true,
+        "albumId": "e61b23d6-c1dc-4630-924e-c6b8f2b776dd",
+        "mediaCount": 9
+      }
+    ],
+    "readiness": {
+      "status": 200,
+      "postgres": "ok",
+      "redis": "ok"
+    },
+    "limits": "Content hashes include image placement order, ALT, captions and event links. Asset bytes were not re-downloaded in this hotfix; prior baseline asset proof remains in docs/qa/post-gallery-data-freeze.json."
+  },
+  "qa": {
+    "baseUrl": "http://127.0.0.1:43291",
+    "composeProject": "destiny-gallery-qa",
+    "db": "destiny_gallery_qa",
+    "postgres": "16",
+    "node": "22",
+    "chrome": true,
+    "unitTests": 90,
+    "e2eTests": 15,
+    "e2eDuration": "1.6m",
+    "lintErrors": 0,
+    "lintWarnings": 118,
+    "typecheck": "PASS",
+    "build": "PASS",
+    "imageSha256": "c0dc43c4d2110fa60b3dd04cdbcc25b1b5b7cba2166c4d80e95a22f8a4252d1f",
+    "packageBottleRelationLoss": 0,
+    "noDuplicatedOriginalPackage": true,
+    "restored": {
+      "event": {
+        "id": "1a827145-58a9-4c53-94ae-8fad9e842c00",
+        "status": "PUBLISHED",
+        "vipEnabled": false,
+        "vipBookingEnabled": true,
+        "vipAvailabilityMode": "REQUEST_ONLY",
+        "vipSquareEnabled": false,
+        "vipDefaultPackageId": null
+      },
+      "package": {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "name": "BOOTH PACKAGE",
+        "enabled": false,
+        "priceMinor": 320000,
+        "capacity": 15,
+        "includedBottleCount": 3,
+        "paymentMode": "REQUEST_ONLY",
+        "bottleOptionIds": [
+          "01446907-24b3-40df-a385-cd6818f8aa07",
+          "0854e11b-d463-47f6-be45-4e125e0ec844",
+          "a1361780-c175-48b1-b2ed-b76fcab2cdde",
+          "b3299d9c-2d6b-4ca5-ba2f-85fbd28c1e11",
+          "d2a3430b-68aa-4740-b1a3-7364227ba419",
+          "ff7ae7e0-0858-420f-9a57-0cb73f1d2909"
+        ]
+      },
+      "packageCount": 1,
+      "bottles": [
+        {
+          "id": "d2a3430b-68aa-4740-b1a3-7364227ba419",
+          "name": "Belvedere Vodka",
+          "mediaId": null,
+          "enabled": true
+        },
+        {
+          "id": "ff7ae7e0-0858-420f-9a57-0cb73f1d2909",
+          "name": "Hennessy VS",
+          "mediaId": null,
+          "enabled": true
+        },
+        {
+          "id": "0854e11b-d463-47f6-be45-4e125e0ec844",
+          "name": "El Jimador Tequila",
+          "mediaId": null,
+          "enabled": true
+        },
+        {
+          "id": "a1361780-c175-48b1-b2ed-b76fcab2cdde",
+          "name": "Moët & Chandon",
+          "mediaId": null,
+          "enabled": true
+        },
+        {
+          "id": "b3299d9c-2d6b-4ca5-ba2f-85fbd28c1e11",
+          "name": "Jager",
+          "mediaId": null,
+          "enabled": true
+        },
+        {
+          "id": "01446907-24b3-40df-a385-cd6818f8aa07",
+          "name": "WAP Cranberry Peach",
+          "mediaId": null,
+          "enabled": true
+        }
+      ],
+      "enabledBoothCount": 0
+    }
+  },
+  "migrationsAdded": [],
+  "protectedOriginalWorkspace": "D:/DJ/destiny-rave original dirty changes and HEAD a25a489 left untouched",
+  "screenshots": [
+    "test-results/vip-package-admin-default.jpg",
+    "test-results/vip-package-admin-bottles.jpg",
+    "test-results/vip-package-admin-error.jpg"
+  ],
+  "rollbackSha": "b0834d8edd08880681e5cab30eb955b4b8a3b5bd"
+}

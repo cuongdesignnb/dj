@@ -36,6 +36,7 @@ export function normalizeApiError(status: number, body: unknown): AdminApiError 
       code: typeof envelope.code === 'string' ? envelope.code : `http_${status}`,
       message: message ?? defaultMessage(status),
       fieldErrors: Object.keys(fieldErrors).length ? fieldErrors : undefined,
+      ...(typeof envelope.requestId === 'string' && /^[a-zA-Z0-9._:-]{1,100}$/.test(envelope.requestId) ? { requestId: envelope.requestId } : {}),
     };
   }
   return { code: `http_${status}`, message: defaultMessage(status) };

@@ -58,6 +58,7 @@ export interface AdminApiError {
   code?: string;
   message: string;
   fieldErrors?: Record<string, string>;
+  requestId?: string;
 }
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: AdminApiError };
