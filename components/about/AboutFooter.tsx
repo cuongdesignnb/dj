@@ -7,6 +7,7 @@ import PublicMenuLinks from '@/components/shared/PublicMenuLinks';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { AboutFooterContact } from '@/lib/about/types';
 import { useEffect, useState } from 'react';
+import RichText from '@/components/shared/RichText';
 
 interface Props {
   contact: AboutFooterContact;
@@ -98,9 +99,9 @@ export default function AboutFooter({
                 </span>
               </div>
             </div>
-            <p className="text-sm text-rave-muted leading-relaxed mb-5">
-              {global.footerDescription}
-            </p>
+            <div className="text-sm text-rave-muted leading-relaxed mb-5">
+              <RichText text={global.footerDescription} />
+            </div>
             <div className="flex items-center gap-3" aria-label="Social links">
               {contact.socials
                 .filter((s) => s.url)
@@ -182,9 +183,9 @@ export default function AboutFooter({
             <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">
               Music Connects Us All
             </h4>
-            <p className="text-sm text-rave-muted leading-relaxed max-w-md">
-              {global.footerDescription}
-            </p>
+            <div className="text-sm text-rave-muted leading-relaxed max-w-md">
+              <RichText text={global.footerDescription} />
+            </div>
           </motion.div>
         </motion.div>
 

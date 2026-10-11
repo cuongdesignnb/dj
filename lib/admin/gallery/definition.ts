@@ -97,7 +97,7 @@ export const galleryDefinition: ResourceDefinition<AdminAlbum> = {
         f.slug('slug', 'title'),
         f.text('subtitle', 'Subtitle', { width: 'half' }),
         f.text('venue', 'Venue', { width: 'half' }),
-        f.textarea('description', 'Description'),
+        f.textarea('description', 'Description', { rich: true }),
         f.media('cover', 'Cover image', { required: true }),
         f.media('hero', 'Hero image'),
         { key: 'eventId', label: 'Related event', type: 'select', optionSource: 'events', width: 'half' },

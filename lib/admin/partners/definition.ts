@@ -90,7 +90,7 @@ export const partnersDefinition: ResourceDefinition<AdminPartner> = {
         f.media('logo', 'Logo', { required: true }),
         f.toggle('featured', 'Featured partner'),
         f.text('tagline', 'Tagline', { maxLength: 60 }),
-        f.textarea('description', 'Description'),
+        f.textarea('description', 'Description', { rich: 'inline' }),
         f.url('website', 'Website', { width: 'half' }),
       ]),
       section('extras', 'Optional', [

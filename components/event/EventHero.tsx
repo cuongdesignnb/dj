@@ -20,6 +20,7 @@ import {
   cardItem,
 } from '@/lib/events/motion';
 import type { EventPageData, FrontendRoutes } from '@/lib/events/types';
+import RichText from '@/components/shared/RichText';
 
 interface EventHeroProps {
   event: EventPageData;
@@ -282,12 +283,12 @@ export default function EventHero({ event, routes }: EventHeroProps) {
               {e.title}
             </motion.h1>
 
-            <motion.p
+            <motion.div
               variants={lineReveal}
               className="text-white/85 text-base md:text-lg leading-relaxed max-w-2xl"
             >
-              {e.intro}
-            </motion.p>
+              <RichText text={e.intro} />
+            </motion.div>
 
             <motion.p
               variants={lineReveal}

@@ -21,6 +21,7 @@ import { gate, loadOptionSets } from '@/lib/admin/page-data';
 import { ROUTED_RESOURCES, getRepository, getResource } from '@/lib/admin/registry';
 import { formatMoney } from '@/lib/money';
 import type { Money } from '@/lib/money';
+import RichText from '@/components/shared/RichText';
 
 type Props = { params: Promise<{ resource: string; id: string }> };
 type Json = Record<string, unknown>;
@@ -172,7 +173,7 @@ function ArtistDetail({ record }: { record: AdminRecord }) {
           />
         </AdminCard>
         <AdminCard title="Biography" titleId="d-bio">
-          <p className="whitespace-pre-line text-sm text-white/85">{str(record.bio, 'No biography yet. Add the artist’s own words when they supply them.')}</p>
+          {str(record.bio, '') ? <RichText text={str(record.bio, '')} className="text-sm text-white/85" /> : <p className="text-sm text-white/85">No biography yet. Add the artist’s own words when they supply them.</p>}
         </AdminCard>
         <AdminCard title="Links" titleId="d-links">
           {links.length === 0 ? (

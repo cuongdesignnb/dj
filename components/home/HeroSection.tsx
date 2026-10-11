@@ -12,6 +12,7 @@ import DancingCrowd, { LaserLights, DiscoBall } from '../ui/DancingCrowd';
 import DESTINYShatter from '../ui/DESTINYShatter';
 import { stableUnit, stableSigned } from '@/lib/stable-visual';
 import type { HomeEvent, HomeMedia } from './types';
+import RichText from '@/components/shared/RichText';
 
 interface Particle {
   width: number;
@@ -466,9 +467,9 @@ export default function HeroSection({ event, animation = null }: { event: HomeEv
 
           {/* Paragraph description */}
           <motion.div variants={fadeUp} className="max-w-2xl mt-2 flex flex-col gap-1">
-            <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed font-body font-medium">
-              {event.description || event.shortDescription || 'Event details will be published here when confirmed.'}
-            </p>
+            <div className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed font-body font-medium">
+              <RichText text={event.description || event.shortDescription || 'Event details will be published here when confirmed.'} />
+            </div>
           </motion.div>
 
           {/* Urgency Alert Badge - Animated entrance */}

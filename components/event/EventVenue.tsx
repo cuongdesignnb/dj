@@ -12,6 +12,7 @@ import {
   formatTimeChip,
 } from '@/lib/events/presentation';
 import type { EventPageData } from '@/lib/events/types';
+import RichText from '@/components/shared/RichText';
 
 interface Props {
   event: EventPageData;
@@ -128,12 +129,12 @@ export default function EventVenue({ event }: Props) {
               </motion.p>
             )}
 
-            <motion.p
+            <motion.div
               variants={lineReveal}
               className="text-sm text-rave-muted mt-3 leading-relaxed"
             >
-              {v.description}
-            </motion.p>
+              <RichText text={v.description} />
+            </motion.div>
           </motion.div>
         </div>
       </Container>

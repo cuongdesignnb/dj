@@ -51,6 +51,12 @@ export interface FieldConfig {
   min?: number;
   max?: number;
   maxLength?: number;
+  /**
+   * Textareas only: edit with the rich text editor; the public site renders it
+   * with <RichText>. `true` allows lists and small headings, 'inline' only
+   * bold, italic and links.
+   */
+  rich?: boolean | 'inline';
   /** For slug fields: the title field it is generated from. */
   slugFrom?: string;
   /** For repeaters: the fields of each row, and which one labels the row. */

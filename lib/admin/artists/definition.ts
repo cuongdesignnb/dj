@@ -94,7 +94,7 @@ export const artistsDefinition: ResourceDefinition<AdminArtist> = {
         f.text('country', 'Country', { width: 'third' }),
         f.text('year', 'Year', { width: 'third' }),
         f.toggle('featured', 'Featured artist', { width: 'third' }),
-        f.locArea('bio', 'Biography', { help: 'Use the artist’s supplied biography only.' }),
+        f.locArea('bio', 'Biography', { rich: true, help: 'Use the artist’s supplied biography only.' }),
         f.tags('genres', 'Genres'),
         f.select('setTimeStatus', 'Set time', opts(['tba', 'TBA'], ['confirmed', 'Confirmed'])),
         f.time('setTime', 'Set time', { showWhen: { key: 'setTimeStatus', in: ['confirmed'] } }),

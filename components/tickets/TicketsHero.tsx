@@ -15,6 +15,7 @@ import Container from '@/components/ui/Container';
 import EventsBreadcrumb from '@/components/events/EventsBreadcrumb';
 import { eventHeroLineReveal, ticketReveal, ticketStagger } from '@/lib/animations';
 import type { TicketEventInfo, TicketsHeroContent } from '@/lib/tickets/types';
+import RichText from '@/components/shared/RichText';
 
 export default function TicketsHero({
   event,
@@ -95,12 +96,12 @@ export default function TicketsHero({
                 <span className="block overflow-hidden"><motion.span variants={eventHeroLineReveal} className="block">{content.title}</motion.span></span>
               </motion.h1>
 
-              <motion.p
+              <motion.div
                 variants={ticketReveal}
                 className="mt-6 max-w-xl text-base leading-relaxed text-rave-muted md:text-lg"
               >
-                {content.description}
-              </motion.p>
+                <RichText text={content.description} />
+              </motion.div>
 
               <motion.ul variants={ticketStagger} className="mt-7 flex flex-wrap gap-3">
                 {meta.map(({ Icon, label }) => (

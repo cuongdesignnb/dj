@@ -8,6 +8,7 @@ import { eventsReveal } from '@/lib/animations';
 import EventAction from '../EventAction';
 import { archiveBadgeLabel, archiveDateLabel, archiveLocationLabel } from '../labels';
 import ArchiveEventVisual from './ArchiveEventVisual';
+import { richTextToPlain } from '@/lib/rich-text/plain';
 
 /**
  * One entry in the EVENT ARCHIVE grid.
@@ -83,7 +84,7 @@ export default function PastEventCard({ event }: { event: PastEventSummary }) {
           </h3>
 
           {event.excerpt && (
-            <p className="text-sm leading-relaxed text-rave-muted">{event.excerpt}</p>
+            <p className="text-sm leading-relaxed text-rave-muted">{richTextToPlain(event.excerpt)}</p>
           )}
 
           <p className="flex items-center gap-2 text-sm text-rave-muted">

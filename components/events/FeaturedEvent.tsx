@@ -19,6 +19,7 @@ import ListingEmptyState from '@/components/shared/ListingEmptyState';
 import EventAction from './EventAction';
 import EventsSectionHeading from './EventsSectionHeading';
 import { dateLabel, scheduleLabel } from './labels';
+import RichText from '@/components/shared/RichText';
 
 export default function FeaturedEvent({
   event,
@@ -196,9 +197,9 @@ export default function FeaturedEvent({
             )}
 
             {event.description && (
-              <motion.p variants={eventsReveal} className="max-w-xl text-sm leading-relaxed text-rave-muted sm:text-base">
-                {event.description}
-              </motion.p>
+              <motion.div variants={eventsReveal} className="max-w-xl text-sm leading-relaxed text-rave-muted sm:text-base">
+                <RichText text={event.description} />
+              </motion.div>
             )}
 
             <motion.div variants={eventsReveal} className="flex flex-wrap items-start gap-3 pt-1">

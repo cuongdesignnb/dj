@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import { Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/admin/ui/Toast';
 import ApiErrorNotice from '@/components/admin/ui/ApiErrorNotice';
 import { MediaPicker } from '@/components/admin/form/MediaPicker';
+import RichTextEditor from '@/components/admin/form/RichTextEditor';
 import type { MediaChoice } from '@/components/admin/form/MediaPicker';
 import type { AdminApiError } from '@/lib/admin/common/types';
 import { normalizeApiError } from '@/lib/api/client';
@@ -204,6 +205,12 @@ function TextInput({ id, value, onChange, multiline = false, type = 'text', plac
   return <input id={id} type={type} value={stringValue(value)} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className={inputClass} />;
 }
 
+/** Long copy that the public site renders with <RichText>. Not wrapped in <label>: its toolbar has buttons. */
+function RichInput({ id, label, labelledBy, value, onChange, mode = 'inline' }: { id?: string; label?: string; labelledBy?: string; value: unknown; onChange: (value: string) => void; mode?: 'full' | 'inline' }) {
+  const autoId = useId();
+  return <RichTextEditor id={id ?? `cms-rich-${autoId.replace(/:/g, '')}`} value={stringValue(value)} onChange={onChange} mode={mode} ariaLabel={label} ariaLabelledBy={labelledBy} />;
+}
+
 function SmallLabel({ children }: { children: ReactNode }) {
   return <span className="mb-1 block text-xs font-medium text-admin-muted">{children}</span>;
 }
@@ -280,7 +287,7 @@ function InfoListEditor({ value, onChange }: { value: unknown; onChange: (value:
       <div className="grid gap-3 md:grid-cols-2">
         <label><SmallLabel>Title</SmallLabel><TextInput value={item.title} onChange={(next) => update(index, updateRecord(item, 'title', next))} /></label>
         <label><SmallLabel>Icon key</SmallLabel><TextInput value={item.icon} onChange={(next) => update(index, updateRecord(item, 'icon', next))} placeholder="Music" /></label>
-        <label className="md:col-span-2"><SmallLabel>Description</SmallLabel><TextInput value={item.description} multiline onChange={(next) => update(index, updateRecord(item, 'description', next))} /></label>
+        <div className="md:col-span-2"><SmallLabel>Description</SmallLabel><RichInput label="Description" mode="full" value={item.description} onChange={(next) => update(index, updateRecord(item, 'description', next))} /></div>
         <label><SmallLabel>Action label (optional)</SmallLabel><TextInput value={item.ctaLabel} onChange={(next) => update(index, updateRecord(item, 'ctaLabel', next))} /></label>
         <label><SmallLabel>Action link (optional)</SmallLabel><TextInput value={item.ctaUrl} onChange={(next) => update(index, updateRecord(item, 'ctaUrl', next))} /></label>
       </div>
@@ -297,7 +304,7 @@ function FaqListEditor({ value, onChange }: { value: unknown; onChange: (value: 
     {items.map((item, index) => <div key={`${index}-${stringValue(item.question)}`} className={cardClass}>
       <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Question {index + 1}</span><button type="button" aria-label="Remove question" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
       <label className="block"><SmallLabel>Question</SmallLabel><TextInput value={item.question} onChange={(next) => update(index, updateRecord(item, 'question', next))} /></label>
-      <label className="mt-3 block"><SmallLabel>Answer</SmallLabel><TextInput value={item.answer} multiline onChange={(next) => update(index, updateRecord(item, 'answer', next))} /></label>
+      <div className="mt-3 block"><SmallLabel>Answer</SmallLabel><RichInput label="Answer" mode="full" value={item.answer} onChange={(next) => update(index, updateRecord(item, 'answer', next))} /></div>
       <label className="mt-3 flex items-center gap-2 text-xs text-admin-muted"><input type="checkbox" checked={item.enabled !== false} onChange={(event) => update(index, updateRecord(item, 'enabled', event.target.checked))} className="h-4 w-4 accent-rave-red" /> Show this question</label>
     </div>)}
     <button type="button" onClick={() => onChange([...items, { question: '', answer: '', enabled: true }])} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-rave-red hover:text-white"><Plus className="h-3.5 w-3.5" /> Add question</button>
@@ -311,7 +318,7 @@ function StepsListEditor({ value, onChange }: { value: unknown; onChange: (value
     {items.map((item, index) => <div key={`${index}-${stringValue(item.title)}`} className={cardClass}>
       <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Step {index + 1}</span><button type="button" aria-label="Remove step" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
       <label className="block"><SmallLabel>Title</SmallLabel><TextInput value={item.title} onChange={(next) => update(index, updateRecord(item, 'title', next))} /></label>
-      <label className="mt-3 block"><SmallLabel>Description</SmallLabel><TextInput value={item.description} multiline onChange={(next) => update(index, updateRecord(item, 'description', next))} /></label>
+      <div className="mt-3 block"><SmallLabel>Description</SmallLabel><RichInput label="Step description" value={item.description} onChange={(next) => update(index, updateRecord(item, 'description', next))} /></div>
     </div>)}
     <button type="button" onClick={() => onChange([...items, { title: '', description: '' }])} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-rave-red hover:text-white"><Plus className="h-3.5 w-3.5" /> Add step</button>
   </div>;
@@ -358,7 +365,7 @@ function CtaEditor({ value, onChange, media }: { value: unknown; onChange: (valu
   const cta = asRecord(value);
   return <div className="space-y-3">
     <label><SmallLabel>Title</SmallLabel><TextInput value={cta.title} onChange={(next) => onChange(updateRecord(cta, 'title', next))} /></label>
-    <label><SmallLabel>Subtitle</SmallLabel><TextInput value={cta.subtitle} multiline onChange={(next) => onChange(updateRecord(cta, 'subtitle', next))} /></label>
+    <div><SmallLabel>Subtitle</SmallLabel><RichInput label="Subtitle" value={cta.subtitle} onChange={(next) => onChange(updateRecord(cta, 'subtitle', next))} /></div>
     <div className="grid gap-3 md:grid-cols-2"><div><SmallLabel>Primary action</SmallLabel><ActionEditor value={cta.primary} onChange={(next) => onChange(updateRecord(cta, 'primary', next))} /></div><div><SmallLabel>Secondary action</SmallLabel><ActionEditor value={cta.secondary} onChange={(next) => onChange(updateRecord(cta, 'secondary', next))} /></div></div>
     <div><SmallLabel>Background image</SmallLabel><MediaEditor value={cta.background} media={media} onChange={(next) => onChange(updateRecord(cta, 'background', next))} /></div>
   </div>;
@@ -366,7 +373,7 @@ function CtaEditor({ value, onChange, media }: { value: unknown; onChange: (valu
 
 function EmptyStateEditor({ value, onChange }: { value: unknown; onChange: (value: unknown) => void }) {
   const state = asRecord(value);
-  return <div className="space-y-3"><label><SmallLabel>Title</SmallLabel><TextInput value={state.title} onChange={(next) => onChange(updateRecord(state, 'title', next))} /></label><label><SmallLabel>Description</SmallLabel><TextInput value={state.description} multiline onChange={(next) => onChange(updateRecord(state, 'description', next))} /></label><div><SmallLabel>Optional call to action</SmallLabel><ActionEditor value={state.cta} onChange={(next) => onChange(updateRecord(state, 'cta', next))} /></div></div>;
+  return <div className="space-y-3"><label><SmallLabel>Title</SmallLabel><TextInput value={state.title} onChange={(next) => onChange(updateRecord(state, 'title', next))} /></label><div><SmallLabel>Description</SmallLabel><RichInput label="Empty state description" value={state.description} onChange={(next) => onChange(updateRecord(state, 'description', next))} /></div><div><SmallLabel>Optional call to action</SmallLabel><ActionEditor value={state.cta} onChange={(next) => onChange(updateRecord(state, 'cta', next))} /></div></div>;
 }
 
 function SeoEditor({ value, onChange, media }: { value: unknown; onChange: (value: unknown) => void; media: MediaChoice[] }) {
@@ -474,8 +481,8 @@ export default function CmsEditor({ contentKey, title, description, media = [] }
       const id = `cms-${field.path.replaceAll('.', '-')}`;
       const update = (next: unknown) => setDraft(setPath(draft, field.path, next));
       return <div key={field.path} className={`${field.wide || !['text', 'textarea', 'number', 'boolean'].includes(type) ? 'xl:col-span-2' : ''} rounded-[12px] border border-admin-border bg-admin-panel/80 p-4`}>
-        <label htmlFor={id} className="mb-2 block text-sm font-medium text-white">{field.label}</label>
-        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} media={media} onChange={update} /> : <TextInput id={id} value={value} multiline={type === 'textarea'} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
+        <label id={`${id}-label`} htmlFor={id} className="mb-2 block text-sm font-medium text-white">{field.label}</label>
+        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} media={media} onChange={update} /> : type === 'textarea' ? <RichInput id={id} labelledBy={`${id}-label`} value={value} onChange={update} /> : <TextInput id={id} value={value} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
         {field.help && <span className="mt-2 block text-xs text-admin-muted">{field.help}</span>}
       </div>;
     })}</div>

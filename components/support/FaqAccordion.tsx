@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { faqAccordionTransition } from '@/lib/animations';
 import type { FaqItem } from '@/lib/support/faq-types';
+import RichText from '@/components/shared/RichText';
 
 /**
  * Question list for /faq. Several answers can be open at once, matching the
@@ -89,9 +90,9 @@ export default function FaqAccordion({
                   transition={reduced ? { duration: 0.1 } : faqAccordionTransition}
                   className="overflow-hidden"
                 >
-                  <p className="mx-5 border-t border-white/10 pb-5 pt-4 text-base leading-relaxed text-white/80">
-                    {item.answer}
-                  </p>
+                  <div className="mx-5 border-t border-white/10 pb-5 pt-4 text-base leading-relaxed text-white/80">
+                    <RichText text={item.answer} />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

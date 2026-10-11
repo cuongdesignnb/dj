@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { assignedBottleIds, type BottleChoice } from '@/lib/admin/events/vip-package';
+import RichTextEditor from '@/components/admin/form/RichTextEditor';
 
 export default function VipPackageFields({ row, bottles, update, errors = {} }: {
   row: Record<string, unknown>; bottles: BottleChoice[];
@@ -14,7 +15,7 @@ export default function VipPackageFields({ row, bottles, update, errors = {} }: 
   return <>
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <label className="text-xs text-admin-muted">Package Name<input value={String(row.name ?? '')} onChange={(event) => update('name', event.target.value)} aria-invalid={Boolean(errors.name)} className={inputClass} /></label>
-      <label className="text-xs text-admin-muted md:col-span-2">Description<textarea value={String(row.description ?? '')} onChange={(event) => update('description', event.target.value)} className={inputClass} rows={2} /></label>
+      <div className="text-xs text-admin-muted md:col-span-2"><span className="mb-1 block">Description</span><RichTextEditor id={`package-description-${String(row.id ?? 'new')}`} ariaLabel="Package description" value={String(row.description ?? '')} onChange={(markdown) => update('description', markdown)} /></div>
       <label className="text-xs text-admin-muted">Price ({currency} dollars)<input inputMode="decimal" value={moneyValue('_priceDollars', 'priceMinor')} onChange={(event) => update('_priceDollars', event.target.value)} aria-invalid={Boolean(errors.priceMinor)} className={inputClass} /><span className="mt-1 block">Enter dollars, e.g. 3200.00. Stored as integer cents.</span></label>
       <label className="text-xs text-admin-muted">Deposit ({currency} dollars)<input inputMode="decimal" value={moneyValue('_depositDollars', 'depositAmountMinor')} onChange={(event) => update('_depositDollars', event.target.value)} aria-invalid={Boolean(errors.depositAmountMinor)} className={inputClass} /><span className="mt-1 block">Optional; leave blank for no deposit.</span></label>
       <label className="text-xs text-admin-muted">Currency<input value={currency} onChange={(event) => update('currency', event.target.value.toUpperCase())} maxLength={3} className={inputClass} /></label>

@@ -8,6 +8,7 @@ import Container from '../ui/Container';
 import PublicMenuLinks from '@/components/shared/PublicMenuLinks';
 import type { HomeFooterData, HomePartner } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
+import RichText from '@/components/shared/RichText';
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -216,9 +217,9 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                     <span className="text-[9px] tracking-[0.3em] text-rave-muted uppercase">{global.tagline}</span>
                   </div>
                 </div>
-                <p className="text-sm text-rave-muted leading-relaxed mb-5">
-                  {global.footerDescription}
-                </p>
+                <div className="text-sm text-rave-muted leading-relaxed mb-5">
+                  <RichText text={global.footerDescription} />
+                </div>
                 <div className="flex items-center gap-3">
                   {footer.socials.map((social, i) => {
                     const Icon = socialIconMap[social.platform];

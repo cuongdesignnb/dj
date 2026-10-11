@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import type { VipBooth } from '@/lib/vip/types';
 import { vipReveal, vipStagger } from '@/lib/animations';
+import RichText from '@/components/shared/RichText';
 
 /**
  * Illustrative club map with selectable booths.
@@ -129,7 +130,7 @@ export default function ClubMap({
           </motion.div>
         </div>
 
-        <p className="mt-4 text-xs text-rave-muted/70">{disclaimer}</p>
+        <div className="mt-4 text-xs text-rave-muted/70"><RichText text={disclaimer} /></div>
       </motion.div>
 
       {/* The booth control below lg, where the map hotspots are hidden. */}

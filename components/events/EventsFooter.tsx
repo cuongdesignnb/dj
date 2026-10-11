@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { EventsFooterData } from '@/lib/events/listing-types';
+import RichText from '@/components/shared/RichText';
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -103,9 +104,9 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
                 </span>
               </div>
             </div>
-            <p className="mb-5 text-sm leading-relaxed text-rave-muted">
-              {global.footerDescription}
-            </p>
+            <div className="mb-5 text-sm leading-relaxed text-rave-muted">
+              <RichText text={global.footerDescription} />
+            </div>
             {socials.length > 0 && (
               <div className="flex items-center gap-3" aria-label="Social links">
                 {socials.map((social) => {

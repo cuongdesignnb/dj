@@ -9,6 +9,7 @@ import Container from '@/components/ui/Container';
 import PartnersSectionHeading from './PartnersSectionHeading';
 import { partnerReveal, partnerStagger } from '@/lib/animations';
 import type { PartnerProfile } from '@/lib/partners/types';
+import RichText from '@/components/shared/RichText';
 
 interface Props {
   partners: PartnerProfile[];
@@ -96,12 +97,12 @@ export default function FeaturedPartners({ partners }: Props) {
                         }}
                       />
                       <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between">
-                        <motion.p
+                        <motion.div
                           variants={partnerReveal}
                           className="text-rave-muted text-sm sm:text-[15px] leading-relaxed max-w-md"
                         >
-                          {p.description}
-                        </motion.p>
+                          <RichText text={p.description} />
+                        </motion.div>
                         <motion.div variants={partnerReveal}>
                           <Link
                             href={ctaHref}

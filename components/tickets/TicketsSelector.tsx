@@ -15,6 +15,7 @@ import type {
 import { clampQuantity, initialSelection } from '@/lib/tickets/pricing';
 import TicketOptionCard from './TicketOptionCard';
 import TicketSelectionPanel from './TicketSelectionPanel';
+import RichText from '@/components/shared/RichText';
 
 /**
  * The interactive half of /tickets.
@@ -69,9 +70,9 @@ export default function TicketsSelector({
               {content.emptyTitle || 'Ticket release details are coming soon.'}
           </h2>
           <div className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-14 text-center">
-            <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
-              {content.emptyDescription || 'Ticket release details will appear here when confirmed by the organiser.'}
-            </p>
+            <div className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
+              <RichText text={content.emptyDescription || 'Ticket release details will appear here when confirmed by the organiser.'} />
+            </div>
           </div>
         </Container>
       </section>

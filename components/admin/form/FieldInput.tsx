@@ -21,6 +21,8 @@ import { getPath, setPath, slugify } from '@/lib/admin/common/paths';
 import type { FieldConfig, Option } from '@/lib/admin/common/schema';
 import { ConfirmDialog, buttonClass } from '../ui/Dialog';
 import { MediaPicker } from './MediaPicker';
+import RichTextEditor from './RichTextEditor';
+import { richTextToPlain } from '@/lib/rich-text/plain';
 import type { MediaChoice, MediaPickerFilter } from './MediaPicker';
 
 export type { MediaChoice } from './MediaPicker';
@@ -84,7 +86,7 @@ function Shell({
         {asGroup ? (
           <legend className="text-sm font-medium text-white/90">{label}</legend>
         ) : (
-          <label htmlFor={id} className="text-sm font-medium text-white/90">
+          <label id={`${id}-label`} htmlFor={id} className="text-sm font-medium text-white/90">
             {label}
           </label>
         )}
@@ -459,7 +461,7 @@ function BlocksField({ id, field, value, onChange, ctx, error }: FieldProps) {
                       />
                     </div>
                   ) : (
-                    <textarea aria-label={`${label} text`} rows={3} value={String(block.text ?? '')} disabled={ctx.readOnly} onChange={(e) => update(i, { text: e.target.value })} className={inputClass} />
+                    <RichTextEditor id={`${id}-block-${String(block.id ?? i)}`} ariaLabel={`${label} text`} mode="inline" value={String(block.text ?? '')} disabled={ctx.readOnly} onChange={(markdown) => update(i, { text: markdown })} />
                   )}
                 </li>
               );
@@ -717,13 +719,28 @@ export default function FieldInput({
           {missingVi ? ' missing' : ''}
         </span>
       ) : null;
-      const counter = field.maxLength ? `${current.length}/${field.maxLength}` : undefined;
+      const rich = field.rich && field.type !== 'localizedText';
+      // Rich fields count the visible text, not the formatting marks.
+      const counter = field.maxLength ? `${rich ? richTextToPlain(current).length : current.length}/${field.maxLength}` : undefined;
       // Only English is required; Vietnamese may be left for translation.
       const shownField = localized && ctx.language === 'vi' ? { ...field, required: false } : field;
       return (
         <Shell id={id} field={shownField} error={ctx.language === 'en' || !localized ? error : undefined} counter={counter} extra={extra}>
           {field.type === 'localizedText' ? (
             <input {...aria} value={current} placeholder={field.placeholder} disabled={ctx.readOnly} onChange={(e) => set(e.target.value)} className={inputClass} lang={ctx.language} />
+          ) : rich ? (
+            <RichTextEditor
+              key={localized ? ctx.language : 'single'}
+              id={id}
+              value={current}
+              onChange={set}
+              mode={field.rich === 'inline' ? 'inline' : 'full'}
+              disabled={ctx.readOnly}
+              invalid={Boolean(error)}
+              lang={localized ? ctx.language : undefined}
+              ariaLabelledBy={`${id}-label`}
+              ariaDescribedBy={aria['aria-describedby']}
+            />
           ) : (
             <textarea {...aria} rows={4} value={current} placeholder={field.placeholder} disabled={ctx.readOnly} onChange={(e) => set(e.target.value)} className={inputClass} lang={localized ? ctx.language : undefined} />
           )}

@@ -10,6 +10,7 @@ import { galleryImageReveal, galleryReveal, galleryStagger } from '@/lib/animati
 import type { GalleryCollection } from '@/lib/gallery/types';
 import type { PublicListingSection } from '@/lib/cms/public-page';
 import { categoryLabel, countPhotos, statusLabel } from '@/lib/gallery/helpers';
+import RichText from '@/components/shared/RichText';
 
 export default function FeaturedCollection({
   collection,
@@ -118,12 +119,12 @@ export default function FeaturedCollection({
                 </motion.p>
               )}
               {collection.description && (
-                <motion.p
+                <motion.div
                   variants={galleryReveal}
                   className="mt-5 max-w-xl text-sm leading-relaxed text-rave-muted sm:text-base"
                 >
-                  {collection.description}
-                </motion.p>
+                  <RichText text={collection.description} />
+                </motion.div>
               )}
             </div>
 

@@ -17,6 +17,7 @@ import type { Product } from '@/lib/shop/types';
 import AddToCartButton from './AddToCartButton';
 import QuantityControl from './QuantityControl';
 import { ColorSelector, SizeSelector } from './ProductVariantSelector';
+import RichText from '@/components/shared/RichText';
 
 // Feature chips cycle through a small set of glyphs; the labels carry meaning.
 const CHIP_ICONS = [Gem, Shirt, Star];
@@ -63,12 +64,12 @@ export default function ProductInfo({ product }: { product: Product }) {
         >
           {product.title}
         </motion.h1>
-        <motion.p
+        <motion.div
           variants={shopReveal}
           className="mt-4 text-base leading-relaxed text-rave-muted sm:text-lg"
         >
-          {product.excerpt}
-        </motion.p>
+          <RichText text={product.excerpt} />
+        </motion.div>
       </div>
 
       {product.featureLabels.length > 0 && (

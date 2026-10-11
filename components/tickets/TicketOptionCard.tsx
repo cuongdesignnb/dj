@@ -7,6 +7,7 @@ import type { TicketTier } from '@/lib/tickets/types';
 import { formatMoney } from '@/lib/tickets/pricing';
 import { ticketReveal } from '@/lib/animations';
 import TicketQuantityControl from './TicketQuantityControl';
+import RichText from '@/components/shared/RichText';
 
 const ICONS: Record<string, LucideIcon> = {
   GraduationCap,
@@ -74,9 +75,9 @@ export default function TicketOptionCard({
             )}
           </div>
 
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-rave-muted">
-            {tier.description}
-          </p>
+          <div className="mt-2 max-w-xl text-sm leading-relaxed text-rave-muted">
+            <RichText text={tier.description} />
+          </div>
 
           {tier.features.length > 0 && (
             <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2">

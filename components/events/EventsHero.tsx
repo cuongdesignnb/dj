@@ -9,6 +9,7 @@ import EventsFilters from './EventsFilters';
 import EventAction from './EventAction';
 import { eventsReveal, eventsStagger, eventHeroLineReveal } from '@/lib/animations';
 import type { EventsHeroData } from '@/lib/events/listing-types';
+import RichText from '@/components/shared/RichText';
 
 interface Props {
   hero: EventsHeroData;
@@ -81,12 +82,12 @@ export default function EventsHero({ hero, breadcrumb, filterLabel, filterOption
                 ))}
               </motion.h1>
 
-              <motion.p
+              <motion.div
                 variants={eventsReveal}
                 className="text-rave-muted text-base md:text-lg leading-relaxed mt-6 max-w-2xl"
               >
-                {hero.description}
-              </motion.p>
+                <RichText text={hero.description} />
+              </motion.div>
 
               <motion.div
                 variants={eventsReveal}

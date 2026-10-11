@@ -7,6 +7,7 @@ import { ArrowRight, Clock, Crown, Headset, Map, Ticket, Users, Wine } from 'luc
 import type { LucideIcon } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { vipReveal, vipStagger } from '@/lib/animations';
+import RichText from '@/components/shared/RichText';
 
 const ICONS: Record<string, LucideIcon> = {
   Crown,
@@ -94,7 +95,7 @@ export default function VipInfoGrid({
                 <h3 className="font-heading text-lg font-bold uppercase tracking-[0.06em] text-white">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-rave-muted">{item.description}</p>
+                <div className="mt-2 text-sm leading-relaxed text-rave-muted"><RichText text={item.description} /></div>
 
                 {item.action && (
                   <Link

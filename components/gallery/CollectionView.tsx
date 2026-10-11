@@ -21,6 +21,7 @@ import {
 import GalleryMediaCard from './GalleryMediaCard';
 import GalleryLightbox from './GalleryLightbox';
 import GalleryVideoModal from './GalleryVideoModal';
+import RichText from '@/components/shared/RichText';
 
 const GRID_ID = 'collection-media-grid';
 
@@ -218,9 +219,9 @@ export default function CollectionView({ collection }: { collection: GalleryColl
               />
 
               {collection.description && (
-                <p className="mt-5 text-sm leading-relaxed text-rave-muted">
-                  {collection.description}
-                </p>
+                <div className="mt-5 text-sm leading-relaxed text-rave-muted">
+                  <RichText text={collection.description} />
+                </div>
               )}
 
               <dl className="mt-5 flex flex-col gap-3 border-t border-white/[0.08] pt-5 text-sm">

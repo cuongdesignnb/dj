@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from 'framer-mot
 import { Plus } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { ticketReveal, ticketStagger } from '@/lib/animations';
+import RichText from '@/components/shared/RichText';
 
 export interface FaqAccordionItem {
   id: string;
@@ -124,9 +125,9 @@ export default function FaqAccordion({
                       transition={{ duration: reduced ? 0.15 : 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                       className="overflow-hidden"
                     >
-                      <p className="px-5 pb-5 text-sm leading-relaxed text-rave-muted sm:px-6 sm:pb-6 sm:text-base">
-                        {item.answer}
-                      </p>
+                      <div className="px-5 pb-5 text-sm leading-relaxed text-rave-muted sm:px-6 sm:pb-6 sm:text-base">
+                        <RichText text={item.answer} />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

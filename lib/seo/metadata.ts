@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { canonicalUrl } from './canonical';
 import { DEFAULT_DESCRIPTION, brandTitle, robotsFor, type Indexability } from './config';
+import { richTextToPlain } from '@/lib/rich-text/plain';
 
 export type SeoImage = { url: string; alt?: string | null; width?: number | null; height?: number | null };
 
@@ -26,7 +27,8 @@ export function buildMetadata(input: {
   canonicalOverride?: string | null;
 }): Metadata {
   const title = brandTitle(input.title);
-  const description = input.description?.trim() || DEFAULT_DESCRIPTION;
+  // Long fields may carry rich-text marks; meta tags get the visible text only.
+  const description = richTextToPlain(input.description) || DEFAULT_DESCRIPTION;
   const selectedImage = input.image?.url
     ? input.image
     : { url: DEFAULT_OG_IMAGE, alt: 'Connection Rave event poster', width: 1200, height: 800 };

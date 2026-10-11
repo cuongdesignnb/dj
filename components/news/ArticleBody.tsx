@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import type { ArticleContentBlock } from '@/lib/news/types';
+import RichText from '@/components/shared/RichText';
 
 /**
  * Renders an article from structured blocks.
@@ -35,9 +36,9 @@ export default function ArticleBody({ blocks }: { blocks: ArticleContentBlock[] 
 
           case 'paragraph':
             return (
-              <p key={block.id} className="text-base leading-relaxed text-rave-muted">
-                {block.text}
-              </p>
+              <div key={block.id} className="text-base leading-relaxed text-rave-muted">
+                <RichText text={block.text} />
+              </div>
             );
 
           case 'image':

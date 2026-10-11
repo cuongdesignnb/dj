@@ -13,6 +13,7 @@ import type {
   TicketSelection,
 } from '@/lib/tickets/types';
 import { buildSelectedLineItems, calculateTicketSubtotal, formatMoney } from '@/lib/tickets/pricing';
+import RichText from '@/components/shared/RichText';
 
 const TRUST_ICONS: Record<string, LucideIcon> = {
   ShieldCheck,
@@ -278,9 +279,9 @@ export default function TicketSelectionPanel({
           </button>
         )}
         {ctaNote && (
-          <p className="mt-2 text-center font-heading text-[11px] uppercase tracking-[0.16em] text-rave-muted/80">
-            {ctaNote}
-          </p>
+          <div className="mt-2 text-center font-heading text-[11px] uppercase tracking-[0.16em] text-rave-muted/80">
+            <RichText text={ctaNote} />
+          </div>
         )}
       </div>
 
@@ -301,9 +302,9 @@ export default function TicketSelectionPanel({
                   <p className="font-heading text-sm font-bold uppercase tracking-wide text-white">
                     {item.title}
                   </p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-rave-muted">
-                    {item.description}
-                  </p>
+                  <div className="mt-0.5 text-xs leading-relaxed text-rave-muted">
+                    <RichText text={item.description} />
+                  </div>
                 </div>
               </li>
             );

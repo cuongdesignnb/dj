@@ -2,6 +2,7 @@
 
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import type { PublicListingEmptyState } from '@/lib/cms/public-page';
+import RichText from '@/components/shared/RichText';
 
 export default function ListingEmptyState({
   state,
@@ -22,7 +23,7 @@ export default function ListingEmptyState({
       <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
         {title}
       </p>
-      <p className="mt-3 text-sm text-rave-muted sm:text-base">{description}</p>
+      <div className="mt-3 text-sm text-rave-muted sm:text-base"><RichText text={description} /></div>
       {state?.cta && (
         <Link
           href={state.cta.href}

@@ -18,6 +18,7 @@ import Container from '@/components/ui/Container';
 import EventsBreadcrumb from '@/components/events/EventsBreadcrumb';
 import type { Crumb } from '@/components/events/EventsBreadcrumb';
 import { eventHeroLineReveal, vipReveal, vipStagger } from '@/lib/animations';
+import RichText from '@/components/shared/RichText';
 
 export interface PageHeroAction {
   label: string;
@@ -136,12 +137,12 @@ export default function PageHero({
                 ))}
               </motion.h1>
 
-              <motion.p
+              <motion.div
                 variants={vipReveal}
                 className="mt-6 max-w-xl text-base leading-relaxed text-rave-muted md:text-lg"
               >
-                {description}
-              </motion.p>
+                <RichText text={description} />
+              </motion.div>
 
               {children && (
                 <motion.div variants={vipReveal} className="mt-7">

@@ -15,8 +15,9 @@ try {
       update: { status: 'PUBLISHED', deletedAt: null },
       create: { slug, status: 'PUBLISHED', venueName: 'QA Hall', city: 'Perth', country: 'Australia', translations: { create: { locale: 'en', title: 'QA Multi Event' } } },
     });
-    // Start every run from "created in Admin after seeding": no content rows at all.
+    // Start every run from "created in Admin after seeding": no content rows and no copy.
     await db.pageContent.deleteMany({ where: { key: { in: keys(event.id) } } });
+    await db.eventTranslation.updateMany({ where: { eventId: event.id }, data: { shortDescription: null, description: null } });
     const pkg = await db.vipPackage.findFirst({ where: { eventId: event.id, name: 'QA Multi Package' } })
       ?? await db.vipPackage.create({ data: { eventId: event.id, name: 'QA Multi Package', priceMinor: 150000, currency: 'AUD', capacity: 10, includedBottleCount: 0, minBottleSelection: 0, maxBottleSelection: 0, paymentMode: 'REQUEST_ONLY' } });
     await db.vipPackage.update({ where: { id: pkg.id }, data: { enabled: true, priceMinor: 150000, paymentMode: 'REQUEST_ONLY' } });

@@ -7,6 +7,7 @@ import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'fr
 import { ArrowRight } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { ticketReveal, ticketStagger } from '@/lib/animations';
+import RichText from '@/components/shared/RichText';
 
 
 export interface FinalCtaData {
@@ -84,12 +85,12 @@ export default function FinalCtaSection({
               {cta.title}
             </motion.h2>
             {cta.subtitle && (
-              <motion.p
+              <motion.div
                 variants={ticketReveal}
                 className="mt-4 text-sm leading-relaxed text-rave-muted sm:text-base"
               >
-                {cta.subtitle}
-              </motion.p>
+                <RichText text={cta.subtitle} />
+              </motion.div>
             )}
           </div>
 

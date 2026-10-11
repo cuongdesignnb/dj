@@ -64,7 +64,7 @@ export const faqDefinition: ResourceDefinition<AdminFaq> = {
         f.select('category', 'Category', FAQ_CATEGORY_OPTIONS, { required: true }),
         f.number('sortOrder', 'Sort order', { min: 0 }),
         f.loc('question', 'Question', { required: true, maxLength: 160 }),
-        f.locArea('answer', 'Answer', { required: true, help: 'Plain text. State only confirmed information.' }),
+        f.locArea('answer', 'Answer', { required: true, rich: true, help: 'State only confirmed information. Formatting is kept on the site; search results use the plain text.' }),
         f.tags('keywords', 'Search keywords'),
         f.toggle('published', 'Published'),
         f.toggle('answersConfirmed', 'Answers confirmed by organiser', { help: 'Only enable this when every visible answer is final and eligible for FAQ rich results.' }),

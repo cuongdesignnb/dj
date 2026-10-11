@@ -100,7 +100,7 @@ export const productsDefinition: ResourceDefinition<AdminProduct> = {
         f.money('price', 'Price (AUD)', { required: true }),
         f.text('badge', 'Badge', { width: 'half', maxLength: 30 }),
         f.toggle('featured', 'Featured product'),
-        f.locArea('excerpt', 'Excerpt', { maxLength: 240 }),
+        f.locArea('excerpt', 'Excerpt', { maxLength: 240, rich: 'inline' }),
         f.locArea('description', 'Description'),
       ], { tab: 'Product' }),
       section('media', 'Media', [

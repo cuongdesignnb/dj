@@ -21,6 +21,7 @@ import {
   partnerStagger,
 } from '@/lib/animations';
 import type { PartnersHeroData } from '@/lib/partners/types';
+import RichText from '@/components/shared/RichText';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   BarChart3,
@@ -129,12 +130,12 @@ export default function PartnersHero({ hero }: Props) {
                 ))}
               </motion.h1>
 
-              <motion.p
+              <motion.div
                 variants={partnerReveal}
                 className="text-rave-muted text-base md:text-lg leading-relaxed mt-6 max-w-2xl"
               >
-                {hero.description}
-              </motion.p>
+                <RichText text={hero.description} />
+              </motion.div>
 
               <motion.div
                 variants={partnerReveal}

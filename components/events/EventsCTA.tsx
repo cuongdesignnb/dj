@@ -7,6 +7,7 @@ import Container from '@/components/ui/Container';
 import { eventsReveal, eventsStagger } from '@/lib/animations';
 import type { EventsFinalCta } from '@/lib/events/listing-types';
 import EventAction from './EventAction';
+import RichText from '@/components/shared/RichText';
 
 export default function EventsCTA({
   cta,
@@ -80,12 +81,12 @@ export default function EventsCTA({
             </motion.h2>
 
             {cta.description && (
-              <motion.p
+              <motion.div
                 variants={eventsReveal}
                 className="mt-5 max-w-xl text-sm leading-relaxed text-rave-muted sm:text-base"
               >
-                {cta.description}
-              </motion.p>
+                <RichText text={cta.description} />
+              </motion.div>
             )}
           </div>
 

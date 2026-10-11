@@ -2,6 +2,7 @@
 // action (which re-checks). The backend remains authoritative.
 
 import { getPath } from './paths';
+import { richTextToPlain } from '@/lib/rich-text/plain';
 import type { FieldConfig, FormSchema } from './schema';
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -83,7 +84,9 @@ export function validateField(field: FieldConfig, value: unknown, values: unknow
         : typeof value === 'object' && value && 'en' in value
           ? String((value as { en?: string }).en ?? '')
           : '';
-    if (text.length > field.maxLength) return `Keep this under ${field.maxLength} characters.`;
+    // Rich text limits count what readers see, not the formatting marks.
+    const length = field.rich ? richTextToPlain(text).length : text.length;
+    if (length > field.maxLength) return `Keep this under ${field.maxLength} characters.`;
   }
 
   if (field.type === 'repeater' && Array.isArray(value) && field.itemFields) {

@@ -12,6 +12,7 @@ import type { VipPageData, VipSelection } from '@/lib/vip/types';
 import { buildVipBookingUrl, toggleBottle } from '@/lib/vip/selection';
 import ClubMap from './ClubMap';
 import BottleSelector from './BottleSelector';
+import RichText from '@/components/shared/RichText';
 
 function SectionHeading({
   title,
@@ -195,9 +196,9 @@ export default function VipConfigurator({
                   </dl>
                 </div>
 
-                <p className="mt-5 text-sm leading-relaxed text-rave-muted">
-                  {data.package.description}
-                </p>
+                <div className="mt-5 text-sm leading-relaxed text-rave-muted">
+                  <RichText text={data.package.description} />
+                </div>
 
                 <dl className="mt-5 flex flex-col gap-3 text-sm">
                   <div className="flex items-center justify-between gap-3">

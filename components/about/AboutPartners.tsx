@@ -8,6 +8,7 @@ import Container from '@/components/ui/Container';
 import AboutSectionHeading from './AboutSectionHeading';
 import { aboutReveal, aboutStagger } from '@/lib/animations';
 import type { PartnerItem } from '@/lib/about/types';
+import RichText from '@/components/shared/RichText';
 
 interface Props {
   partners: PartnerItem[];
@@ -74,9 +75,9 @@ export default function AboutPartners({ partners }: Props) {
                     {partner.name}
                   </h3>
                   {partner.description && (
-                    <p className="text-rave-muted text-sm leading-relaxed mt-2">
-                      {partner.description}
-                    </p>
+                    <div className="text-rave-muted text-sm leading-relaxed mt-2">
+                      <RichText text={partner.description} />
+                    </div>
                   )}
                 </div>
               </motion.article>

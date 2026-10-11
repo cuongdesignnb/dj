@@ -7,6 +7,7 @@ import Container from '@/components/ui/Container';
 import EventSectionHeading from './EventSectionHeading';
 import { cardStagger, cardItem, lineReveal } from '@/lib/events/motion';
 import type { EventPageData } from '@/lib/events/types';
+import RichText from '@/components/shared/RichText';
 
 const ICON_MAP = {
   globe: Globe,
@@ -52,13 +53,13 @@ export default function EventAbout({ event }: Props) {
 
             <div className="flex flex-col gap-5 mt-6">
               {e.aboutParagraphs.map((p, i) => (
-                <motion.p
+                <motion.div
                   key={i}
                   variants={lineReveal}
                   className="text-white/85 text-base md:text-lg leading-relaxed"
                 >
-                  {p}
-                </motion.p>
+                  <RichText text={p} />
+                </motion.div>
               ))}
             </div>
           </motion.div>

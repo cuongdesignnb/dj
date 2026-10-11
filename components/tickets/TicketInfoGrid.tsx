@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react';
 import Container from '@/components/ui/Container';
 import { ticketReveal, ticketStagger } from '@/lib/animations';
 import type { TicketInfoItem } from '@/lib/tickets/types';
+import RichText from '@/components/shared/RichText';
 
 const ICONS: Record<string, LucideIcon> = {
   ShoppingCart,
@@ -73,7 +74,7 @@ export default function TicketInfoGrid({ items }: { items: TicketInfoItem[] }) {
                 <h3 className="font-heading text-lg font-bold uppercase tracking-[0.06em] text-white">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-rave-muted">{item.description}</p>
+                <div className="mt-2 text-sm leading-relaxed text-rave-muted"><RichText text={item.description} /></div>
               </motion.li>
             );
           })}

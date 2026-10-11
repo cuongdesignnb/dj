@@ -16,6 +16,7 @@ import type { PastEventsHeroData } from '@/lib/events/listing-types';
 import EventAction from '../EventAction';
 import EventsBreadcrumb from '../EventsBreadcrumb';
 import PastEventFilters from './PastEventFilters';
+import RichText from '@/components/shared/RichText';
 
 export default function PastEventsHero({
   hero,
@@ -92,12 +93,12 @@ export default function PastEventsHero({
                 ))}
               </motion.h1>
 
-              <motion.p
+              <motion.div
                 variants={eventsReveal}
                 className="mt-6 max-w-2xl text-base leading-relaxed text-rave-muted md:text-lg"
               >
-                {hero.description}
-              </motion.p>
+                <RichText text={hero.description} />
+              </motion.div>
 
               <motion.div variants={eventsReveal} className="mt-7 flex flex-wrap items-start gap-3">
                 <EventAction action={hero.primaryCta} />

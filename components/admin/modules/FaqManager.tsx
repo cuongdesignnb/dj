@@ -11,6 +11,8 @@ import { ConfirmDialog, Drawer, buttonClass } from '../ui/Dialog';
 import { EmptyState } from '../ui/States';
 import StatusBadge from '../ui/StatusBadge';
 import { useToast } from '../ui/Toast';
+import RichTextEditor from '@/components/admin/form/RichTextEditor';
+import { richTextToPlain } from '@/lib/rich-text/plain';
 
 export interface FaqItem {
   id: string;
@@ -205,7 +207,7 @@ export default function FaqManager({
               <li key={item.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-white">{item.question.en || 'Untitled question'}</p>
-                  <p className="mt-1 line-clamp-2 text-sm text-admin-muted">{item.answer.en}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-admin-muted">{richTextToPlain(item.answer.en)}</p>
                   <p className="mt-2 flex flex-wrap items-center gap-2">
                     <StatusBadge value={item.published ? 'published' : 'draft'} label={item.published ? 'Published' : 'Hidden'} />
                     {item.answersConfirmed && <StatusBadge value="confirmed" label="Confirmed" />}
@@ -316,20 +318,22 @@ export default function FaqManager({
                 className={inputClass}
               />
             </label>
-            <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-white/90">
+            <div>
+              <span id="faq-answer-label" className="mb-1.5 block text-sm font-medium text-white/90">
                 Answer{lang === 'en' && <span className="ml-0.5 text-rave-red" aria-hidden>*</span>}
               </span>
-              <textarea
+              <RichTextEditor
+                key={lang}
+                id="faq-answer"
                 lang={lang}
-                rows={6}
                 value={draft.answer[lang] ?? ''}
-                aria-invalid={lang === 'en' && field('answer') ? true : undefined}
-                onChange={(e) => setDraft({ ...draft, answer: { ...draft.answer, [lang]: e.target.value } })}
-                className={inputClass}
+                invalid={lang === 'en' && Boolean(field('answer'))}
+                ariaLabelledBy="faq-answer-label"
+                ariaDescribedBy="faq-answer-help"
+                onChange={(markdown) => setDraft((current) => (current ? { ...current, answer: { ...current.answer, [lang]: markdown } } : current))}
               />
-              <span className="mt-1 block text-xs text-admin-muted">Plain text. State only confirmed information.</span>
-            </label>
+              <span id="faq-answer-help" className="mt-1 block text-xs text-admin-muted">State only confirmed information. Formatting is kept on the site; search results use the plain text.</span>
+            </div>
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium text-white/90">Search keywords</span>
               <input

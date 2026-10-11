@@ -32,6 +32,7 @@ import {
 import type { BookingFieldErrors } from '@/lib/vip/validation';
 import BottleSelector from './BottleSelector';
 import GroupSizeControl from './GroupSizeControl';
+import RichText from '@/components/shared/RichText';
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -719,9 +720,9 @@ export default function BookingRequestForm({
                         <p className="font-heading text-sm font-bold uppercase tracking-wide text-white">
                           {step.title}
                         </p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-rave-muted">
-                          {step.description}
-                        </p>
+                        <div className="mt-0.5 text-xs leading-relaxed text-rave-muted">
+                          <RichText text={step.description} />
+                        </div>
                       </div>
                     </motion.li>
                   ))}

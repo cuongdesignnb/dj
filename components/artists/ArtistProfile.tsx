@@ -12,6 +12,7 @@ import type { Artist } from '@/lib/artists/types';
 import { artistBioFallback, setTimeLabel } from '@/lib/artists/helpers';
 import ArtistCard from './ArtistCard';
 import ArtistMediaLinks from './ArtistMediaLinks';
+import RichText from '@/components/shared/RichText';
 
 function SectionHeading({ title, titleId }: { title: string; titleId: string }) {
   return (
@@ -196,7 +197,7 @@ export default function ArtistProfile({
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-14">
             <div>
               <SectionHeading title={`About ${artist.name}`} titleId="artist-about-title" />
-              <motion.p
+              <motion.div
                 variants={artistReveal}
                 initial="hidden"
                 whileInView="visible"
@@ -205,8 +206,8 @@ export default function ArtistProfile({
               >
                 {/* No biography has been supplied, so this says so rather than
                     inventing a career, a genre or a list of achievements. */}
-                {hasBio ? artist.bio : artistBioFallback()}
-              </motion.p>
+                {hasBio ? <RichText text={artist.bio} /> : artistBioFallback()}
+              </motion.div>
 
               {artist.genres.length > 0 && (
                 <ul className="mt-6 flex flex-wrap gap-2.5">

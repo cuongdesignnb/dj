@@ -22,6 +22,7 @@ import {
   shopStagger,
 } from '@/lib/animations';
 import type { ShopPageData } from '@/lib/shop/types';
+import RichText from '@/components/shared/RichText';
 
 // Where each cut-out sits in the composition, back to front, with how far it
 // drifts with the pointer. Depth sells the layering without any loop running.
@@ -127,12 +128,12 @@ export default function ShopHero({ hero }: { hero: ShopPageData['hero'] }) {
                 ))}
               </motion.h1>
 
-              <motion.p
+              <motion.div
                 variants={shopReveal}
                 className="mt-6 max-w-md text-base leading-relaxed text-rave-muted md:text-lg"
               >
-                {hero.description}
-              </motion.p>
+                <RichText text={hero.description} />
+              </motion.div>
 
               <motion.div variants={shopReveal} className="mt-8 flex flex-wrap items-center gap-3">
                 <Link

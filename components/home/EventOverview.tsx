@@ -7,6 +7,7 @@ import Container from '../ui/Container';
 import NeonButton from './NeonButton';
 import type { HomeEvent } from './types';
 import { fadeUp, slideLeft, staggerContainer } from '@/lib/animations';
+import RichText from '@/components/shared/RichText';
 
 export default function EventOverview({ event }: { event: HomeEvent }) {
   return (
@@ -69,8 +70,8 @@ export default function EventOverview({ event }: { event: HomeEvent }) {
 
             {/* Description Paragraphs */}
             <motion.div variants={fadeUp} className="flex flex-col gap-4 mb-6">
-              {event.shortDescription && <p className="text-white text-sm sm:text-base font-semibold leading-relaxed">{event.shortDescription}</p>}
-              {event.description && <p className="text-white/80 text-sm sm:text-base leading-relaxed">{event.description}</p>}
+              {event.shortDescription && <div className="text-white text-sm sm:text-base font-semibold leading-relaxed"><RichText text={event.shortDescription} /></div>}
+              {event.description && <div className="text-white/80 text-sm sm:text-base leading-relaxed"><RichText text={event.description} /></div>}
               {!event.shortDescription && !event.description && <p className="text-white/80 text-sm sm:text-base leading-relaxed">Event details will be published here when confirmed.</p>}
             </motion.div>
 
