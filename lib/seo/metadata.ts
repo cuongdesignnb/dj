@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { canonicalUrl } from './canonical';
-import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, robotsFor, type Indexability } from './config';
+import { DEFAULT_DESCRIPTION, brandTitle, robotsFor, type Indexability } from './config';
 
 export type SeoImage = { url: string; alt?: string | null; width?: number | null; height?: number | null };
 
@@ -25,7 +25,7 @@ export function buildMetadata(input: {
   follow?: boolean | null;
   canonicalOverride?: string | null;
 }): Metadata {
-  const title = input.title?.trim() || DEFAULT_TITLE;
+  const title = brandTitle(input.title);
   const description = input.description?.trim() || DEFAULT_DESCRIPTION;
   const selectedImage = input.image?.url
     ? input.image
@@ -39,7 +39,8 @@ export function buildMetadata(input: {
     },
   ];
   return {
-    title,
+    // Absolute: the root layout template would otherwise repeat the site name.
+    title: { absolute: title },
     description,
     alternates: { canonical: canonicalUrl(input.path, input.canonicalOverride) },
     robots: robotsFor({ indexable: input.indexable, follow: input.follow } satisfies Indexability),

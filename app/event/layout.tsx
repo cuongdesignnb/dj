@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { siteTitle } from '@/lib/seo/config';
 
 // Scope the layout to /event. No data fetching here, per spec.
 
 export const metadata: Metadata = {
-  title: 'Event Details | Connection Rave',
+  title: siteTitle('Event Details'),
   description: 'Published event details, music, lineup and venue information from Connection Rave.',
 };
 

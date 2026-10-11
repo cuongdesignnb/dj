@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 // Every admin screen is private: never indexed, never followed.
 export const metadata: Metadata = {
-  title: { default: 'Admin — Connection Rave', template: '%s — Admin — Connection Rave' },
+  title: { absolute: 'Admin — Connection Rave', template: '%s — Admin — Connection Rave' },
   robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { siteTitle } from '@/lib/seo/config';
 import { notFound } from 'next/navigation';
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -8,7 +9,7 @@ import { getCheckoutIntentPublic } from '@/server/services/payments/checkout-int
 import { squarePublicConfig } from '@/server/integrations/square/config';
 
 export const metadata: Metadata = {
-  title: 'Secure Checkout | Connection Rave',
+  title: siteTitle('Secure Checkout'),
   description: 'Secure Square checkout.',
   robots: { index: false, follow: false },
 };

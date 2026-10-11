@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { siteTitle } from '@/lib/seo/config';
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import Header from '@/components/home/Header';
 import EventsMotion from '@/components/events/EventsMotion';
@@ -6,7 +7,7 @@ import Container from '@/components/ui/Container';
 import { verifyIssuedTicketToken } from '@/server/services/tickets/verify';
 
 export const metadata: Metadata = {
-  title: 'Ticket Verification | Connection Rave',
+  title: siteTitle('Ticket Verification'),
   description: 'Verify a Connection Rave ticket QR code.',
   robots: { index: false, follow: false },
 };

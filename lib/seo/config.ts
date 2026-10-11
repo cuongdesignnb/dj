@@ -1,6 +1,21 @@
 import type { Metadata } from 'next';
 
+export const SITE_NAME = 'Connection Rave';
 export const DEFAULT_TITLE = 'Connection Rave | Music, Events & Experiences';
+
+/**
+ * Page titles name the site exactly once. Editors and code often already end a
+ * title with "| Connection Rave"; only titles without the name get it appended.
+ */
+export function brandTitle(raw: string | null | undefined): string {
+  const title = raw?.trim() || DEFAULT_TITLE;
+  return title.toLowerCase().includes(SITE_NAME.toLowerCase()) ? title : `${title} | ${SITE_NAME}`;
+}
+
+/** Metadata title that bypasses the root `%s | Connection Rave` template. */
+export function siteTitle(raw: string | null | undefined): { absolute: string } {
+  return { absolute: brandTitle(raw) };
+}
 export const DEFAULT_DESCRIPTION = 'Connection Rave brings published music events, artists and experiences together.';
 
 function rawSiteUrl() {

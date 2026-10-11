@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { siteTitle } from '@/lib/seo/config';
 import { getEventRepository, readEventEnv } from '@/lib/events/repository.server';
 import { repositoryErrorMessage } from '@/lib/events/presentation';
 import { EventPageData, FrontendRoutes } from '@/lib/events/types';
@@ -53,7 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const result = await loadEventData();
   if ('error' in result) {
     return {
-      title: 'Event Details | Connection Rave',
+      title: siteTitle('Event Details'),
       description: 'Event details for Connection Rave.',
       robots: { index: false, follow: false },
     };
@@ -65,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? [{ url: e.seo.image.src, width: e.seo.image.width, height: e.seo.image.height, alt: e.seo.image.alt }]
     : [];
   const metadata: Metadata = {
-    title: e.seo.title,
+    title: siteTitle(e.seo.title),
     description: e.seo.description,
     openGraph: {
       title: e.seo.title,

@@ -617,6 +617,9 @@ function adminRecord(resource: string, row: any) {
     return {
       ...base,
       name: localized(row.translations, 'name'),
+      // Loaded back so an edit/save round trip never blanks the stored copy.
+      tagline: localized(row.translations, 'tagline'),
+      description: localized(row.translations, 'description'),
       logo: mediaRef(row.logoMedia),
       collaborationImage: mediaRef(row.imageMedia),
       website: row.websiteUrl ?? '',
