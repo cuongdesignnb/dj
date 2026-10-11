@@ -62,9 +62,9 @@ const QUICK_LINKS: Array<{ label: string; key: keyof FrontendRoutes | 'home' | '
   { label: 'Booked Now', key: 'booking' },
 ];
 
-function resolveHref(key: keyof FrontendRoutes | 'home' | 'event', routes: FrontendRoutes): string | null {
+function resolveHref(key: keyof FrontendRoutes | 'home' | 'event', routes: FrontendRoutes, eventSlug: string): string | null {
   if (key === 'home') return '/';
-  if (key === 'event') return '/event';
+  if (key === 'event') return `/events/${encodeURIComponent(eventSlug)}`;
   return routes[key] ?? null;
 }
 
@@ -167,7 +167,7 @@ export default function EventFooter({ event, routes }: Props) {
             </h4>
             <ul className="flex flex-col gap-2.5">
               {QUICK_LINKS.map((l) => {
-                const href = resolveHref(l.key, routes);
+                const href = resolveHref(l.key, routes, event.event.slug);
                 if (!href) {
                   return (
                     <li

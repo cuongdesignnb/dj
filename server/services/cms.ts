@@ -7,6 +7,8 @@ import { db } from '@/server/db/client';
 import { notFound, validationError } from '@/server/errors';
 import { databaseUuid } from '@/server/validators/identifiers';
 import { isPageContentKey, pageContentSchema } from '@/lib/cms/page-content';
+import { eventContentTemplate, parseEventContentKey } from '@/lib/cms/event-content-template';
+import { eventScopedHref } from '@/lib/events/event-scope';
 import { isSafeCustomUrl, isValidAnchor, STATIC_ROUTES, type InternalRoute } from '@/lib/navigation/route-registry';
 
 const LOCALES = ['en', 'vi'] as const;
@@ -42,10 +44,28 @@ export async function getAdminPageContent(key: string, localeValue?: string | nu
   if (!isPageContentKey(key)) throw notFound('Page content not found.');
   const locale = localeOrDefault(localeValue);
   const row = await db.pageContent.findUnique({ where: { key }, include: { translations: true } });
-  if (!row) throw notFound('Page content has not been seeded yet.');
+  if (!row) {
+    const scoped = await eventForContentKey(key);
+    if (!scoped) throw notFound('Page content has not been seeded yet.');
+    // Events created after seeding have no row yet. Hand the editor a neutral
+    // starting draft; nothing is stored until it is saved.
+    return { id: null, key, status: 'MISSING', persisted: false, locale: 'en', data: eventContentTemplate(scoped.kind, scoped.event), seo: { title: null, description: null, ogImageUrl: null }, updatedAt: null };
+  }
   const translation = row.translations.find((item) => item.locale === locale) ?? row.translations.find((item) => item.locale === 'en');
   if (!translation) throw notFound('Page content translation not found.');
-  return { id: row.id, key: row.key, status: row.status, locale: translation.locale, data: translation.contentJson, seo: { title: translation.seoTitle, description: translation.seoDescription, ogImageUrl: translation.ogImageUrl }, updatedAt: row.updatedAt.toISOString() };
+  return { id: row.id, key: row.key, status: row.status, persisted: true, locale: translation.locale, data: translation.contentJson, seo: { title: translation.seoTitle, description: translation.seoDescription, ogImageUrl: translation.ogImageUrl }, updatedAt: row.updatedAt.toISOString() };
+}
+
+/** Event-scoped keys (`tickets:`, `tables:`, `booking:<eventId>`) may only be created for an existing event. */
+async function eventForContentKey(key: string) {
+  const scoped = parseEventContentKey(key);
+  if (!scoped) return null;
+  const event = databaseUuid.safeParse(scoped.eventId).success
+    ? await db.event.findFirst({ where: { id: scoped.eventId, deletedAt: null }, select: { slug: true, translations: { select: { locale: true, title: true } } } })
+    : null;
+  if (!event) throw notFound('Event not found.');
+  const title = event.translations.find((item) => item.locale === 'en')?.title ?? event.translations[0]?.title ?? event.slug;
+  return { kind: scoped.kind, event: { title, slug: event.slug } };
 }
 
 export async function updateAdminPageContent(key: string, payload: unknown) {
@@ -55,11 +75,12 @@ export async function updateAdminPageContent(key: string, payload: unknown) {
   const rawData = input.data ?? input.content;
   const schema = pageContentSchema(key);
   if (!schema) throw notFound('Page content schema not found.');
+  const existing = await db.pageContent.findUnique({ where: { key } });
+  if (!existing) await eventForContentKey(key);
   const parsed = schema.safeParse(rawData);
   if (!parsed.success) throw validationError(Object.fromEntries(parsed.error.issues.map((issue) => [issue.path.join('.') || 'data', issue.message])));
   const status = typeof input.status === 'string' && ['DRAFT', 'PREVIEW', 'PUBLISHED', 'ARCHIVED'].includes(input.status) ? input.status as 'DRAFT' | 'PREVIEW' | 'PUBLISHED' | 'ARCHIVED' : undefined;
   const seoInput = record(input.seo);
-  const existing = await db.pageContent.findUnique({ where: { key } });
   const row = await db.$transaction(async (tx) => {
     const page = existing
       ? await tx.pageContent.update({ where: { id: existing.id }, data: status ? { status } : {} })
@@ -72,7 +93,7 @@ export async function updateAdminPageContent(key: string, payload: unknown) {
     return tx.pageContent.findUniqueOrThrow({ where: { id: page.id }, include: { translations: true } });
   });
   const translation = row.translations.find((item) => item.locale === locale) ?? row.translations[0];
-  return { id: row.id, key: row.key, status: row.status, locale: translation?.locale ?? locale, data: translation?.contentJson ?? parsed.data, seo: { title: translation?.seoTitle ?? null, description: translation?.seoDescription ?? null, ogImageUrl: translation?.ogImageUrl ?? null }, updatedAt: row.updatedAt.toISOString() };
+  return { id: row.id, key: row.key, status: row.status, persisted: true, created: !existing, locale: translation?.locale ?? locale, data: translation?.contentJson ?? parsed.data, seo: { title: translation?.seoTitle ?? null, description: translation?.seoDescription ?? null, ogImageUrl: translation?.ogImageUrl ?? null }, updatedAt: row.updatedAt.toISOString() };
 }
 
 function dynamicRoute(entityType: string, id: string, label: string, slug: string, status: string, deletedAt: Date | null | undefined): InternalRoute {
@@ -359,7 +380,8 @@ export async function getEventReadiness(eventId: string, mode: 'vip' | 'tickets'
   if (mode === 'tickets') {
     const activeTiers = await db.ticketTier.count({ where: { eventId, enabled: true } });
     if (event.ticketingEnabled && !activeTiers) warnings.push('Ticketing is enabled but no active ticket tiers exist. Configure tiers before announcing a release.');
-    return { facts: { 'Ticketing enabled': event.ticketingEnabled, 'Sale status': event.ticketSaleStatus, 'Active tiers': activeTiers, 'Square enabled': event.ticketSquareEnabled, 'External provider configured': event.ticketExternalProviderEnabled && Boolean(event.ticketProviderUrl), 'Tickets content': contentStatus(contentKeys[0]) }, warnings };
+    if (contentStatus(contentKeys[0]) !== 'PUBLISHED') warnings.push('Tickets content is not published. The public tickets page stays unavailable until it is published in the content editor.');
+    return { facts: { 'Ticketing enabled': event.ticketingEnabled, 'Sale status': event.ticketSaleStatus, 'Active tiers': activeTiers, 'Square enabled': event.ticketSquareEnabled, 'External provider configured': event.ticketExternalProviderEnabled && Boolean(event.ticketProviderUrl), 'Tickets content': contentStatus(contentKeys[0]), 'Public page': eventScopedHref('/tickets', event.slug) }, warnings };
   }
   const [activePackages, activeBooths, bottleOptions, defaultPackage] = await Promise.all([
     db.vipPackage.count({ where: { eventId, enabled: true } }),
@@ -373,7 +395,7 @@ export async function getEventReadiness(eventId: string, mode: 'vip' | 'tickets'
   if (event.vipDefaultPackageId && !defaultPackage) warnings.push('The selected default package is no longer available for this event. Choose an existing package.');
   if (defaultPackage && !defaultPackage.enabled) warnings.push('The selected default package is disabled. Public VIP stays unavailable; it will not silently switch to another package.');
   for (const key of contentKeys) if (contentStatus(key) !== 'PUBLISHED') warnings.push(`${key.startsWith('tables:') ? 'Tables' : 'Booking'} content is not published. Review it in the content editor.`);
-  return { facts: { 'VIP enabled': event.vipEnabled, 'Booking enabled': event.vipBookingEnabled, 'Availability mode': event.vipAvailabilityMode, 'Active packages': activePackages, 'Active booths': activeBooths, 'Bottle options': bottleOptions, 'Default package': defaultPackage?.name ?? (event.vipDefaultPackageId ? 'Unavailable' : 'None'), 'Default package enabled': defaultPackage?.enabled ?? false, 'Default package assigned bottles': defaultPackage?._count.packageBottles ?? 0, 'Tables content': contentStatus(contentKeys[0]), 'Booking content': contentStatus(contentKeys[1]) }, warnings };
+  return { facts: { 'VIP enabled': event.vipEnabled, 'Booking enabled': event.vipBookingEnabled, 'Availability mode': event.vipAvailabilityMode, 'Active packages': activePackages, 'Active booths': activeBooths, 'Bottle options': bottleOptions, 'Default package': defaultPackage?.name ?? (event.vipDefaultPackageId ? 'Unavailable' : 'None'), 'Default package enabled': defaultPackage?.enabled ?? false, 'Default package assigned bottles': defaultPackage?._count.packageBottles ?? 0, 'Tables content': contentStatus(contentKeys[0]), 'Booking content': contentStatus(contentKeys[1]), 'Public pages': `${eventScopedHref('/tables', event.slug)} · ${eventScopedHref('/book-now', event.slug)}` }, warnings };
 }
 
 export async function updateVipSettings(eventId: string, input: unknown) {

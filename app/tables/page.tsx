@@ -9,16 +9,17 @@ import PageHero from '@/components/shared/PageHero';
 import VipConfigurator from '@/components/vip/VipConfigurator';
 import VipInfoGrid from '@/components/vip/VipInfoGrid';
 
-import { loadVipPage } from '@/lib/vip/page';
+import { loadScopedVipPage, type PageSearchParams } from '@/lib/vip/page';
 import { parseVipSelection } from '@/lib/vip/selection';
 import VipStateNotice, { VipAvailabilityNotice } from '@/components/vip/VipStateNotice';
 import { buildMetadata } from '@/lib/seo/metadata';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const result = await loadVipPage();
+export async function generateMetadata({ searchParams }: { searchParams: Promise<PageSearchParams> }): Promise<Metadata> {
+  const { eventSlug, result } = await loadScopedVipPage(searchParams);
   const event = 'data' in result ? result.data.event : 'event' in result ? result.event : null;
   if (!event) return buildMetadata({ title: 'VIP Tables | Connection Rave', description: 'VIP table information from Connection Rave.', path: '/tables', indexable: false });
-  return buildMetadata({ title: `${event.title} VIP Tables | Connection Rave`, description: `Review VIP table and bottle information for ${event.title}. Availability is confirmed directly with the team.`, path: '/tables', image: event.image.src ? { url: event.image.src, alt: event.image.alt, width: event.image.width, height: event.image.height } : null, indexable: true });
+  // Only the default event's /tables is indexed; `?event=` variants share that canonical path.
+  return buildMetadata({ title: `${event.title} VIP Tables | Connection Rave`, description: `Review VIP table and bottle information for ${event.title}. Availability is confirmed directly with the team.`, path: '/tables', image: event.image.src ? { url: event.image.src, alt: event.image.alt, width: event.image.width, height: event.image.height } : null, indexable: !eventSlug });
 }
 
 /**
@@ -28,9 +29,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TablesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams: Promise<PageSearchParams>;
 }) {
-  const [params, result] = await Promise.all([searchParams, loadVipPage()]);
+  const { params, eventSlug, result } = await loadScopedVipPage(searchParams);
 
   if (!('data' in result)) return <VipStateNotice state={result} page="tables" />;
 
@@ -76,7 +77,7 @@ export default async function TablesPage({
         />
 
         <VipAvailabilityNotice state={result} />
-        <VipConfigurator data={data} initialSelection={initialSelection} canRequest={result.canRequest} />
+        <VipConfigurator data={data} initialSelection={initialSelection} canRequest={result.canRequest} eventSlug={eventSlug} />
 
         <VipInfoGrid
           items={data.infoItems}

@@ -8,9 +8,11 @@ import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 
 export interface TicketsRepositoryError {
-  kind: 'network' | 'http' | 'invalid' | 'config';
+  kind: 'network' | 'http' | 'invalid' | 'config' | 'not-found' | 'not-configured';
   message: string;
 }
+
+export const TICKETS_UNAVAILABLE_MESSAGE = 'Could not reach the ticketing service. Please try again shortly.';
 
 export type TicketsRepositoryResult =
   | { ok: true; data: TicketsPageData }
@@ -45,6 +47,10 @@ export class HttpTicketsRepository implements TicketsRepository {
           next: { revalidate: this.revalidateSeconds, tags: [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.tickets(this.eventSlug)] },
         }),
       ]);
+      // An unknown or unpublished event is not a network failure.
+      if (eventResponse.status === 404) {
+        return { ok: false, error: { kind: 'not-found', message: 'This event could not be found.' } };
+      }
       const eventPayload = await eventResponse.clone().json() as { data?: { id?: string } };
       const eventId = eventPayload.data?.id;
       if (!eventId) throw new Error('Event payload did not include an id.');
@@ -57,9 +63,14 @@ export class HttpTicketsRepository implements TicketsRepository {
         ok: false,
         error: {
           kind: 'network',
-          message: 'Could not reach the ticketing service. Please try again shortly.',
+          message: TICKETS_UNAVAILABLE_MESSAGE,
         },
       };
+    }
+
+    // Ticket page content is published per event; a missing record is configuration, not an outage.
+    if (eventResponse.ok && ticketsResponse.ok && contentResponse.status === 404) {
+      return { ok: false, error: { kind: 'not-configured', message: 'Ticket information for this event has not been published yet.' } };
     }
 
     if (!eventResponse.ok || !ticketsResponse.ok || !contentResponse.ok) {
@@ -138,6 +149,9 @@ export class HttpTicketsRepository implements TicketsRepository {
   }
 }
 
+/** Event served by /tickets when no `?event=` is given. */
+export const DEFAULT_TICKETS_EVENT_SLUG = 'destiny';
+
 export interface TicketsDataEnv {
   source: 'api';
   baseUrl: string;
@@ -155,9 +169,9 @@ export function readTicketsEnv(): TicketsDataEnv {
  * the API without giving it an address — a visible misconfiguration beats a
  * production page quietly serving local prices.
  */
-export function getTicketsRepository():
+export function getTicketsRepository(eventSlug?: string | null):
   | { ok: true; repository: TicketsRepository }
   | { ok: false; error: TicketsRepositoryError } {
   const env = readTicketsEnv();
-  return { ok: true, repository: new HttpTicketsRepository(env.baseUrl, 'destiny') };
+  return { ok: true, repository: new HttpTicketsRepository(env.baseUrl, eventSlug || DEFAULT_TICKETS_EVENT_SLUG) };
 }

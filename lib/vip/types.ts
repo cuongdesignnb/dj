@@ -221,7 +221,7 @@ export type VipPageState =
   | ({ kind: 'vip-disabled' | 'no-active-package' } & VipStateContext)
   | ({ kind: 'not-configured'; reason: 'content' } & VipStateContext)
   | { kind: 'ready' | 'booking-disabled' | 'no-booths' | 'no-availability'; data: VipPageData; canRequest: boolean }
-  | { kind: 'service-unavailable' | 'invalid-response'; message: string };
+  | { kind: 'service-unavailable' | 'invalid-response' | 'event-not-found'; message: string };
 
 export interface BookingRequestResult {
   requestId?: string;

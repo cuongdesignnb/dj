@@ -48,3 +48,20 @@ image URL/alt-text fields, CTA groups, repeaters for cards/FAQ/process steps,
 filter and section builders, visibility toggles, and SEO controls. The storage
 and API payload may remain structured, but raw JSON is not exposed as an input
 to administrators.
+
+## Event-scoped ticket and VIP pages
+
+`/tickets`, `/tables` and `/book-now` serve one event at a time. Without a
+query they serve the default event (`destiny`; VIP pages honour
+`NEXT_PUBLIC_VIP_EVENT_SLUG`). `?event=<slug>` selects any other published
+event, for example `/tickets?event=hi-land-perth`; malformed or unknown slugs
+return 404. Event pages (`/events/:slug`) link to their own scoped URLs, and
+the VIP configurator carries the event on to `/book-now`. Scoped variants are
+not indexed; the default event keeps the indexable canonical URL.
+
+Each event has its own page-content records: `tickets:<eventId>`,
+`tables:<eventId>` and `booking:<eventId>`. Events created after seeding have
+none. Their content editors open a neutral draft built from the event name and
+say that nothing is saved yet; Save draft or Publish creates the record. The
+public page stays unavailable until that record is published, and the event's
+Tickets/VIP readiness panel shows the content status and public URL.

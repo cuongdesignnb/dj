@@ -13,6 +13,7 @@ export const vipStateMessages = {
   'no-availability': 'No VIP tables are currently available.',
   'invalid-response': 'We received data this page could not read.',
   'service-unavailable': "We couldn't reach the VIP service. Please try again shortly.",
+  'event-not-found': 'This event could not be found.',
 } as const;
 
 export function VipAvailabilityNotice({ state }: { state: VipPageState }) {

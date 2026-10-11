@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import { Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/admin/ui/Toast';
+import ApiErrorNotice from '@/components/admin/ui/ApiErrorNotice';
 import { MediaPicker } from '@/components/admin/form/MediaPicker';
 import type { MediaChoice } from '@/components/admin/form/MediaPicker';
+import type { AdminApiError } from '@/lib/admin/common/types';
+import { normalizeApiError } from '@/lib/api/client';
 
 type JsonRecord = Record<string, unknown>;
 type FieldType =
@@ -196,9 +199,9 @@ const inputClass = 'w-full rounded-[8px] border border-admin-border bg-admin-bg 
 const textareaClass = `${inputClass} min-h-24 resize-y`;
 const cardClass = 'rounded-[10px] border border-admin-border/80 bg-admin-bg/60 p-3';
 
-function TextInput({ value, onChange, multiline = false, type = 'text', placeholder }: { value: unknown; onChange: (value: string) => void; multiline?: boolean; type?: 'text' | 'number'; placeholder?: string }) {
-  if (multiline) return <textarea value={stringValue(value)} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className={textareaClass} rows={4} />;
-  return <input type={type} value={stringValue(value)} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className={inputClass} />;
+function TextInput({ id, value, onChange, multiline = false, type = 'text', placeholder }: { id?: string; value: unknown; onChange: (value: string) => void; multiline?: boolean; type?: 'text' | 'number'; placeholder?: string }) {
+  if (multiline) return <textarea id={id} value={stringValue(value)} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className={textareaClass} rows={4} />;
+  return <input id={id} type={type} value={stringValue(value)} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className={inputClass} />;
 }
 
 function SmallLabel({ children }: { children: ReactNode }) {
@@ -392,48 +395,79 @@ export default function CmsEditor({ contentKey, title, description, media = [] }
   const toast = useToast();
   const [draft, setDraft] = useState<JsonRecord | null>(null);
   const [status, setStatus] = useState('DRAFT');
+  const [persisted, setPersisted] = useState(true);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<AdminApiError | null>(null);
+  const [saveError, setSaveError] = useState<AdminApiError | undefined>();
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
   const fields = useMemo(() => fieldsFor(contentKey), [contentKey]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setLoadError(null);
+    const readJson = (response: Response) => response.json().catch(() => null).then((body: unknown) => ({ response, body }));
     Promise.all([
-      fetch('/api/v1/auth/session', { credentials: 'include' }).then((response) => response.json()),
-      fetch(`/api/v1/admin/page-content/${encodeURIComponent(contentKey)}`, { credentials: 'include' }).then((response) => response.json()),
-    ]).then(([sessionPayload, payload]) => {
+      fetch('/api/v1/auth/session', { credentials: 'include' }).then(readJson),
+      fetch(`/api/v1/admin/page-content/${encodeURIComponent(contentKey)}`, { credentials: 'include' }).then(readJson),
+    ]).then(([session, content]) => {
       if (cancelled) return;
-      setCsrfToken(sessionPayload?.data?.csrfToken ?? null);
-      const record = payload?.data;
-      setDraft(record?.data ?? null);
-      setStatus(record?.status ?? 'DRAFT');
-    }).catch(() => toast('error', 'Could not load page content.')).finally(() => { if (!cancelled) setLoading(false); });
+      const token = asRecord(asRecord(session.body).data).csrfToken;
+      setCsrfToken(typeof token === 'string' ? token : null);
+      if (!content.response.ok) { setDraft(null); setLoadError(normalizeApiError(content.response.status, content.body)); return; }
+      const record = asRecord(asRecord(content.body).data);
+      const data = asRecord(record.data);
+      setDraft(Object.keys(data).length ? data : null);
+      setStatus(typeof record.status === 'string' ? record.status : 'DRAFT');
+      setPersisted(record.persisted !== false);
+    }).catch(() => { if (!cancelled) setLoadError(normalizeApiError(0, null)); }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [contentKey, toast]);
 
   const save = async (nextStatus: 'DRAFT' | 'PUBLISHED') => {
     if (!draft) return;
     setBusy(true);
-    const response = await fetch(`/api/v1/admin/page-content/${encodeURIComponent(contentKey)}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: { 'content-type': 'application/json', ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}) },
-      body: JSON.stringify({ data: draft, status: nextStatus, locale: 'en' }),
-    });
-    const payload = await response.json().catch(() => null);
-    setBusy(false);
-    if (!response.ok) { toast('error', payload?.message ?? 'Could not save page content.'); return; }
-    setStatus(payload?.data?.status ?? nextStatus);
-    toast('success', nextStatus === 'PUBLISHED' ? 'Published page content.' : 'Saved draft.');
+    setSaveError(undefined);
+    try {
+      const response = await fetch(`/api/v1/admin/page-content/${encodeURIComponent(contentKey)}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json', ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}) },
+        body: JSON.stringify({ data: draft, status: nextStatus, locale: 'en' }),
+      });
+      const payload: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        const error = normalizeApiError(response.status, payload);
+        setSaveError(error);
+        toast('error', error.message);
+        return;
+      }
+      const record = asRecord(asRecord(payload).data);
+      setStatus(typeof record.status === 'string' ? record.status : nextStatus);
+      setPersisted(true);
+      toast('success', nextStatus === 'PUBLISHED' ? 'Published page content.' : 'Saved draft.');
+    } catch {
+      const error = normalizeApiError(0, null);
+      setSaveError(error);
+      toast('error', error.message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (loading) return <div className="rounded-[14px] border border-admin-border bg-admin-panel p-6 text-admin-muted">Loading page content…</div>;
-  if (!draft) return <div className="rounded-[14px] border border-rose-400/30 bg-admin-panel p-6 text-rose-200">Page content has not been seeded yet.</div>;
+  if (!draft) return <div role="alert" className="rounded-[14px] border border-rose-400/30 bg-admin-panel p-6 text-rose-200">
+    <p>{loadError?.message ?? 'Page content could not be loaded.'}</p>
+    {loadError?.requestId && <p className="mt-2 break-all text-xs">Request ID: {loadError.requestId}</p>}
+  </div>;
 
   return <section className="space-y-5">
-    <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="font-heading text-2xl font-bold uppercase tracking-wide text-white">{title}</h1>{description && <p className="mt-1 text-sm text-admin-muted">{description}</p>}<p className="mt-2 text-xs uppercase tracking-[0.18em] text-admin-muted">Key: {contentKey} · {status}</p></div><div className="flex gap-2"><button type="button" disabled={busy} onClick={() => void save('DRAFT')} className="inline-flex min-h-[42px] items-center gap-2 rounded-[9px] border border-admin-border px-4 text-sm text-white hover:bg-white/5"><Save className="h-4 w-4" /> Save draft</button><button type="button" disabled={busy} onClick={() => void save('PUBLISHED')} className="inline-flex min-h-[42px] items-center gap-2 rounded-[9px] bg-rave-red px-4 text-sm font-semibold text-white hover:bg-rave-red2"><Save className="h-4 w-4" /> Publish</button></div></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="font-heading text-2xl font-bold uppercase tracking-wide text-white">{title}</h1>{description && <p className="mt-1 text-sm text-admin-muted">{description}</p>}<p className="mt-2 text-xs uppercase tracking-[0.18em] text-admin-muted">Key: {contentKey} · {persisted ? status : 'Not saved yet'}</p></div><div className="flex gap-2"><button type="button" disabled={busy} onClick={() => void save('DRAFT')} className="inline-flex min-h-[42px] items-center gap-2 rounded-[9px] border border-admin-border px-4 text-sm text-white hover:bg-white/5"><Save className="h-4 w-4" /> Save draft</button><button type="button" disabled={busy} onClick={() => void save('PUBLISHED')} className="inline-flex min-h-[42px] items-center gap-2 rounded-[9px] bg-rave-red px-4 text-sm font-semibold text-white hover:bg-rave-red2"><Save className="h-4 w-4" /> Publish</button></div></div>
+    {!persisted && <div role="status" className="rounded-[12px] border border-amber-300/40 bg-amber-300/10 p-4 text-sm text-amber-100">
+      This event has no saved content for this page yet. The form starts from a neutral draft built from the event name. Nothing is stored or shown on the website until you choose Save draft or Publish.
+    </div>}
+    <ApiErrorNotice error={saveError} />
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">{fields.map((field) => {
       const value = getPath(draft, field.path);
       const type = field.type ?? (typeof value === 'boolean' ? 'boolean' : field.path.toLowerCase().includes('description') ? 'textarea' : 'text');
@@ -441,7 +475,7 @@ export default function CmsEditor({ contentKey, title, description, media = [] }
       const update = (next: unknown) => setDraft(setPath(draft, field.path, next));
       return <div key={field.path} className={`${field.wide || !['text', 'textarea', 'number', 'boolean'].includes(type) ? 'xl:col-span-2' : ''} rounded-[12px] border border-admin-border bg-admin-panel/80 p-4`}>
         <label htmlFor={id} className="mb-2 block text-sm font-medium text-white">{field.label}</label>
-        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} media={media} onChange={update} /> : <TextInput value={value} multiline={type === 'textarea'} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
+        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} media={media} onChange={update} /> : <TextInput id={id} value={value} multiline={type === 'textarea'} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
         {field.help && <span className="mt-2 block text-xs text-admin-muted">{field.help}</span>}
       </div>;
     })}</div>

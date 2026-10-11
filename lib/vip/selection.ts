@@ -1,4 +1,5 @@
 import type { VipPackage, VipPageData, VipSelection } from './types';
+import { EVENT_SCOPE_PARAM } from '@/lib/events/event-scope';
 
 // Moves a VIP selection between /tables and /book-now through the URL.
 //
@@ -61,8 +62,10 @@ export function parseExperience(searchParams: SearchParams): 'vip' {
  * Builds the /book-now link for a selection. Empty parts are omitted so a bare
  * "Send Booking Request" with nothing chosen still produces a clean URL.
  */
-export function buildVipBookingUrl(selection: VipSelection, basePath = '/book-now'): string {
+export function buildVipBookingUrl(selection: VipSelection, basePath = '/book-now', eventSlug?: string | null): string {
   const params = new URLSearchParams();
+  // Keeps a non-default event selected on /book-now; the default event needs no parameter.
+  if (eventSlug) params.set(EVENT_SCOPE_PARAM, eventSlug);
   params.set('experience', VIP_EXPERIENCE_PARAM);
   if (selection.boothId) params.set('booth', selection.boothId);
   if (selection.bottleIds.length > 0) params.set('bottles', selection.bottleIds.join(','));

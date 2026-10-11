@@ -1433,7 +1433,7 @@ if (second && third === 'vip') { const result = await getPublicVip(second); if (
         assertSameOrigin(request);
         const session = await requirePermission(request, `${permission}.edit`, true);
         const result = await updateAdminPageContent(third, await body(request));
-        await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'page_content', entityId: result.id, after: result, requestId });
+        await writeAuditLog({ actorUserId: session.user.id, action: result.created ? 'create' : 'update', entityType: 'page_content', entityId: result.id, after: result, requestId });
         revalidatePublicResource('page-content', third);
         return dataResponse(result);
       }

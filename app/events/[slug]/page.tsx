@@ -17,19 +17,27 @@ import { buildMetadata } from '@/lib/seo/metadata';
 import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
 import { eventSchema, jsonLd } from '@/lib/seo/structured-data';
 import type { EventPageData, FrontendRoutes } from '@/lib/events/types';
+import { eventScopedHref } from '@/lib/events/event-scope';
+import { DEFAULT_TICKETS_EVENT_SLUG } from '@/lib/tickets/repository';
+import { defaultVipEventSlug } from '@/lib/vip/repository';
 import { getPublicSlugRedirect } from '@/server/services/slug-history';
 
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
 
-const ROUTES: FrontendRoutes = {
-  tickets: '/tickets',
-  tables: '/tables',
-  lineup: '/lineup',
-  booking: '/book-now',
-  legalTerms: '/terms',
-  legalPrivacy: '/privacy',
-};
+/** Ticket, VIP and booking links stay on this event; the default event keeps its plain URLs. */
+function eventRoutes(slug: string): FrontendRoutes {
+  const ticketsSlug = slug === DEFAULT_TICKETS_EVENT_SLUG ? null : slug;
+  const vipSlug = slug === defaultVipEventSlug() ? null : slug;
+  return {
+    tickets: eventScopedHref('/tickets', ticketsSlug),
+    tables: eventScopedHref('/tables', vipSlug),
+    lineup: '/lineup',
+    booking: eventScopedHref('/book-now', vipSlug),
+    legalTerms: '/terms',
+    legalPrivacy: '/privacy',
+  };
+}
 
 async function loadEvent(slug: string): Promise<EventPageData | null> {
   const result = await getEventRepository().getPage(slug);
@@ -56,25 +64,26 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     notFound();
   }
   const event = data.event;
+  const routes = eventRoutes(event.slug);
   const eventJsonLd = eventSchema({ name: event.name, path: `/events/${event.slug}`, image: event.poster?.src ?? null, description: event.intro, startDate: event.startsAt, endDate: event.endsAt, venue: event.venue });
   const breadcrumbs = breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Events', path: '/events' }, { name: event.title, path: `/events/${event.slug}` }]);
 
   return (
     <EventMotion>
       <main className="min-h-screen bg-rave-black text-white">
-        <Header ctaHref="/tickets" ctaLabel="Get Tickets" />
+        <Header ctaHref={routes.tickets ?? '/tickets'} ctaLabel="Get Tickets" />
         <div className="pt-[84px]">
           <div className="mx-auto w-full max-w-[1280px] px-4 pt-6 sm:px-6 lg:px-8">
             <Breadcrumb trail={[{ label: 'Home', href: '/' }, { label: 'Events', href: '/events' }, { label: event.title }]} />
           </div>
         </div>
-        <EventHero event={data} routes={ROUTES} />
+        <EventHero event={data} routes={routes} />
         <EventAbout event={data} />
         <EventExpectations event={data} />
-        <EventLineup event={data} routes={ROUTES} />
+        <EventLineup event={data} routes={routes} />
         <EventVenue event={data} />
-        <EventFinalCta event={data} routes={ROUTES} />
-        <EventFooter event={data} routes={ROUTES} />
+        <EventFinalCta event={data} routes={routes} />
+        <EventFooter event={data} routes={routes} />
         {[breadcrumbs, eventJsonLd].filter(Boolean).map((schema, index) => (
           <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) ?? '' }} />
         ))}

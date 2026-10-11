@@ -58,10 +58,13 @@ export default function VipConfigurator({
   data,
   initialSelection,
   canRequest,
+  eventSlug = null,
 }: {
   data: VipPageData;
   initialSelection: VipSelection;
   canRequest: boolean;
+  /** Set when the page serves a non-default event, so /book-now stays on it. */
+  eventSlug?: string | null;
 }) {
   const reduced = useReducedMotion();
   const [boothId, setBoothId] = useState<string | null>(initialSelection.boothId ?? null);
@@ -73,7 +76,7 @@ export default function VipConfigurator({
     [data.booths, boothId],
   );
 
-  const bookingUrl = buildVipBookingUrl({ boothId, bottleIds });
+  const bookingUrl = buildVipBookingUrl({ boothId, bottleIds }, '/book-now', eventSlug);
 
   const handleToggleBottle = (id: string) => {
     const result = toggleBottle(bottleIds, id, data.package);

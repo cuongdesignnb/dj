@@ -20,15 +20,17 @@ export class HttpVipRepository implements VipRepository {
   }
   async getVipPage(): Promise<VipPageState> {
     const invalid = (): VipPageState => ({ kind: 'invalid-response', message: 'We received data this page could not read.' });
-    const unavailable = (): VipPageState => ({ kind: 'service-unavailable', message: "We couldn't reach the VIP service. Please try again shortly." });
+    const unavailable = (): VipPageState => ({ kind: 'service-unavailable', message: VIP_UNAVAILABLE_MESSAGE });
     let eventResponse: Response;
     let vipResponse: Response;
     try {
       [eventResponse, vipResponse] = await Promise.all([
-        this.fetch(`/api/v1/events/${this.eventSlug}`, [PUBLIC_CACHE_TAGS.events]),
-        this.fetch(`/api/v1/events/${this.eventSlug}/vip`, [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.vip(this.eventSlug)]),
+        this.fetch(`/api/v1/events/${encodeURIComponent(this.eventSlug)}`, [PUBLIC_CACHE_TAGS.events]),
+        this.fetch(`/api/v1/events/${encodeURIComponent(this.eventSlug)}/vip`, [PUBLIC_CACHE_TAGS.events, PUBLIC_CACHE_TAGS.vip(this.eventSlug)]),
       ]);
     } catch { return unavailable(); }
+    // An unknown or unpublished event is not a VIP outage.
+    if (eventResponse.status === 404) return { kind: 'event-not-found', message: 'This event could not be found.' };
     if (!eventResponse.ok || !vipResponse.ok) return unavailable();
     let event: unknown;
     let vip: unknown;
@@ -68,11 +70,17 @@ export class HttpVipRepository implements VipRepository {
     return { status: 'received', requestId: data.id, message: 'Request received. This is not a confirmed reservation; the team will review availability.' };
   }
 }
-export function readVipEnv() {
-  return { source: 'api' as const, baseUrl: publicApiBaseUrl(), eventSlug: (process.env.NEXT_PUBLIC_VIP_EVENT_SLUG ?? 'destiny').trim() };
+export const VIP_UNAVAILABLE_MESSAGE = "We couldn't reach the VIP service. Please try again shortly.";
+
+/** Event served by /tables and /book-now when no `?event=` is given. */
+export function defaultVipEventSlug() {
+  return process.env.NEXT_PUBLIC_VIP_EVENT_SLUG?.trim() || 'destiny';
 }
-export function getVipRepository(): { ok: true; repository: VipRepository } | { ok: false; error: VipRepositoryError } {
-  const env = readVipEnv();
+export function readVipEnv(eventSlug?: string | null) {
+  return { source: 'api' as const, baseUrl: publicApiBaseUrl(), eventSlug: eventSlug || defaultVipEventSlug() };
+}
+export function getVipRepository(eventSlug?: string | null): { ok: true; repository: VipRepository } | { ok: false; error: VipRepositoryError } {
+  const env = readVipEnv(eventSlug);
   return { ok: true, repository: new HttpVipRepository(env.baseUrl, env.eventSlug) };
 }
 export function isBookingSubmissionConnected() { return true; }
