@@ -12,6 +12,7 @@ import type { CartState, CheckoutAvailability, Money } from '@/lib/cart/types';
 import type { ReviewedLine } from '@/lib/cart/validation';
 import { formatMoney } from '@/lib/shop/pricing';
 import PromoCodeForm from './PromoCodeForm';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 function Amount({ value }: { value: string }) {
   const reduced = useReducedMotion();
@@ -57,6 +58,7 @@ export default function OrderSummary({
     mode === 'disabled' ? 'unavailable' : 'ready',
   );
   const [message, setMessage] = useState('');
+  const toast = useToast();
   // A discount only counts while the code it came with is still applied.
   const activeDiscount = cart.promoCode ? discount : null;
   const total = estimatedTotal(subtotal, activeDiscount);
@@ -96,6 +98,7 @@ export default function OrderSummary({
 
     setAvailability(result.status === 'unavailable' ? 'unavailable' : 'ready');
     setMessage(result.message ?? 'Checkout could not be started. Please try again.');
+    toast(result.status === 'unavailable' ? 'warning' : 'error', result.message ?? 'Checkout could not be started. Please try again.');
   };
 
   const loading = availability === 'loading';

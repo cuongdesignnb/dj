@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Oswald } from "next/font/google";
 import { Suspense } from 'react';
 import NavigationFeedback from '@/components/shared/NavigationFeedback';
+import { ToastProvider } from '@/components/shared/toast/ToastProvider';
 import "./globals.css";
 import MouseGlow from "@/components/ui/MouseGlow";
 import { canonicalUrl } from '@/lib/seo/canonical';
@@ -58,7 +59,8 @@ export default function RootLayout({
         {[organizationSchema(), websiteSchema()].map((schema, index) => (
           <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) ?? '' }} />
         ))}
-        {children}
+        {/* Site-wide toasts; the admin shell nests its own themed provider. */}
+        <ToastProvider variant="site">{children}</ToastProvider>
       </body>
     </html>
   );

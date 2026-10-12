@@ -13,6 +13,7 @@ import { ToastProvider } from '../ui/Toast';
 import AdminSidebar from './AdminSidebar';
 import AdminTopbar from './AdminTopbar';
 import type { TopbarNotification } from './AdminTopbar';
+import { AdminTourProvider } from '../tour/AdminTour';
 
 /** Sidebar + topbar + main area for every signed-in admin page. */
 export default function AdminShell({
@@ -74,6 +75,7 @@ export default function AdminShell({
     <MotionConfig reducedMotion={reduced ? 'always' : 'user'}>
       <AdminSessionProvider session={session}>
         <ToastProvider>
+          <AdminTourProvider>
           <a
             href="#admin-main"
             className="sr-only z-[90] rounded bg-rave-red px-3 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
@@ -128,6 +130,7 @@ export default function AdminShell({
               </main>
             </div>
           </div>
+          </AdminTourProvider>
         </ToastProvider>
       </AdminSessionProvider>
     </MotionConfig>

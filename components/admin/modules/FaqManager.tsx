@@ -81,7 +81,12 @@ export default function FaqManager({
   const refresh = () => start(() => router.refresh());
 
   const persist = async (id: string | null, values: Record<string, unknown>) => {
-    const result = await saveRecord('faq', id, values);
+    let result: Awaited<ReturnType<typeof saveRecord>>;
+    try {
+      result = await saveRecord('faq', id, values);
+    } catch {
+      result = { ok: false, error: { message: 'Could not reach the server. Nothing was changed; please try again.' } };
+    }
     if (!result.ok) toast('error', result.error.message);
     return result;
   };

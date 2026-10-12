@@ -14,6 +14,7 @@ import type {
 } from '@/lib/tickets/types';
 import { buildSelectedLineItems, calculateTicketSubtotal, formatMoney } from '@/lib/tickets/pricing';
 import RichText from '@/components/shared/RichText';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 const TRUST_ICONS: Record<string, LucideIcon> = {
   ShieldCheck,
@@ -41,6 +42,7 @@ export default function TicketSelectionPanel({
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const toast = useToast();
   const [checkoutBusy, setCheckoutBusy] = useState(false);
 
   // The CTA is only a real link when a provider URL has been configured.
@@ -79,7 +81,9 @@ export default function TicketSelectionPanel({
       }
       window.location.assign(payload.data.checkoutUrl);
     } catch (error) {
-      setCheckoutError(error instanceof Error ? error.message : 'The ticket checkout could not be started.');
+      const failure = error instanceof Error ? error.message : 'The ticket checkout could not be started.';
+      setCheckoutError(failure);
+      toast('error', failure);
       setCheckoutBusy(false);
     }
   }

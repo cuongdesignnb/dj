@@ -7,6 +7,7 @@ import { paymentAction } from '@/app/admin/actions';
 import { buttonClass } from '../ui/buttonClass';
 import { inputClass } from '../form/FieldInput';
 import { useToast } from '../ui/Toast';
+import { ConfirmDialog } from '../ui/Dialog';
 
 export default function PaymentActions({ id, status, canEdit }: { id: string; status: string; canEdit: boolean }) {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function PaymentActions({ id, status, canEdit }: { id: string; st
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
   const [busy, start] = useTransition();
+  const [confirmRefund, setConfirmRefund] = useState(false);
   const run = (action: 'reconcile' | 'refund') => start(async () => {
     const result = await paymentAction(id, action, action === 'refund' && amount ? Number(amount) : undefined, reason);
     if (result.ok) {
@@ -31,9 +33,10 @@ export default function PaymentActions({ id, status, canEdit }: { id: string; st
           <input id="refund-amount" value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" className={`${inputClass} mt-1`} placeholder="Full refund if blank" />
           <label htmlFor="refund-reason" className="mt-3 block text-xs uppercase tracking-wider text-admin-muted">Reason</label>
           <input id="refund-reason" value={reason} onChange={(event) => setReason(event.target.value)} maxLength={200} className={`${inputClass} mt-1`} placeholder="Optional" />
-          <button type="button" disabled={busy || !['completed', 'paid'].includes(status)} onClick={() => run('refund')} className={`${buttonClass.ghost} mt-3`}><RotateCcw aria-hidden className="h-4 w-4" /> Request Square refund</button>
+          <button type="button" disabled={busy || !['completed', 'paid'].includes(status)} onClick={() => setConfirmRefund(true)} className={`${buttonClass.ghost} mt-3`}><RotateCcw aria-hidden className="h-4 w-4" /> Request Square refund</button>
         </div>
       </div>}
+      <ConfirmDialog open={confirmRefund} title="Request a Square refund?" consequence={amount ? `Square is asked to refund ${amount} minor units of this payment. This cannot be undone here.` : 'Square is asked to refund the full payment. This cannot be undone here.'} confirmLabel="Request refund" busy={busy} onCancel={() => setConfirmRefund(false)} onConfirm={() => { setConfirmRefund(false); run('refund'); }} />
     </section>
   );
 }

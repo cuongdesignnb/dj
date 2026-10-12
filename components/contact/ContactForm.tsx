@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 const inputClass = 'w-full rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-rave-red/70 focus:ring-2 focus:ring-rave-red/20';
 
@@ -8,6 +9,7 @@ export default function ContactForm() {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -15,7 +17,9 @@ export default function ContactForm() {
     setPending(true);
     setMessage(null);
     setError(null);
-    const form = new FormData(event.currentTarget);
+    // currentTarget is null after the first await; keep the element itself.
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       const response = await fetch('/api/v1/contact', {
         method: 'POST',
@@ -31,13 +35,17 @@ export default function ContactForm() {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        setError(String(payload?.error?.message ?? 'Your message could not be sent. Please try again.'));
+        const failure = String(payload?.error?.message ?? 'Your message could not be sent. Please try again.');
+        setError(failure);
+        toast('error', failure);
         return;
       }
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage('Thanks — your message has been received.');
+      toast('success', 'Message sent. The team will reply by email.');
     } catch {
       setError('The contact service could not be reached. Please try again shortly.');
+      toast('error', 'The contact service could not be reached. Please try again shortly.');
     } finally {
       setPending(false);
     }

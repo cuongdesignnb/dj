@@ -36,7 +36,12 @@ export default function OrderActions({
 
   const run = async (action: Step | 'note') => {
     setBusy(true);
-    const result = await updateOrder(id, action, action === 'note' ? note : undefined);
+    let result: Awaited<ReturnType<typeof updateOrder>>;
+    try {
+      result = await updateOrder(id, action, action === 'note' ? note : undefined);
+    } catch {
+      result = { ok: false, error: { message: 'Could not reach the server. Nothing was changed; please try again.' } };
+    }
     setBusy(false);
     setConfirm(null);
     if (result.ok) {

@@ -79,3 +79,58 @@ Node 22, and the GALLERY_QA E2E suite including `rich-text-editor.spec.ts`
 Redeploy `31e78a6` with the same env/volumes. Content saved with formatting
 stays valid text; the old code shows the Markdown marks literally (e.g.
 `**bold**`) until it is redeployed or the text is edited back.
+
+## 4. Ticket tiers and ticket settings
+
+The tier editor showed "Price minor units" (cents) and a free-text
+Availability box; any value other than the exact API code made the server throw
+(HTTP 500, "Something went wrong"). Now (`components/admin/cms/TicketTierFields.tsx`,
+`lib/admin/events/tickets.ts`):
+
+- price is entered in dollars with a live "Shown as AUD 45.00" preview;
+- availability, sale status and VIP payment mode are labelled selects;
+- badge, capacity, min/max/pre-selected quantity and display order are editable;
+- the API validates with field messages (422) instead of throwing, accepts
+  seeded database UUIDs, and checks min ≤ max ≤ capacity;
+- editing a field clears its own error; deleting a tier/package/booth/bottle
+  asks for confirmation;
+- the ticket sale window loads back into the date inputs and is saved as an
+  ISO instant from the editor's local time; a closing time before the opening
+  time is refused on the field.
+
+## 5. Site-wide toasts
+
+`components/shared/toast/ToastProvider.tsx` serves both the public site (root
+layout, bottom-left, rave theme) and the admin (admin theme, bottom-right). It
+announces through polite/assertive live regions and is rendered inside the
+open modal dialog when there is one, so admin toasts are no longer hidden or
+inert behind drawers.
+
+Public actions now confirm with a toast in addition to their inline messages:
+add to cart, remove from cart, promo code, booking request, VIP/ticket/cart
+checkout failures, contact form, newsletter and copy link. The contact form
+also had a real bug: it reset the form through `event.currentTarget` after an
+await (null by then), so a sent message was reported as "could not be reached".
+
+Admin: media picker upload success/failure, media upload failure and empty
+menu creation now toast; save/delete/duplicate/archive in data tables, media,
+FAQ, menus, menu locations, orders and integrations recover from network
+failures with an error toast instead of hanging. A Square refund now needs
+confirmation.
+
+## 6. Admin guided tour
+
+`driver.js` 1.8.0 (MIT, no dependencies) drives page tours defined in
+`lib/admin/tour/tours.ts`: admin overview (dashboard), event editing, ticket
+tiers, ticket settings, page content editors and the media library. A tour
+opens automatically the first time an editor visits that kind of page, every
+step has "Skip tour", and Escape/close also skip. Progress is remembered per
+admin user in this browser (`connection-rave:admin-tour:v1:<userId>`). The
+"Guide" button in the top bar replays the tour for the current page (or the
+general overview). Steps whose element is not on the page are dropped before
+the tour starts. Automated browsers (E2E) never get tours unless a test opts
+in, so existing suites are unaffected.
+
+Verification for sections 4–6 on QA: typecheck, lint 0 errors (118 existing
+warnings), 157 unit tests, `cms:audit` 0, Docker build, and the full E2E suite
+30/30 including `ticket-tiers.spec.ts` and `toast-and-tour.spec.ts`.

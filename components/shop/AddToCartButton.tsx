@@ -10,6 +10,7 @@ import type { CartAdapter } from '@/lib/cart/types';
 import { selectionLabel, validateAddToCart } from '@/lib/shop/helpers';
 import type { ProductSelection } from '@/lib/shop/helpers';
 import type { Product } from '@/lib/shop/types';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 type Status = { kind: 'idle' } | { kind: 'added' | 'error'; message: string };
 
@@ -37,6 +38,7 @@ export default function AddToCartButton({
   const reduced = useReducedMotion();
   const statusId = useId();
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  const toast = useToast();
 
   const check = validateAddToCart(product, selection, quantity);
   // Only a product that can never be added is disabled; a missing option is
@@ -53,18 +55,19 @@ export default function AddToCartButton({
   const add = () => {
     if (!check.ok) {
       setStatus({ kind: 'error', message: check.reason });
+      toast('warning', check.reason);
       return;
     }
 
     const options = selectionLabel(product, selection);
     try {
       adapter.addItem(cartInputFor(product, selection, check.variant, quantity));
-      setStatus({
-        kind: 'added',
-        message: `Added to cart: ${quantity} × ${product.title}${options ? ` (${options})` : ''}.`,
-      });
+      const message = `Added to cart: ${quantity} × ${product.title}${options ? ` (${options})` : ''}.`;
+      setStatus({ kind: 'added', message });
+      toast('success', message);
     } catch {
       setStatus({ kind: 'error', message: 'Could not add this item. Please try again.' });
+      toast('error', 'Could not add this item. Please try again.');
     }
   };
 

@@ -111,7 +111,12 @@ export default function MediaLibrary({
   const saveDetails = async () => {
     if (!selected) return;
     setSaving(true);
-    const result = await saveRecord('media', selected.id, draft);
+    let result: Awaited<ReturnType<typeof saveRecord>>;
+    try {
+      result = await saveRecord('media', selected.id, draft);
+    } catch {
+      result = { ok: false, error: { message: 'Could not reach the server. Nothing was changed; please try again.' } };
+    }
     setSaving(false);
     if (result.ok) {
       toast('success', result.message ?? 'Saved.');
@@ -125,7 +130,12 @@ export default function MediaLibrary({
   const remove = async () => {
     if (!deleting) return;
     setBusyDelete(true);
-    const result = await deleteRecords('media', [deleting.id]);
+    let result: Awaited<ReturnType<typeof deleteRecords>>;
+    try {
+      result = await deleteRecords('media', [deleting.id]);
+    } catch {
+      result = { ok: false, error: { message: 'Could not reach the server. Nothing was changed; please try again.' } };
+    }
     setBusyDelete(false);
     if (result.ok) {
       toast('success', result.message ?? 'Deleted.');
@@ -156,7 +166,9 @@ export default function MediaLibrary({
       setUploadAlt('');
       start(() => router.refresh());
     } catch (reason: unknown) {
-      setUploadError(reason instanceof Error ? reason.message : 'Could not upload this file.');
+      const failure = reason instanceof Error ? reason.message : 'Could not upload this file.';
+      setUploadError(failure);
+      toast('error', failure);
     } finally {
       setUploading(false);
     }
@@ -199,7 +211,7 @@ export default function MediaLibrary({
             ))}
           </div>
           {canEdit && (
-            <button type="button" onClick={() => setUploadOpen(true)} className={buttonClass.primary}>
+            <button type="button" data-tour="media-upload" onClick={() => setUploadOpen(true)} className={buttonClass.primary}>
               <Upload aria-hidden className="h-4 w-4" /> Upload
             </button>
           )}

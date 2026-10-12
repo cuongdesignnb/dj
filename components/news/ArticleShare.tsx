@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Check, Link2 } from 'lucide-react';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 // lucide-react v1 no longer ships brand marks, so these are inline — the same
 // approach the site footer already uses for its social icons.
@@ -60,6 +61,7 @@ export default function ArticleShare({ title }: { title: string }) {
     () => '',
   );
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const toast = useToast();
   const copied = status === 'copied';
 
   useEffect(() => {
@@ -73,10 +75,12 @@ export default function ArticleShare({ title }: { title: string }) {
     try {
       await navigator.clipboard.writeText(url);
       setStatus('copied');
+      toast('success', 'Link copied.');
     } catch {
       // Some browsers refuse clipboard access outright. Say so rather than
       // leaving the reader to wonder whether the click registered.
       setStatus('failed');
+      toast('warning', 'Your browser blocked copying. Select the address bar to copy the link.');
     }
   };
 

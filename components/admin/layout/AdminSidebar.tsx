@@ -96,6 +96,7 @@ export default function AdminSidebar({
 
   return (
     <nav
+      data-tour="sidebar"
       aria-label="Admin"
       className={`flex h-full flex-col border-r border-admin-border bg-admin-deep ${compact ? 'w-[76px]' : 'w-[272px]'}`}
     >
@@ -113,6 +114,7 @@ export default function AdminSidebar({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search menu..."
+              data-tour="menu-search"
               className="min-h-[40px] w-full rounded-[8px] border border-admin-border bg-admin-panel pl-9 pr-3 text-sm text-white placeholder:text-admin-muted focus:border-rave-red focus:outline-none"
             />
           </label>
@@ -128,7 +130,7 @@ export default function AdminSidebar({
           if (compact) {
             const target = group.items[0];
             return (
-              <li key={group.id}>
+              <li key={group.id} data-tour={`nav-${group.id}`}>
                 <Link
                   href={target.href}
                   onClick={onNavigate}
@@ -149,7 +151,7 @@ export default function AdminSidebar({
             const item = group.items[0];
             const current = item.href === active;
             return (
-              <li key={group.id}>
+              <li key={group.id} data-tour={`nav-${group.id}`}>
                 <Link
                   href={item.href}
                   onClick={onNavigate}
@@ -170,7 +172,7 @@ export default function AdminSidebar({
           const expanded = isOpen(group.id);
           const panelId = `nav-${group.id}`;
           return (
-            <li key={group.id}>
+            <li key={group.id} data-tour={`nav-${group.id}`}>
               <button
                 type="button"
                 onClick={() => toggle(group.id)}

@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { validatePromoCode } from '@/app/cart/actions';
 import { sessionCartAdapter } from '@/lib/cart/adapter';
 import type { Money, PromoResult } from '@/lib/cart/types';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 /**
  * Promo code entry. The code is only kept — and a discount only shown — when
@@ -21,6 +22,7 @@ export default function PromoCodeForm({
   const messageId = useId();
   const [code, setCode] = useState('');
   const [result, setResult] = useState<PromoResult | null>(null);
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
 
   const apply = () => {
@@ -32,6 +34,7 @@ export default function PromoCodeForm({
     startTransition(async () => {
       const outcome = await validatePromoCode(value);
       setResult(outcome);
+      toast(outcome.valid ? 'success' : 'warning', outcome.message ?? (outcome.valid ? 'Promo code applied.' : 'This promo code cannot be used.'));
       if (outcome.valid) {
         sessionCartAdapter.setPromoCode(outcome.code);
         onDiscount(outcome.discount ?? null);

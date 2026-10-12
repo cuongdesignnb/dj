@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Image as ImageIcon, LoaderCircle, Search, Upload } from 'lucide-react';
 import { Modal, buttonClass } from '../ui/Dialog';
+import { useToast } from '../ui/Toast';
 
 const pickerInputClass = 'w-full min-h-[42px] rounded-[8px] border border-admin-border bg-admin-deep px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-rave-red focus:outline-none focus:ring-1 focus:ring-rave-red/60';
 
@@ -106,6 +107,7 @@ export function MediaPicker({
   title?: string;
   description?: string;
 }) {
+  const toast = useToast();
   const [query, setQuery] = useState('');
   const [choices, setChoices] = useState<MediaChoice[]>(media);
   const [hasLoaded, setHasLoaded] = useState(media.length > 0);
@@ -159,8 +161,11 @@ export function MediaPicker({
       setChoices((current) => [choice, ...current.filter((item) => item.id !== choice.id)]);
       setUploadAlt('');
       onPick(choice);
+      toast('success', 'Uploaded to the media library and selected.');
     } catch (reason: unknown) {
-      setError(reason instanceof Error ? reason.message : 'Could not upload this file.');
+      const failure = reason instanceof Error ? reason.message : 'Could not upload this file.';
+      setError(failure);
+      toast('error', failure);
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

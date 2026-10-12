@@ -250,7 +250,12 @@ export default function DataTable({
 
   const run = async (kind: 'archive' | 'delete', ids: string[]) => {
     setBusy(true);
-    const result = kind === 'delete' ? await deleteRecords(resourceKey, ids) : await archiveRecords(resourceKey, ids);
+    let result: Awaited<ReturnType<typeof deleteRecords>>;
+    try {
+      result = await (kind === 'delete' ? deleteRecords(resourceKey, ids) : archiveRecords(resourceKey, ids));
+    } catch {
+      result = { ok: false, error: { message: 'Could not reach the server. Nothing was changed; please try again.' } };
+    }
     setBusy(false);
     setConfirm(null);
     if (result.ok) {
@@ -263,7 +268,12 @@ export default function DataTable({
   };
 
   const duplicate = async (row: TableRow) => {
-    const result = await duplicateRecord(resourceKey, row.id);
+    let result: Awaited<ReturnType<typeof duplicateRecord>>;
+    try {
+      result = await duplicateRecord(resourceKey, row.id);
+    } catch {
+      result = { ok: false, error: { message: 'Could not reach the server. Nothing was changed; please try again.' } };
+    }
     if (result.ok) {
       toast('success', result.message ?? 'Copy created.');
       start(() => router.refresh());

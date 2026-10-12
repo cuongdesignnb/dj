@@ -23,14 +23,19 @@ try {
     await db.vipPackage.update({ where: { id: pkg.id }, data: { enabled: true, priceMinor: 150000, paymentMode: 'REQUEST_ONLY' } });
     const tier = await db.ticketTier.findFirst({ where: { eventId: event.id, name: 'QA Multi General' } })
       ?? await db.ticketTier.create({ data: { eventId: event.id, name: 'QA Multi General', priceMinor: 4500, currency: 'AUD', availabilityStatus: 'AVAILABLE' } });
-    await db.ticketTier.update({ where: { id: tier.id }, data: { enabled: true } });
-    await db.event.update({ where: { id: event.id }, data: { vipEnabled: true, vipBookingEnabled: true, vipAvailabilityMode: 'REQUEST_ONLY', vipSquareEnabled: false, vipDefaultPackageId: pkg.id, ticketingEnabled: true, ticketSaleStatus: 'COMING_SOON', ticketSquareEnabled: false, ticketExternalProviderEnabled: false } });
+    await db.ticketTier.update({ where: { id: tier.id }, data: { enabled: true, priceMinor: 4500, availabilityStatus: 'AVAILABLE', capacity: null, minQuantity: 1, maxQuantity: null, defaultQuantity: null, badge: null } });
+    // Tiers added by a previous run (QA event only) would make every run different.
+    await db.ticketTier.deleteMany({ where: { eventId: event.id, id: { not: tier.id }, purchaseItems: { none: {} } } });
+    await db.event.update({ where: { id: event.id }, data: { vipEnabled: true, vipBookingEnabled: true, vipAvailabilityMode: 'REQUEST_ONLY', vipSquareEnabled: false, vipDefaultPackageId: pkg.id, ticketingEnabled: true, ticketSaleStatus: 'COMING_SOON', ticketSquareEnabled: false, ticketExternalProviderEnabled: false, ticketSaleStart: null, ticketSaleEnd: null } });
     console.log(JSON.stringify({ eventId: event.id, packageId: pkg.id }));
   } else if (action === 'content') {
     const event = await db.event.findUniqueOrThrow({ where: { slug } });
     const rows = await db.pageContent.findMany({ where: { key: { in: keys(event.id) } }, select: { key: true, status: true, translations: { select: { locale: true, contentJson: true } } } });
     const audits = await db.auditLog.findMany({ where: { entityType: 'page_content', entityId: { in: (await db.pageContent.findMany({ where: { key: { in: keys(event.id) } }, select: { id: true } })).map((row) => row.id) } }, select: { action: true } });
     console.log(JSON.stringify({ rows, audits }));
+  } else if (action === 'tiers') {
+    const event = await db.event.findUniqueOrThrow({ where: { slug } });
+    console.log(JSON.stringify({ tiers: await db.ticketTier.findMany({ where: { eventId: event.id }, orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }], select: { name: true, priceMinor: true, availabilityStatus: true, capacity: true, minQuantity: true, maxQuantity: true, badge: true, enabled: true } }), sale: await db.event.findUniqueOrThrow({ where: { id: event.id }, select: { ticketSaleStart: true, ticketSaleEnd: true, ticketSaleStatus: true } }) }));
   } else if (action === 'count-content') {
     console.log(JSON.stringify({ count: await db.pageContent.count({ where: { key: value.key } }) }));
   } else if (action === 'bookings') {

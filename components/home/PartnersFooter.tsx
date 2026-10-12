@@ -9,6 +9,7 @@ import PublicMenuLinks from '@/components/shared/PublicMenuLinks';
 import type { HomeFooterData, HomePartner } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import RichText from '@/components/shared/RichText';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -82,6 +83,7 @@ function MarqueeStrip({ partners }: { partners: HomePartner[] }) {
 export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
   const [email, setEmail] = useState('');
   const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const toast = useToast();
   const [global, setGlobal] = useState<{ tagline?: string; footerDescription?: string; copyright?: string }>({});
 
   useEffect(() => {
@@ -101,9 +103,11 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
         body: JSON.stringify({ email }),
       });
       setNewsletterState(response.ok ? 'success' : 'error');
+      toast(response.ok ? 'success' : 'error', response.ok ? 'You’re subscribed.' : 'Could not subscribe. Please try again.');
       if (response.ok) setEmail('');
     } catch {
       setNewsletterState('error');
+      toast('error', 'Could not subscribe. Please try again.');
     }
   };
 
@@ -335,8 +339,8 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                     <ArrowRight className="w-4 h-4 text-white" />
                   </motion.button>
                 </form>
-                {newsletterState === 'success' && <p className="mt-2 text-xs text-emerald-300">You&apos;re subscribed.</p>}
-                {newsletterState === 'error' && <p className="mt-2 text-xs text-rave-red">Could not subscribe. Please try again.</p>}
+                {newsletterState === 'success' && <p role="status" className="mt-2 text-xs text-emerald-300">You&apos;re subscribed.</p>}
+                {newsletterState === 'error' && <p role="alert" className="mt-2 text-xs text-rave-red">Could not subscribe. Please try again.</p>}
               </motion.div>
             </div>
           </div>

@@ -33,6 +33,7 @@ import type { BookingFieldErrors } from '@/lib/vip/validation';
 import BottleSelector from './BottleSelector';
 import GroupSizeControl from './GroupSizeControl';
 import RichText from '@/components/shared/RichText';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -94,6 +95,7 @@ export default function BookingRequestForm({
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [result, setResult] = useState<BookingRequestResult | null>(null);
+  const toast = useToast();
 
   const selectedBooth = useMemo(
     () => data.booths.find((booth) => booth.id === boothId) ?? null,
@@ -152,10 +154,13 @@ export default function BookingRequestForm({
       const selection = getVipRepository();
       if (!selection.ok) {
         setResult({ status: 'error', message: selection.error.message });
+        toast('error', selection.error.message);
         return;
       }
       const outcome = await selection.repository.submitBookingRequest(input);
       setResult(outcome);
+      if (outcome.status === 'received') toast('success', 'Request received. The team will confirm availability — this is not a reservation yet.');
+      else toast(outcome.status === 'validation-error' ? 'warning' : 'error', outcome.message ?? 'Could not send your request. Please try again shortly.');
       if (outcome.fieldErrors) {
         setErrors((prev) => ({ ...prev, ...outcome.fieldErrors }));
       }
@@ -164,6 +169,7 @@ export default function BookingRequestForm({
         status: 'error',
         message: 'Could not send your request. Please try again shortly.',
       });
+      toast('error', 'Could not send your request. Please try again shortly.');
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
@@ -204,7 +210,9 @@ export default function BookingRequestForm({
       }
       window.location.assign(payload.data.checkoutUrl);
     } catch (error) {
-      setPaymentError(error instanceof Error ? error.message : 'The VIP checkout could not be started.');
+      const failure = error instanceof Error ? error.message : 'The VIP checkout could not be started.';
+      setPaymentError(failure);
+      toast('error', failure);
       setPaymentSubmitting(false);
     }
   };

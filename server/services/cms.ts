@@ -289,23 +289,29 @@ export async function getTicketSettings(eventId: string) {
   };
 }
 
+const isoDateTime = z.string().datetime({ offset: true, message: 'Choose a valid date and time.' });
+
+export const ticketSettingsInput = z.object({
+  ticketingEnabled: z.boolean().optional(),
+  saleStatus: z.enum(['COMING_SOON', 'ON_SALE', 'PAUSED', 'SOLD_OUT', 'ENDED'], { message: 'Choose a sale status.' }).optional(),
+  currency: currency.optional(),
+  onlineSalesEnabled: z.boolean().optional(),
+  doorSalesEnabled: z.boolean().optional(),
+  capacityTracking: z.boolean().optional(),
+  saleStart: z.preprocess((value) => value === '' ? null : value, isoDateTime.nullable().optional()),
+  saleEnd: z.preprocess((value) => value === '' ? null : value, isoDateTime.nullable().optional()),
+  squarePaymentEnabled: z.boolean().optional(),
+  externalProviderEnabled: z.boolean().optional(),
+  providerName: z.string().max(160).nullable().optional(),
+  providerUrl: z.string().max(2_000).nullable().optional(),
+  providerEventId: z.string().max(160).nullable().optional(),
+}).superRefine((value, context) => {
+  if (value.saleStart && value.saleEnd && new Date(value.saleEnd) <= new Date(value.saleStart)) context.addIssue({ code: 'custom', path: ['saleEnd'], message: 'Sale end must be after sale start.' });
+});
+
 export async function updateTicketSettings(eventId: string, input: unknown) {
+  const value = parseModuleInput(ticketSettingsInput, input, 'Some ticket settings need attention.');
   await ensureEvent(eventId);
-  const value = z.object({
-    ticketingEnabled: z.boolean().optional(),
-    saleStatus: z.enum(['COMING_SOON', 'ON_SALE', 'PAUSED', 'SOLD_OUT', 'ENDED']).optional(),
-    currency: currency.optional(),
-    onlineSalesEnabled: z.boolean().optional(),
-    doorSalesEnabled: z.boolean().optional(),
-    capacityTracking: z.boolean().optional(),
-    saleStart: z.string().datetime().nullable().optional(),
-    saleEnd: z.string().datetime().nullable().optional(),
-    squarePaymentEnabled: z.boolean().optional(),
-    externalProviderEnabled: z.boolean().optional(),
-    providerName: z.string().max(160).nullable().optional(),
-    providerUrl: z.string().max(2_000).nullable().optional(),
-    providerEventId: z.string().max(160).nullable().optional(),
-  }).parse(input);
   const row = await db.event.update({ where: { id: eventId }, data: {
     ticketingEnabled: value.ticketingEnabled,
     ticketSaleStatus: value.saleStatus,
@@ -324,8 +330,33 @@ export async function updateTicketSettings(eventId: string, input: unknown) {
   return getTicketSettings(row.id);
 }
 
-const ticketTierInput = z.object({
-  id: z.string().uuid().optional(), name: z.string().trim().min(1).max(160), description: z.string().max(20_000).nullable().optional(), priceMinor: z.number().int().min(0), currency: currency, badge: z.string().max(120).nullable().optional(), capacity: z.number().int().positive().nullable().optional(), availabilityStatus: z.enum(['AVAILABLE', 'SOLD_OUT', 'NOT_AVAILABLE', 'UNKNOWN', 'ON_REQUEST']).optional(), purchasableOnline: z.boolean(), purchasableAtDoor: z.boolean(), minQuantity: z.number().int().min(0).optional(), maxQuantity: z.number().int().min(0).nullable().optional(), defaultQuantity: z.number().int().min(0).nullable().optional(), highlighted: z.boolean().optional(), sortOrder: z.number().int().min(0).optional(), enabled: z.boolean().optional(), providerName: z.string().max(160).nullable().optional(), providerUrl: z.string().max(2_000).nullable().optional(), providerExternalId: z.string().max(160).nullable().optional(),
+const wholeNumber = (message: string) => z.number({ message }).int({ message });
+
+export const ticketTierInput = z.object({
+  id: databaseUuid.optional(),
+  name: z.string({ message: 'Enter a tier name.' }).trim().min(1, 'Enter a tier name.').max(160, 'Keep the name under 160 characters.'),
+  description: z.string().max(20_000).nullable().optional(),
+  priceMinor: wholeNumber('Enter the price in dollars, e.g. 45.00.').min(0, 'Price cannot be negative.').max(2_147_483_647, 'Price is too large.'),
+  currency: z.string().regex(/^[A-Z]{3}$/, 'Use a 3-letter currency code, e.g. AUD.'),
+  badge: z.string().max(120, 'Keep the badge under 120 characters.').nullable().optional(),
+  capacity: wholeNumber('Capacity must be a whole number, or blank for no limit.').positive('Capacity must be above 0, or blank for no limit.').nullable().optional(),
+  availabilityStatus: z.enum(['AVAILABLE', 'SOLD_OUT', 'NOT_AVAILABLE', 'UNKNOWN', 'ON_REQUEST'], { message: 'Choose an availability option.' }).optional(),
+  purchasableOnline: z.boolean(),
+  purchasableAtDoor: z.boolean(),
+  minQuantity: wholeNumber('Minimum per order must be a whole number.').min(0, 'Minimum per order cannot be negative.').optional(),
+  maxQuantity: wholeNumber('Maximum per order must be a whole number, or blank.').min(1, 'Maximum per order must be at least 1, or blank.').nullable().optional(),
+  defaultQuantity: wholeNumber('Default quantity must be a whole number, or blank.').min(0).nullable().optional(),
+  highlighted: z.boolean().optional(),
+  sortOrder: wholeNumber('Display order must be a whole number.').min(0, 'Display order cannot be negative.').optional(),
+  enabled: z.boolean().optional(),
+  providerName: z.string().max(160).nullable().optional(),
+  providerUrl: z.string().max(2_000).nullable().optional(),
+  providerExternalId: z.string().max(160).nullable().optional(),
+}).superRefine((value, context) => {
+  const min = value.minQuantity ?? 1;
+  if (value.maxQuantity != null && value.maxQuantity < Math.max(min, 1)) context.addIssue({ code: 'custom', path: ['maxQuantity'], message: 'Maximum per order cannot be below the minimum.' });
+  if (value.defaultQuantity != null && value.defaultQuantity !== 0 && (value.defaultQuantity < min || (value.maxQuantity != null && value.defaultQuantity > value.maxQuantity))) context.addIssue({ code: 'custom', path: ['defaultQuantity'], message: 'Default quantity must be between the minimum and maximum per order.' });
+  if (value.capacity != null && value.maxQuantity != null && value.maxQuantity > value.capacity) context.addIssue({ code: 'custom', path: ['maxQuantity'], message: 'Maximum per order cannot exceed the capacity.' });
 });
 
 export async function listTicketTiers(eventId: string) {
@@ -334,8 +365,8 @@ export async function listTicketTiers(eventId: string) {
 }
 
 export async function saveTicketTier(eventId: string, input: unknown) {
+  const value = parseModuleInput(ticketTierInput, input, 'Some ticket tier fields need attention.');
   await ensureEvent(eventId);
-  const value = ticketTierInput.parse(input);
   const data = { name: value.name, description: value.description ?? null, priceMinor: value.priceMinor, currency: value.currency, badge: value.badge ?? null, capacity: value.capacity ?? null, availabilityStatus: value.availabilityStatus ?? 'UNKNOWN', purchasableOnline: value.purchasableOnline, purchasableAtDoor: value.purchasableAtDoor, minQuantity: value.minQuantity ?? 1, maxQuantity: value.maxQuantity ?? null, defaultQuantity: value.defaultQuantity ?? null, highlighted: value.highlighted ?? false, sortOrder: value.sortOrder ?? 0, enabled: value.enabled ?? true, providerName: value.providerName ?? null, providerUrl: value.providerUrl ?? null, providerExternalId: value.providerExternalId ?? null };
   if (value.id) {
     const existing = await db.ticketTier.findFirst({ where: { id: value.id, eventId } });
@@ -358,10 +389,15 @@ const vipSettingsInput = z.object({
   vipEnabled: z.boolean().optional(), paymentMode: z.enum(['REQUEST_ONLY', 'FULL_PAYMENT', 'DEPOSIT']).optional(), availabilityMode: z.string().max(40).optional(), bookingEnabled: z.boolean().optional(), defaultPackageId: databaseUuid.nullable().optional(), requestExpiryMinutes: z.number().int().positive().optional(), boothHoldMinutes: z.number().int().positive().optional(), currency: currency.optional(), squarePaymentEnabled: z.boolean().optional(),
 });
 
-function parseVipInput<T>(schema: z.ZodType<T>, input: unknown): T {
+/** Field errors (422) instead of an unhandled ZodError (500) for event module inputs. */
+function parseModuleInput<T>(schema: z.ZodType<T>, input: unknown, message: string): T {
   const parsed = schema.safeParse(input);
-  if (!parsed.success) throw validationError(Object.fromEntries(parsed.error.issues.map((issue) => [issue.path.join('.') || 'data', issue.message])), 'Some VIP fields need attention.');
+  if (!parsed.success) throw validationError(Object.fromEntries(parsed.error.issues.map((issue) => [issue.path.join('.') || 'data', issue.message])), message);
   return parsed.data;
+}
+
+function parseVipInput<T>(schema: z.ZodType<T>, input: unknown): T {
+  return parseModuleInput(schema, input, 'Some VIP fields need attention.');
 }
 
 export async function getVipSettings(eventId: string) {

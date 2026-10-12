@@ -37,7 +37,12 @@ export default function IntegrationsPanel({ initial, canEdit }: { initial: Recor
     const payload = {
       items: items.map((i) => (i.id === item.id ? { ...i, newKey: draft.key, endpoint: draft.endpoint.trim() } : { ...i, newKey: '' })),
     };
-    const result = await saveSingleton('settings-integrations', payload);
+    let result: Awaited<ReturnType<typeof saveSingleton>>;
+    try {
+      result = await saveSingleton('settings-integrations', payload);
+    } catch {
+      result = { ok: false, error: { message: 'Could not reach the server. Nothing was changed; please try again.' } };
+    }
     setBusy(null);
     setConfirm(null);
     // The key leaves the browser state whatever the outcome.

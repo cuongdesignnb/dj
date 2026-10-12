@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { TriangleAlert, X } from 'lucide-react';
 import QuantityControl from '@/components/shop/QuantityControl';
 import { sessionCartAdapter } from '@/lib/cart/adapter';
+import { useToast } from '@/components/shared/toast/ToastProvider';
 import { optionLabel } from '@/lib/cart/input';
 import { lineTotal } from '@/lib/cart/pricing';
 import type { ReviewedLine } from '@/lib/cart/validation';
@@ -41,6 +42,7 @@ export default function CartItem({
   index?: number;
 }) {
   const reduced = useReducedMotion();
+  const toast = useToast();
   const { line, product, issue, price, maxQuantity } = reviewed;
   const unavailable = issue?.kind === 'unavailable';
   const total = formatMoney(lineTotal({ unitPrice: price, quantity: line.quantity }));
@@ -186,7 +188,7 @@ export default function CartItem({
 
         <button
           type="button"
-          onClick={() => sessionCartAdapter.removeItem(line.id)}
+          onClick={() => { sessionCartAdapter.removeItem(line.id); toast('info', `Removed from cart: ${labelBase}.`); }}
           aria-label={`Remove ${labelBase} from cart`}
           className="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full bg-black/60 text-white/80 sm:bg-transparent transition-colors hover:bg-rave-red/10 hover:text-rave-red focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
         >

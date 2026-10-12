@@ -3,11 +3,12 @@
 import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, ChevronDown, ExternalLink, LogOut, Menu, Search, Settings, UserRound } from 'lucide-react';
+import { Bell, ChevronDown, CircleHelp, ExternalLink, LogOut, Menu, Search, Settings, UserRound } from 'lucide-react';
 import { adminSearch, signOut } from '@/app/admin/actions';
 import type { SearchHit } from '@/app/admin/actions';
 import type { EnvironmentBadge } from '@/lib/admin/common/config';
 import { useAdminSession } from '../ui/PermissionGate';
+import { useAdminTour } from '../tour/AdminTour';
 
 export interface TopbarNotification {
   id: string;
@@ -175,6 +176,23 @@ function Notifications({ items }: { items: TopbarNotification[] }) {
   );
 }
 
+/** Replays the guided tour for the current admin page. */
+function GuideButton() {
+  const { startGuide } = useAdminTour();
+  return (
+    <button
+      type="button"
+      data-tour="guide-button"
+      onClick={startGuide}
+      className="inline-flex min-h-[44px] items-center gap-2 rounded-[10px] px-3 text-sm text-admin-muted hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red"
+    >
+      <CircleHelp aria-hidden className="h-5 w-5" />
+      <span className="hidden md:inline">Guide</span>
+      <span className="sr-only md:hidden">Open the guide for this page</span>
+    </button>
+  );
+}
+
 function UserMenu() {
   const session = useAdminSession();
   const [open, setOpen] = useState(false);
@@ -255,9 +273,10 @@ export default function AdminTopbar({
           <span className="sr-only">Environment: </span>
           {environment.label}
         </span>
-        <div className="hidden flex-1 justify-end sm:flex">
+        <div data-tour="global-search" className="hidden flex-1 justify-end sm:flex">
           <GlobalSearch />
         </div>
+        <GuideButton />
         <Notifications items={notifications} />
         <UserMenu />
       </div>
