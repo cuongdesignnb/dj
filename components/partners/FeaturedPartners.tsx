@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { PartnerLogo } from '@/components/shared/Sponsors';
 import Container from '@/components/ui/Container';
 import PartnersSectionHeading from './PartnersSectionHeading';
 import { partnerReveal, partnerStagger } from '@/lib/animations';
@@ -59,13 +60,7 @@ export default function FeaturedPartners({ partners }: Props) {
                       variants={partnerReveal}
                       className="relative h-12 sm:h-14 w-full max-w-[220px] grid place-items-start"
                     >
-                      <Image
-                        src={p.logo.src}
-                        alt={p.logo.alt}
-                        width={p.logo.width ?? 240}
-                        height={p.logo.height ?? 80}
-                        className="max-h-full w-auto object-contain opacity-95 group-hover:drop-shadow-[0_0_14px_rgba(255,23,61,0.45)] transition"
-                      />
+                      <PartnerLogo logo={p.logo} name={p.name} className="max-h-full w-auto object-contain opacity-95 group-hover:drop-shadow-[0_0_14px_rgba(255,23,61,0.45)] transition" />
                     </motion.div>
                     {p.tagline && (
                       <motion.div

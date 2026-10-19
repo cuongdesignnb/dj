@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import { ARTISTS, BOOTH_CODES, BOTTLES, EVENT_GENRES, TICKET_TIERS } from './seeds/context';
+import { SPONSORS } from './seeds/16-sponsors';
 
 const db = new PrismaClient();
 
@@ -29,6 +30,8 @@ async function main() {
   assertGate(booths >= 12, `Expected 12 on-request booths, found ${booths}`);
   assertGate(bottles >= 6, `Expected 6 bottle options, found ${bottles}`);
   assertGate(partners >= 2, `Expected 2 confirmed partners, found ${partners}`);
+  const sponsorLogos = await db.partner.count({ where: { slug: { in: SPONSORS.map((sponsor) => sponsor.slug) }, logoMediaId: { not: null } } });
+  assertGate(sponsorLogos >= SPONSORS.length, `Expected ${SPONSORS.length} sponsors with a logo, found ${sponsorLogos}`);
   assertGate(pages >= 3, `Expected home/about/contact content pages, found ${pages}`);
   assertGate(locales === 2, `Expected en and vi locales, found ${locales}`);
   assertGate(roles === 5, `Expected five baseline roles, found ${roles}`);
@@ -47,7 +50,7 @@ async function main() {
   assertGate(legal.length === 2 && legal.every((row) => row.status === 'DRAFT' && row.publishedAt === null && !row.indexable), 'Terms and privacy must remain drafts');
 
   console.log('SEED_VERIFY=PASS');
-  console.log(JSON.stringify({ DESTINY: 1, artists, tickets, booths, bottles, partners, pages, locales, roles, media, previewProducts: previewProducts.length, legal: legal.length }, null, 2));
+  console.log(JSON.stringify({ DESTINY: 1, artists, tickets, booths, bottles, partners, sponsorLogos, pages, locales, roles, media, previewProducts: previewProducts.length, legal: legal.length }, null, 2));
 }
 
 main()

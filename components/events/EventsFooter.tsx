@@ -3,13 +3,14 @@
 import type { ReactElement } from 'react';
 import { useEffect, useState } from 'react';
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Container from '@/components/ui/Container';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { EventsFooterData } from '@/lib/events/listing-types';
 import RichText from '@/components/shared/RichText';
 import { SiteLogo } from '@/components/shared/SiteBranding';
+import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
+import { sponsorToFooterPartner } from '@/lib/sponsors';
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -60,7 +61,9 @@ const SOCIAL_ICON: Record<string, (props: { className?: string }) => ReactElemen
 export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
   const year = new Date().getFullYear();
   const socials = footer.socials.filter((social) => social.url);
-  const partners = footer.partners ?? [];
+  const sponsors = useSponsors();
+  // Pages may pass their own partners; otherwise every footer shows the Admin sponsors.
+  const partners = footer.partners?.length ? footer.partners : sponsors.map(sponsorToFooterPartner);
   const [quickLinks, setQuickLinks] = useState<Array<{ id: string; labelEn: string; href: string | null }>>([]);
   const [legalLinks, setLegalLinks] = useState<Array<{ id: string; labelEn: string; href: string | null }>>([]);
   const [secondaryLinks, setSecondaryLinks] = useState<Array<{ id: string; labelEn: string; href: string | null }>>([]);
@@ -127,22 +130,19 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
               <h2 className="mb-4 font-heading text-sm font-semibold uppercase tracking-[0.2em] text-white">
                 In Partnership With
               </h2>
-              <div className="flex flex-wrap items-center gap-5">
+              {/* A pair reads "A × B"; longer lists sit in a two-column grid. */}
+              <div data-sponsor-slot="footer" className={partners.length === 2 ? 'flex flex-wrap items-center gap-5' : 'grid grid-cols-2 items-center gap-x-6 gap-y-5'}>
                 {partners.map((partner, index) => (
                   <div key={partner.id} className="flex items-center gap-5">
-                    {index > 0 && (
+                    {partners.length === 2 && index > 0 && (
                       <span aria-hidden className="font-heading text-sm text-rave-muted/50">
                         &times;
                       </span>
                     )}
-                    <Image
-                      src={partner.logo.src}
-                      alt={partner.logo.alt || partner.name}
-                      width={160}
-                      height={32}
-                      sizes="160px"
-                      unoptimized={!partner.logo.src.startsWith('/')}
-                      className="h-8 w-auto object-contain opacity-80 transition-opacity duration-300 hover:opacity-100"
+                    <PartnerLogo
+                      logo={partner.logo}
+                      name={partner.name}
+                      className="h-8 w-auto max-w-full object-contain opacity-80 transition-opacity duration-300 hover:opacity-100"
                     />
                   </div>
                 ))}

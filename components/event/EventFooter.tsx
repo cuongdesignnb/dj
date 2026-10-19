@@ -1,12 +1,13 @@
 'use client';
 
-import Image from 'next/image';
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useReducedMotion } from 'framer-motion';
 import Container from '@/components/ui/Container';
 import { cardStagger, cardItem, lineReveal } from '@/lib/events/motion';
 import type { EventPageData, FrontendRoutes } from '@/lib/events/types';
 import { SiteLogo } from '@/components/shared/SiteBranding';
+import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
+import { sponsorToFooterPartner } from '@/lib/sponsors';
 
 interface Props {
   event: EventPageData;
@@ -72,6 +73,8 @@ function resolveHref(key: keyof FrontendRoutes | 'home' | 'event', routes: Front
 export default function EventFooter({ event, routes }: Props) {
   const reduced = useReducedMotion();
   const site = event.site;
+  const sponsors = useSponsors();
+  const partners = site.partners.length ? site.partners : sponsors.map(sponsorToFooterPartner);
   const socials = site.contact.socials.filter((s) => s.url && s.url.length > 0);
   const termsHref = routes.legalTerms ?? null;
   const privacyHref = routes.legalPrivacy ?? null;
@@ -132,21 +135,10 @@ export default function EventFooter({ event, routes }: Props) {
             <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">
               In Partnership With
             </h4>
-            <div className="flex items-center gap-6">
-              {site.partners.map((p) => (
-                <div key={p.id} className="flex items-center gap-3">
-                  <div className="h-8 flex items-center">
-                    <Image
-                      src={p.logo.src}
-                      alt={p.logo.alt}
-                      width={p.logo.width}
-                      height={p.logo.height}
-                      className="h-full w-auto object-contain opacity-80"
-                    />
-                  </div>
-                  <span className="text-xs text-rave-muted uppercase tracking-wider">
-                    {p.name}
-                  </span>
+            <div data-sponsor-slot="event-footer" className="flex flex-wrap items-center gap-x-6 gap-y-4">
+              {partners.map((p) => (
+                <div key={p.id} className="h-8 flex items-center">
+                  <PartnerLogo logo={p.logo} name={p.name} className="h-full w-auto max-w-[150px] object-contain opacity-80 hover:opacity-100 transition-opacity" />
                 </div>
               ))}
             </div>

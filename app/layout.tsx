@@ -5,6 +5,8 @@ import NavigationFeedback from '@/components/shared/NavigationFeedback';
 import { ToastProvider } from '@/components/shared/toast/ToastProvider';
 import { SiteBrandingProvider } from '@/components/shared/SiteBranding';
 import { getSiteBranding } from '@/server/services/branding';
+import { SponsorsProvider } from '@/components/shared/Sponsors';
+import { getSponsors } from '@/server/services/sponsors';
 import "./globals.css";
 import MouseGlow from "@/components/ui/MouseGlow";
 import { canonicalUrl } from '@/lib/seo/canonical';
@@ -56,7 +58,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const branding = await getSiteBranding();
+  const [branding, sponsors] = await Promise.all([getSiteBranding(), getSponsors()]);
   return (
     <html
       lang="en"
@@ -70,7 +72,9 @@ export default async function RootLayout({
         ))}
         {/* Site-wide toasts; the admin shell nests its own themed provider. */}
         <SiteBrandingProvider value={branding}>
-          <ToastProvider variant="site">{children}</ToastProvider>
+          <SponsorsProvider value={sponsors}>
+            <ToastProvider variant="site">{children}</ToastProvider>
+          </SponsorsProvider>
         </SiteBrandingProvider>
       </body>
     </html>

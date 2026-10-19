@@ -149,3 +149,40 @@ the Organization JSON-LD. Only site paths and https URLs are accepted.
 `app/favicon.ico` moved to `public/favicon.ico` so the chosen favicon is not
 overridden; `/favicon.ico` still serves the default. E2E: `site-branding.spec.ts`
 (7 public pages; restore reverts immediately). Full suite 32/32.
+
+## 8. Sponsor logos from Admin › Partners
+
+New SVG artwork (text outlined, no webfonts, no scripts) in `public/assets`:
+`logo-bihi.svg` (redrawn, horizontal), `logo-bi-hair.svg`, `logo-vina9.svg`,
+plus full and light-background versions under `public/assets/sponsors/`.
+`logo-mcq.svg` is unchanged.
+
+Every sponsor slot now shows the published partners that have a logo, in
+Admin order (featured, sort order, then creation): the home hero, the home VIP
+block (first sponsor), the home footer strip, the shared footer on FAQ, legal,
+events, tickets, gallery and news pages, and the event page footer. The list
+comes from `server/services/sponsors.ts` (cached on `public:partners`, which
+saving a partner already revalidates) through the root layout. Logos render as
+plain `<img>` (`PartnerLogo`) so SVGs from the media library work; the
+`/partners` and `/about` logos use the same component. `GET /api/v1/partners`
+now returns the partner id (it used to be overwritten by the translation id)
+and hides soft-deleted media.
+
+Seeding (`prisma/seeds/16-sponsors.ts`, also part of `db:seed`):
+
+    npx tsx prisma/seed-sponsors.ts --dry-run   # shows changes, rolls back
+    npx tsx prisma/seed-sponsors.ts             # npm run db:seed:sponsors
+
+It creates missing media rows and the Bi Hair / VINA9 partners, and on MCQ and
+BIHI fills only an empty logo or tagline ("Powered by", "Presented by"). It
+never deletes and never changes status, order or names set by an editor; a
+second run reports 0 changes. A raw database write does not revalidate the
+public cache (up to 5 minutes), so on a running server seed before starting the
+new container, or save the partner once in Admin.
+
+QA: seeded the QA DB from the production-like state (MCQ/BIHI without logos):
+dry run 16 changes rolled back, run 16 changes, repeat 0. `sponsor-logos.spec.ts`
+(5 tests: files served as SVG, every slot in order and decoded in Chrome,
+unpublish in Admin removes VINA9 everywhere and Publish restores it). Full suite
+37/37 (run the sponsor spec separately or clear the QA login keys: it adds a
+sixth qa-admin login).

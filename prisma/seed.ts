@@ -16,6 +16,7 @@ import { seedGalleryPreview } from './seeds/12-gallery-preview';
 import { seedSettings } from './seeds/13-settings';
 import { seedAdminUser } from './seeds/14-admin-user';
 import { seedCms } from './seeds/15-cms';
+import { seedSponsors } from './seeds/16-sponsors';
 
 const db = new PrismaClient();
 
@@ -30,6 +31,7 @@ async function main() {
     await seedTickets(context, event.id);
     await seedVip(context, event.id);
     await seedPartners(context);
+    await seedSponsors(tx);
     await seedProducts(context);
     await seedContentPages(context);
     await seedFaq(context, event.id);

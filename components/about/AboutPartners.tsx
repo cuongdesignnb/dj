@@ -1,9 +1,9 @@
 'use client';
 
 import { useRef } from 'react';
-import Image from 'next/image';
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { PartnerLogo } from '@/components/shared/Sponsors';
 import Container from '@/components/ui/Container';
 import AboutSectionHeading from './AboutSectionHeading';
 import { aboutReveal, aboutStagger } from '@/lib/animations';
@@ -50,11 +50,9 @@ export default function AboutPartners({ partners }: Props) {
                 className="group h-full flex flex-col sm:flex-row items-start gap-5 sm:gap-7 p-6 sm:p-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/40 hover:border-rave-red/30 transition-colors"
               >
                 <div className="relative flex-shrink-0 w-full sm:w-[180px] h-20 sm:h-[100px] grid place-items-center">
-                  <Image
-                    src={partner.logo.src}
-                    alt={partner.logo.alt}
-                    width={partner.logo.width ?? 240}
-                    height={partner.logo.height ?? 80}
+                  <PartnerLogo
+                    logo={partner.logo}
+                    name={partner.name}
                     className={`max-h-full w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity ${
                       reduced ? '' : 'group-hover:drop-shadow-[0_0_18px_rgba(255,23,61,0.45)]'
                     }`}

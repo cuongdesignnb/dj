@@ -13,6 +13,7 @@ import DESTINYShatter from '../ui/DESTINYShatter';
 import { stableUnit, stableSigned } from '@/lib/stable-visual';
 import type { HomeEvent, HomeMedia } from './types';
 import RichText from '@/components/shared/RichText';
+import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
 
 interface Particle {
   width: number;
@@ -376,6 +377,7 @@ function AudioVisualizer() {
 }
 
 export default function HeroSection({ event, animation = null }: { event: HomeEvent; animation?: HomeMedia | null }) {
+  const sponsors = useSponsors();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[84px]">
       {/* Background layers */}
@@ -412,44 +414,43 @@ export default function HeroSection({ event, animation = null }: { event: HomeEv
           animate="visible"
           className="flex flex-col items-center text-center gap-4"
         >
-          {/* Sponsors block - Animated entrance */}
-          <motion.div
-            variants={fadeUp}
-            className="flex flex-row items-center justify-center gap-10 md:gap-14 mb-4"
-          >
-            {/* MCQ Block */}
+          {/* Sponsors from Admin › Partners (published, with a logo) */}
+          {sponsors.length > 0 && (
             <motion.div
-              className="flex flex-col items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring', stiffness: 300 }}
+              variants={fadeUp}
+              data-sponsor-slot="hero"
+              className="flex flex-wrap items-stretch justify-center gap-x-8 gap-y-6 md:gap-x-12 mb-4"
             >
-              <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-semibold">Powered by</span>
-              <div className="h-[44px] sm:h-[50px] flex items-center select-none">
-                <Image src="/assets/logo-mcq.svg" alt="MCQ Supermarket" width={180} height={50} className="h-full w-auto object-contain" />
-              </div>
-              <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rave-red font-heading font-extrabold mt-1">POWERED BY MCQ SUPERMARKET</span>
+              {sponsors.map((sponsor, index) => (
+                <div key={sponsor.id} className="flex items-stretch gap-8 md:gap-12">
+                  {index > 0 && (
+                    <motion.div
+                      aria-hidden
+                      className="hidden sm:block w-px bg-white/10 self-stretch"
+                      initial={{ scaleY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
+                    />
+                  )}
+                  <motion.div
+                    className="flex flex-col items-center gap-2"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    {sponsor.role && (
+                      <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-semibold">{sponsor.role}</span>
+                    )}
+                    <div className="h-[44px] sm:h-[50px] flex items-center select-none">
+                      <PartnerLogo logo={sponsor.logo} name={sponsor.name} eager className="h-full w-auto max-w-[200px] object-contain" />
+                    </div>
+                    <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rave-red font-heading font-extrabold mt-1">
+                      {sponsor.role ? `${sponsor.role} ${sponsor.name}` : sponsor.name}
+                    </span>
+                  </motion.div>
+                </div>
+              ))}
             </motion.div>
-
-            <motion.div
-              className="w-px h-20 bg-white/10 self-stretch"
-              initial={{ scaleY: 0 }}
-              animate={{ scaleY: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            />
-
-            {/* BIHI Block */}
-            <motion.div
-              className="flex flex-col items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-semibold">Presented by</span>
-              <div className="h-[44px] sm:h-[50px] flex items-center select-none">
-                <Image src="/assets/logo-bihi.svg" alt="BIHI Entertainment" width={180} height={50} className="h-full w-auto object-contain" />
-              </div>
-              <span className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-rave-red font-heading font-extrabold mt-1">PRESENTED BY BIHI ENTERTAINMENT</span>
-            </motion.div>
-          </motion.div>
+          )}
 
           {/* Tagline */}
           <motion.p

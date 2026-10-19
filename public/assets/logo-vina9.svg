@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="140 120 730 390" width="730" height="390" role="img" aria-labelledby="t">
+  <title id="t">VINA9</title>
+  <defs>
+    <filter id="brush" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035 0.09" numOctaves="3" seed="9" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="16" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <radialGradient id="ink" cx="0.45" cy="0.35" r="0.8">
+      <stop offset="0" stop-color="#e3313b"/>
+      <stop offset="1" stop-color="#b81d27"/>
+    </radialGradient>
+  </defs>
+  <g id="nine" filter="url(#brush)">
+    <path fill="url(#ink)" fill-rule="evenodd" d="M 645.4 224 A 100 100 0 1 1 645.3 223.5 Z M 605.4 224 A 60 60 0 1 0 605.3 224.5 Z"/>
+    <path fill="url(#ink)" d="M 643.4 214 C 649.4 314, 585.4 414, 425.4 479 C 525.4 424, 585.4 344, 605.4 228 Z"/>
+    <path d="M 625.4 284 C 575.4 394, 505.4 439, 415.4 476" stroke="#c4202b" stroke-width="2.60" fill="none" stroke-linecap="round" opacity="0.90"/><path d="M 618.4 293 C 569.4 398, 501.4 442, 406.4 478" stroke="#c4202b" stroke-width="2.35" fill="none" stroke-linecap="round" opacity="0.82"/><path d="M 611.4 302 C 563.4 402, 497.4 445, 397.4 480" stroke="#c4202b" stroke-width="2.10" fill="none" stroke-linecap="round" opacity="0.74"/><path d="M 604.4 311 C 557.4 406, 493.4 448, 388.4 482" stroke="#c4202b" stroke-width="1.85" fill="none" stroke-linecap="round" opacity="0.66"/><path d="M 597.4 320 C 551.4 410, 489.4 451, 379.4 484" stroke="#c4202b" stroke-width="1.60" fill="none" stroke-linecap="round" opacity="0.58"/><path d="M 590.4 329 C 545.4 414, 485.4 454, 370.4 486" stroke="#c4202b" stroke-width="1.35" fill="none" stroke-linecap="round" opacity="0.50"/><path d="M 583.4 338 C 539.4 418, 481.4 457, 361.4 488" stroke="#c4202b" stroke-width="1.10" fill="none" stroke-linecap="round" opacity="0.42"/><path d="M 576.4 347 C 533.4 422, 477.4 460, 352.4 490" stroke="#c4202b" stroke-width="0.85" fill="none" stroke-linecap="round" opacity="0.34"/>
+  </g>
+  <g id="vina" fill="#ffffff">
+    <path d="M 162.0 232.0 L 204.0 232.0 L 359.4 442.0 L 317.4 442.0 Z M 327.4 262.0 L 359.4 262.0 L 359.4 442.0 L 327.4 442.0 Z"/>
+    <path d="M 381.4 262.0 L 413.4 262.0 L 413.4 410.0 L 381.4 410.0 Z"/>
+    <path d="M 435.4 262.0 L 467.4 262.0 L 467.4 410.0 L 435.4 410.0 Z"/>
+    <path d="M 435.4 232.0 L 477.4 232.0 L 632.8 442.0 L 590.8 442.0 Z"/>
+    <path d="M 600.8 232.0 L 632.8 232.0 L 632.8 442.0 L 600.8 442.0 Z"/>
+    <path d="M 654.8 232.0 L 686.8 232.0 L 686.8 410.0 L 654.8 410.0 Z"/>
+    <path d="M 654.8 232.0 L 696.8 232.0 L 852.2 442.0 L 810.2 442.0 Z"/>
+  </g>
+</svg>

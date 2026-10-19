@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
-import Image from 'next/image';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { PartnerLogo } from '@/components/shared/Sponsors';
 import Container from '@/components/ui/Container';
 import PartnersSectionHeading from './PartnersSectionHeading';
 import { partnerReveal, partnerStagger } from '@/lib/animations';
@@ -46,13 +46,7 @@ export default function TrustedPartners({ partners }: Props) {
                 transition={{ type: 'spring', stiffness: 280, damping: 22 }}
                 className="relative h-10 sm:h-12 w-auto min-w-[110px] flex items-center justify-center"
               >
-                <Image
-                  src={p.logo.src}
-                  alt={p.logo.alt}
-                  width={p.logo.width ?? 200}
-                  height={p.logo.height ?? 60}
-                  className="max-h-full w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
-                />
+                <PartnerLogo logo={p.logo} name={p.name} className="max-h-full w-auto object-contain opacity-70 hover:opacity-100 transition-opacity" />
               </motion.div>
             </li>
           ))}

@@ -14,6 +14,7 @@
     "db:seed:bootstrap": "tsx prisma/seed.ts --bootstrap",
     "db:seed:preview": "tsx prisma/seed.ts --preview",
     "db:seed:verify": "tsx prisma/seed-verify.ts",
+    "db:seed:sponsors": "tsx prisma/seed-sponsors.ts",
     "seo:audit": "node scripts/seo-audit.mjs",
     "seo:route-matrix": "node scripts/seo-route-matrix.mjs",
     "seo:sitemap:check": "node scripts/seo-sitemap-check.mjs",

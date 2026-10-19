@@ -11,6 +11,7 @@ import { fadeUp, staggerContainer } from '@/lib/animations';
 import RichText from '@/components/shared/RichText';
 import { useToast } from '@/components/shared/toast/ToastProvider';
 import { SiteLogo } from '@/components/shared/SiteBranding';
+import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -85,6 +86,9 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
   const [email, setEmail] = useState('');
   const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const toast = useToast();
+  const sponsors = useSponsors();
+  const sponsorNames = new Set(sponsors.map((sponsor) => sponsor.name.toLowerCase()));
+  const textPartners = footer.partners.filter((partner) => !sponsorNames.has(partner.label.toLowerCase()));
   const [global, setGlobal] = useState<{ tagline?: string; footerDescription?: string; copyright?: string }>({});
 
   useEffect(() => {
@@ -126,71 +130,54 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
             viewport={{ once: true }}
             className="py-10 md:py-14"
           >
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 lg:gap-16">
-              {/* Powered By */}
-              <motion.div
-                variants={fadeUp}
-                className="flex flex-col items-center gap-2 group"
-              >
-                <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-medium group-hover:text-white transition-colors">Powered by</span>
-                <div className="h-9 flex items-center select-none">
-                  <motion.img
-                    src="/assets/logo-mcq.svg"
-                    alt="MCQ Supermarket"
-                    className="h-full w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-                    whileHover={{ scale: 1.1 }}
-                  />
+            <div data-sponsor-slot="home-footer" className="flex flex-wrap items-center justify-center gap-8 md:gap-12 lg:gap-16">
+              {sponsors.map((sponsor, index) => (
+                <div key={sponsor.id} className="flex items-center gap-8 md:gap-12 lg:gap-16">
+                  {index > 0 && (
+                    <motion.div
+                      aria-hidden
+                      className="w-px h-10 bg-white/10 hidden md:block"
+                      initial={{ scaleY: 0 }}
+                      whileInView={{ scaleY: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.05 }}
+                    />
+                  )}
+                  <motion.div variants={fadeUp} className="flex flex-col items-center gap-2 group">
+                    <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-medium group-hover:text-white transition-colors">
+                      {sponsor.role ?? 'Official Partner'}
+                    </span>
+                    <motion.div className="h-9 flex items-center select-none" whileHover={{ scale: 1.1 }}>
+                      {sponsor.href ? (
+                        <a href={sponsor.href} target="_blank" rel="noopener noreferrer" aria-label={sponsor.name} className="h-full flex items-center">
+                          <PartnerLogo logo={sponsor.logo} name={sponsor.name} className="h-full w-auto max-w-[180px] object-contain opacity-60 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                      ) : (
+                        <PartnerLogo logo={sponsor.logo} name={sponsor.name} className="h-full w-auto max-w-[180px] object-contain opacity-60 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </motion.div>
+                  </motion.div>
                 </div>
-              </motion.div>
+              ))}
 
-              <motion.div
-                className="w-px h-10 bg-white/10 hidden md:block"
-                initial={{ scaleY: 0 }}
-                whileInView={{ scaleY: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-              />
-
-              {/* Presented By */}
-              <motion.div
-                variants={fadeUp}
-                className="flex flex-col items-center gap-2 group"
-              >
-                <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading font-medium group-hover:text-white transition-colors">Presented by</span>
-                <div className="h-9 flex items-center select-none">
-                  <motion.img
-                    src="/assets/logo-bihi.svg"
-                    alt="BIHI Entertainment"
-                    className="h-full w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-                    whileHover={{ scale: 1.1 }}
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="w-px h-10 bg-white/10 hidden md:block"
-                initial={{ scaleY: 0 }}
-                whileInView={{ scaleY: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              />
-
-              {/* Official Partners */}
-              <motion.div variants={fadeUp} className="flex flex-col items-center gap-2">
-                <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading">Official Partners</span>
-                <div className="flex items-center gap-4 md:gap-6">
-                  {(footer.partners.length ? footer.partners : [{ id: 'pending', label: 'Partners to be announced', href: null }]).map((p) => (
-                    <motion.span
-                      key={p.id}
-                      className="font-heading text-sm tracking-wider text-white/60 hover:text-white transition-colors uppercase cursor-default"
-                      whileHover={{ scale: 1.1, color: '#ff173d' }}
-                      transition={{ type: 'spring', stiffness: 400 }}
-                    >
-                      {p.label}
-                    </motion.span>
-                  ))}
-                </div>
-              </motion.div>
+              {/* Partners without a logo yet are still listed by name. */}
+              {(textPartners.length > 0 || sponsors.length === 0) && (
+                <motion.div variants={fadeUp} className="flex flex-col items-center gap-2">
+                  <span className="text-[10px] tracking-[0.35em] uppercase text-rave-muted font-heading">Official Partners</span>
+                  <div className="flex items-center gap-4 md:gap-6">
+                    {(textPartners.length ? textPartners : [{ id: 'pending', label: 'Partners to be announced', href: null }]).map((p) => (
+                      <motion.span
+                        key={p.id}
+                        className="font-heading text-sm tracking-wider text-white/60 hover:text-white transition-colors uppercase cursor-default"
+                        whileHover={{ scale: 1.1, color: '#ff173d' }}
+                        transition={{ type: 'spring', stiffness: 400 }}
+                      >
+                        {p.label}
+                      </motion.span>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         </Container>

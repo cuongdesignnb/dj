@@ -2,7 +2,6 @@
 
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Image from 'next/image';
 import { Crown, Wine, Users } from 'lucide-react';
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
@@ -10,9 +9,11 @@ import NeonButton from './NeonButton';
 import type { HomeBoothPackage } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import { SiteLogo } from '@/components/shared/SiteBranding';
+import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
 
 export default function VipTableSection({ boothPackage }: { boothPackage: HomeBoothPackage | null }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const leadSponsor = useSponsors()[0] ?? null;
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start'],
@@ -94,7 +95,7 @@ export default function VipTableSection({ boothPackage }: { boothPackage: HomeBo
               <div className="absolute inset-0 bg-gradient-to-r from-rave-black/95 via-rave-black/80 to-rave-black/60" />
 
               <div className="relative p-6 sm:p-8 lg:p-10 flex flex-col h-full min-h-[400px] justify-center">
-                {/* MCQ & Connection logos */}
+                {/* Lead sponsor (first in Admin › Partners) & site logo */}
                 <motion.div
                   className="flex items-center gap-4 mb-6 select-none"
                   initial={{ opacity: 0, y: -20 }}
@@ -102,8 +103,12 @@ export default function VipTableSection({ boothPackage }: { boothPackage: HomeBo
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
                 >
-                  <Image src="/assets/logo-mcq.svg" alt="MCQ" width={116} height={32} className="h-8 w-auto object-contain" />
-                  <div className="w-px h-6 bg-white/15" />
+                  {leadSponsor && (
+                    <>
+                      <PartnerLogo logo={leadSponsor.logo} name={leadSponsor.name} className="h-8 w-auto max-w-[140px] object-contain" />
+                      <div className="w-px h-6 bg-white/15" />
+                    </>
+                  )}
                   <SiteLogo className="h-[36px] w-auto max-w-[150px] object-contain" />
                 </motion.div>
 

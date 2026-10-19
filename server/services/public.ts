@@ -261,8 +261,13 @@ export async function getPublicLegal(type: string, locale: Locale) {
 }
 
 export async function getPublicPartners(locale: Locale) {
-  const rows = await db.partner.findMany({ where: { status: 'PUBLISHED' }, orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }], include: { translations: true, logoMedia: true, imageMedia: true } });
-  return rows.map((row) => ({ id: row.id, slug: row.slug, type: row.type, websiteUrl: row.websiteUrl, featured: row.featured, logo: mediaDto(row.logoMedia), image: mediaDto(row.imageMedia), ...translated(row.translations, locale) }));
+  const rows = await db.partner.findMany({ where: { status: 'PUBLISHED' }, orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }], include: { translations: true, logoMedia: true, imageMedia: true } });
+  const live = (media: { publicUrl: string; altText: string; width: number | null; height: number | null; deletedAt: Date | null } | null) => (media && !media.deletedAt ? mediaDto(media) : null);
+  return rows.map((row) => {
+    const translation = translated(row.translations, locale);
+    // Translation fields only: spreading the row would replace the partner id with the translation id.
+    return { id: row.id, slug: row.slug, type: row.type, websiteUrl: row.websiteUrl, featured: row.featured, logo: live(row.logoMedia), image: live(row.imageMedia), name: translation?.name ?? row.slug, tagline: translation?.tagline ?? null, description: translation?.description ?? null };
+  });
 }
 
 export async function getPublicBootstrap(locale: Locale) {
