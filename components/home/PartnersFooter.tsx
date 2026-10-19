@@ -10,6 +10,7 @@ import type { HomeFooterData, HomePartner } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import RichText from '@/components/shared/RichText';
 import { useToast } from '@/components/shared/toast/ToastProvider';
+import { SiteLogo } from '@/components/shared/SiteBranding';
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -210,16 +211,9 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className="w-10 h-10 rounded-full border-2 border-rave-red/50 flex items-center justify-center animate-border-glow"
-                  >
-                    <span className="text-rave-red font-heading font-bold text-lg">C</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-heading text-base font-bold tracking-wider text-white leading-tight">CONNECTION</span>
-                    <span className="text-[9px] tracking-[0.3em] text-rave-muted uppercase">{global.tagline}</span>
-                  </div>
+                <div className="mb-4 flex flex-col items-start gap-2">
+                  <SiteLogo className="h-10 w-auto max-w-[180px] object-contain" />
+                  <span className="text-[9px] uppercase tracking-[0.3em] text-rave-muted">{global.tagline}</span>
                 </div>
                 <div className="text-sm text-rave-muted leading-relaxed mb-5">
                   <RichText text={global.footerDescription} />

@@ -9,6 +9,7 @@ import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
 import type { HomeBoothPackage } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
+import { SiteLogo } from '@/components/shared/SiteBranding';
 
 export default function VipTableSection({ boothPackage }: { boothPackage: HomeBoothPackage | null }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -103,7 +104,7 @@ export default function VipTableSection({ boothPackage }: { boothPackage: HomeBo
                 >
                   <Image src="/assets/logo-mcq.svg" alt="MCQ" width={116} height={32} className="h-8 w-auto object-contain" />
                   <div className="w-px h-6 bg-white/15" />
-                  <Image src="/assets/logo-connection.svg" alt="Connection" width={150} height={36} className="h-[36px] w-auto object-contain" />
+                  <SiteLogo className="h-[36px] w-auto max-w-[150px] object-contain" />
                 </motion.div>
 
                 <motion.span

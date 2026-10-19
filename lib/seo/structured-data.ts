@@ -8,13 +8,13 @@ export function jsonLd(value: JsonLd | null) {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
 
-export function organizationSchema() {
+export function organizationSchema(logo = '/assets/logo-connection.svg') {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Connection Rave',
     url: canonicalUrl('/'),
-    logo: canonicalUrl('/assets/logo-connection.svg'),
+    logo: /^https:\/\//i.test(logo) ? logo : canonicalUrl(logo),
   } satisfies JsonLd;
 }
 

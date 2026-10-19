@@ -8,6 +8,7 @@ import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { PartnersFooterContact } from '@/lib/partners/types';
 import { useEffect, useState } from 'react';
 import RichText from '@/components/shared/RichText';
+import { SiteLogo } from '@/components/shared/SiteBranding';
 
 interface Props {
   contact: PartnersFooterContact;
@@ -82,18 +83,9 @@ export default function PartnersFooter({
           className="py-12 md:py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8"
         >
           <motion.div variants={fadeUp}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full border-2 border-rave-red/50 grid place-items-center animate-border-glow">
-                <span className="font-heading text-rave-red font-bold text-lg leading-none">C</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-heading font-bold tracking-wider text-white leading-tight">
-                  CONNECTION
-                </span>
-                <span className="text-[9px] tracking-[0.3em] text-rave-muted uppercase">
-                  {global.tagline}
-                </span>
-              </div>
+            <div className="mb-4 flex flex-col items-start gap-2">
+              <SiteLogo className="h-10 w-auto max-w-[180px] object-contain" />
+              <span className="text-[9px] uppercase tracking-[0.3em] text-rave-muted">{global.tagline}</span>
             </div>
             <div className="text-sm text-rave-muted leading-relaxed mb-5">
               <RichText text={global.footerDescription} />

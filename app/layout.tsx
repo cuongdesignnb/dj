@@ -3,6 +3,8 @@ import { Inter, Oswald } from "next/font/google";
 import { Suspense } from 'react';
 import NavigationFeedback from '@/components/shared/NavigationFeedback';
 import { ToastProvider } from '@/components/shared/toast/ToastProvider';
+import { SiteBrandingProvider } from '@/components/shared/SiteBranding';
+import { getSiteBranding } from '@/server/services/branding';
 import "./globals.css";
 import MouseGlow from "@/components/ui/MouseGlow";
 import { canonicalUrl } from '@/lib/seo/canonical';
@@ -24,7 +26,7 @@ const oswald = Oswald({
   display: "swap",
 });
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: { default: DEFAULT_TITLE, template: '%s | Connection Rave' },
   description: DEFAULT_DESCRIPTION,
@@ -43,11 +45,18 @@ export const metadata: Metadata = {
   robots: robotsFor(),
 };
 
-export default function RootLayout({
+/** Favicon from Admin › Settings › Site, falling back to the bundled icon. */
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getSiteBranding();
+  return { ...baseMetadata, icons: { icon: branding.favicon ?? '/favicon.ico' } };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const branding = await getSiteBranding();
   return (
     <html
       lang="en"
@@ -56,11 +65,13 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-rave-black text-white antialiased font-body">
         <MouseGlow />
         <Suspense fallback={null}><NavigationFeedback /></Suspense>
-        {[organizationSchema(), websiteSchema()].map((schema, index) => (
+        {[organizationSchema(branding.logo.src), websiteSchema()].map((schema, index) => (
           <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schema) ?? '' }} />
         ))}
         {/* Site-wide toasts; the admin shell nests its own themed provider. */}
-        <ToastProvider variant="site">{children}</ToastProvider>
+        <SiteBrandingProvider value={branding}>
+          <ToastProvider variant="site">{children}</ToastProvider>
+        </SiteBrandingProvider>
       </body>
     </html>
   );

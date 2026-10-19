@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { SiteLogo } from '@/components/shared/SiteBranding';
 
 type PublicMenuItem = { id: string; labelEn: string; labelVi?: string | null; href: string | null; target?: string; children?: PublicMenuItem[] };
 
@@ -114,14 +114,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                 className="absolute inset-0 bg-rave-red/20 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{ margin: '-10px' }}
               />
-              <Image
-                src="/assets/logo-connection.svg"
-                alt="Connection Sound Meets Soul"
-                width={220}
-                height={58}
-                className="h-[52px] sm:h-[58px] w-auto object-contain relative z-10"
-                priority
-              />
+              <SiteLogo priority className="h-[52px] sm:h-[58px] w-auto max-w-[220px] object-contain relative z-10" />
             </motion.div>
           </Link>
 

@@ -134,3 +134,18 @@ in, so existing suites are unaffected.
 Verification for sections 4–6 on QA: typecheck, lint 0 errors (118 existing
 warnings), 157 unit tests, `cms:audit` 0, Docker build, and the full E2E suite
 30/30 including `ticket-tiers.spec.ts` and `toast-and-tour.spec.ts`.
+
+## 7. Logo and favicon from Admin › Settings › Site
+
+The logo and favicon saved in Settings › Site were stored (`site.logo`,
+`site.favicon`) but never read: the header, home VIP section and SEO data used
+the bundled `/assets/logo-connection.svg`, the six public footers showed a
+"C · CONNECTION" text mark, and the favicon was the `app/favicon.ico` file
+convention. `server/services/branding.ts` now reads them (cached on the
+`public:site` tag that saving Settings already revalidates, with a safe
+fallback when the database is unreachable) and the root layout provides them
+to `SiteLogo` in the header, VIP section and all footers, to the favicon and to
+the Organization JSON-LD. Only site paths and https URLs are accepted.
+`app/favicon.ico` moved to `public/favicon.ico` so the chosen favicon is not
+overridden; `/favicon.ico` still serves the default. E2E: `site-branding.spec.ts`
+(7 public pages; restore reverts immediately). Full suite 32/32.

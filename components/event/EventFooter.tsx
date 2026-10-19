@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Container from '@/components/ui/Container';
 import { cardStagger, cardItem, lineReveal } from '@/lib/events/motion';
 import type { EventPageData, FrontendRoutes } from '@/lib/events/types';
+import { SiteLogo } from '@/components/shared/SiteBranding';
 
 interface Props {
   event: EventPageData;
@@ -93,18 +94,9 @@ export default function EventFooter({ event, routes }: Props) {
         >
           {/* Brand */}
           <motion.div variants={cardItem} className="md:col-span-4">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="w-10 h-10 rounded-full border-2 border-rave-red/50 flex items-center justify-center animate-border-glow">
-                <span className="text-rave-red font-heading font-bold text-lg">C</span>
-              </span>
-              <div className="flex flex-col">
-                <span className="font-heading text-base font-bold tracking-wider text-white leading-tight">
-                  {site.brandName}
-                </span>
-                <span className="text-[9px] tracking-[0.3em] text-rave-muted uppercase">
-                  {site.tagline}
-                </span>
-              </div>
+            <div className="mb-4 flex flex-col items-start gap-2">
+              <SiteLogo className="h-10 w-auto max-w-[180px] object-contain" alt={site.brandName} />
+              <span className="text-[9px] uppercase tracking-[0.3em] text-rave-muted">{site.tagline}</span>
             </div>
             <p className="text-sm text-rave-muted leading-relaxed mb-5 max-w-sm">
               Uniting music, energy and people for unforgettable experiences.

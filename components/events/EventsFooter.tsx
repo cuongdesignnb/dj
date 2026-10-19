@@ -9,6 +9,7 @@ import Container from '@/components/ui/Container';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import type { EventsFooterData } from '@/lib/events/listing-types';
 import RichText from '@/components/shared/RichText';
+import { SiteLogo } from '@/components/shared/SiteBranding';
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -91,18 +92,9 @@ export default function EventsFooter({ footer }: { footer: EventsFooterData }) {
           className={`grid grid-cols-1 gap-10 py-12 sm:grid-cols-2 lg:gap-8 md:py-16 ${partners.length > 0 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}
         >
           <motion.div variants={fadeUp}>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full border-2 border-rave-red/50 animate-border-glow">
-                <span className="font-heading text-lg font-bold leading-none text-rave-red">C</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-heading font-bold leading-tight tracking-wider text-white">
-                  CONNECTION
-                </span>
-                <span className="text-[9px] uppercase tracking-[0.3em] text-rave-muted">
-                  {global.tagline}
-                </span>
-              </div>
+            <div className="mb-4 flex flex-col items-start gap-2">
+              <SiteLogo className="h-10 w-auto max-w-[180px] object-contain" />
+              <span className="text-[9px] uppercase tracking-[0.3em] text-rave-muted">{global.tagline}</span>
             </div>
             <div className="mb-5 text-sm leading-relaxed text-rave-muted">
               <RichText text={global.footerDescription} />
