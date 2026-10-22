@@ -3,6 +3,7 @@ import PageHero from '@/components/shared/PageHero';
 import Container from '@/components/ui/Container';
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import type { VipPageState } from '@/lib/vip/types';
+import AdminFixLink from '@/components/shared/AdminFixLink';
 
 export const vipStateMessages = {
   'vip-disabled': 'VIP table information is not available yet.',
@@ -16,11 +17,24 @@ export const vipStateMessages = {
   'event-not-found': 'This event could not be found.',
 } as const;
 
+/** Admin screen that resolves each closed state for this event; null for outages. */
+const VIP_FIX: Partial<Record<VipPageState['kind'], [string, string]>> = {
+  'vip-disabled': ['vip', 'Turn on VIP in Admin'],
+  'booking-disabled': ['vip', 'Open VIP settings in Admin'],
+  'not-configured': ['vip', 'See what is missing in Admin'],
+  'no-active-package': ['vip/packages', 'Add a VIP package in Admin'],
+  'no-booths': ['vip/booths', 'Add booths in Admin'],
+  'no-availability': ['vip/booths', 'Edit booths in Admin'],
+};
+
 export function VipAvailabilityNotice({ state }: { state: VipPageState }) {
   if (state.kind === 'ready') return null;
+  const event = 'event' in state ? state.event : null;
+  const fix = VIP_FIX[state.kind];
   return <div role="status" data-vip-state={state.kind} className="mx-auto max-w-[1280px] rounded-2xl border border-white/10 bg-rave-panel/60 px-6 py-8">
     <h2 className="font-heading text-2xl uppercase text-white">{vipStateMessages[state.kind]}</h2>
     {state.kind === 'no-booths' && state.canRequest && <p className="mt-3 text-rave-muted">You can send a request without choosing a booth. The team will review it; no table is reserved.</p>}
+    {event && fix && <AdminFixLink href={`/admin/events/${event.id}/${fix[0]}`} label={fix[1]} className="justify-start" />}
   </div>;
 }
 

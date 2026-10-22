@@ -174,6 +174,7 @@ export default function ArtistGrid({
           >
             <ListingEmptyState
               state={emptyState}
+              adminHref="/admin/artists"
               fallbackTitle="The lineup is being prepared."
               fallbackDescription="Artist announcements will appear here."
             />

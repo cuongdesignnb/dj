@@ -180,6 +180,8 @@ test('Admin readiness shows the public page and flags unpublished tickets conten
   expect(vip.data.facts['Public pages']).toBe('/tables?event=' + slug + ' · /book-now?event=' + slug);
   const page = await adminPage(browser);
   await page.goto('/admin/events/' + setup.eventId + '/tickets');
-  await expect(page.getByText('/tickets?event=' + slug, { exact: true })).toBeVisible();
+  const readinessPanel = page.getByRole('region', { name: 'Ticket readiness', exact: true });
+  await expect(readinessPanel.getByRole('link', { name: 'View public page' })).toHaveAttribute('href', '/tickets?event=' + slug);
+  await expect(readinessPanel.getByText('/tickets?event=' + slug, { exact: true })).toBeAttached();
   await page.context().close();
 });

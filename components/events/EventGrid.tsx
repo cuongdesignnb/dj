@@ -73,6 +73,7 @@ export default function EventGrid({
           >
             <ListingEmptyState
               state={emptyState}
+              adminHref="/admin/events"
               fallbackTitle="New events are being prepared."
               fallbackDescription="Stay connected for the next announcement."
             />

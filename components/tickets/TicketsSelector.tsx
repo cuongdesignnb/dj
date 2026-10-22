@@ -16,6 +16,7 @@ import { clampQuantity, initialSelection } from '@/lib/tickets/pricing';
 import TicketOptionCard from './TicketOptionCard';
 import TicketSelectionPanel from './TicketSelectionPanel';
 import RichText from '@/components/shared/RichText';
+import AdminFixLink from '@/components/shared/AdminFixLink';
 
 /**
  * The interactive half of /tickets.
@@ -73,6 +74,7 @@ export default function TicketsSelector({
             <div className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
               <RichText text={content.emptyDescription || 'Ticket release details will appear here when confirmed by the organiser.'} />
             </div>
+            <AdminFixLink href={`/admin/events/${event.id}/tickets/tiers`} label="Add ticket tiers in Admin" />
           </div>
         </Container>
       </section>

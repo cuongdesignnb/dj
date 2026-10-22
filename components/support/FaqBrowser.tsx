@@ -11,6 +11,7 @@ import { faqStagger } from '@/lib/animations';
 import { searchFaq } from '@/lib/support/faq-search';
 import type { FaqCategory, FaqPageData } from '@/lib/support/faq-types';
 import FaqAccordion from './FaqAccordion';
+import AdminFixLink from '@/components/shared/AdminFixLink';
 import FaqCategories from './FaqCategories';
 import FaqSearch from './FaqSearch';
 
@@ -111,6 +112,7 @@ export default function FaqBrowser({
                 </Link>{' '}
                 for assistance.
               </p>
+              <AdminFixLink href="/admin/content/faq" />
             </div>
           ) : (
             <motion.div

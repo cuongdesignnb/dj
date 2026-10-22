@@ -186,3 +186,30 @@ dry run 16 changes rolled back, run 16 changes, repeat 0. `sponsor-logos.spec.ts
 unpublish in Admin removes VINA9 everywhere and Publish restores it). Full suite
 37/37 (run the sponsor spec separately or clear the QA login keys: it adds a
 sixth qa-admin login).
+
+## 9. Event setup status in Admin and "Fix this in Admin" links
+
+Owners could not tell why `/tickets` said "Ticket information is being
+prepared." or `/tables` said "VIP package details are being prepared.": the
+Ticketing and VIP / Tables screens only listed events with plain buttons.
+
+`lib/admin/events/setup-status.ts` turns the facts the readiness endpoint
+already gathers into an English checklist, evaluated in the same order the
+public pages decide what to show (event published → page content published →
+enabled tiers; VIP: event → VIP enabled → Tables/Booking content → an enabled
+package and a usable default → booths/booking as warnings). Each failing step
+says what visitors currently see and links to the exact Admin screen.
+`GET /api/v1/admin/events/:id/{tickets|vip}/readiness` now also returns
+`status` (existing `facts`/`warnings` unchanged).
+
+- Ticketing / VIP / Tables landing: every event card shows "Live on site" or
+  "Not showing yet — <first missing step>" with the fix button.
+- Ticket Settings / VIP Settings: the readiness panel shows the same checklist;
+  the raw facts and warnings moved under "Technical details".
+- Public empty states (tickets, VIP tables/book now, lineup, events, past
+  events, gallery, news, shop, FAQ) show "Fix this in Admin" style links only
+  to browsers signed in to Admin. Visitors without the admin CSRF cookie never
+  call `/api/v1/auth/session`.
+
+E2E: `admin-setup-status.spec.ts` (own `qa-setup-status` event via
+`tests/fixtures/setup-status-qa.mjs`, signed in as qa-editor).

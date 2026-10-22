@@ -3,17 +3,21 @@
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import type { PublicListingEmptyState } from '@/lib/cms/public-page';
 import RichText from '@/components/shared/RichText';
+import AdminFixLink from '@/components/shared/AdminFixLink';
 
 export default function ListingEmptyState({
   state,
   fallbackTitle,
   fallbackDescription,
   className = '',
+  adminHref,
 }: {
   state?: PublicListingEmptyState;
   fallbackTitle: string;
   fallbackDescription: string;
   className?: string;
+  /** Admin screen that fills this list; offered only to signed-in admins. */
+  adminHref?: string;
 }) {
   const title = state?.title ?? fallbackTitle;
   const description = state?.description ?? fallbackDescription;
@@ -32,6 +36,7 @@ export default function ListingEmptyState({
           {state.cta.label}
         </Link>
       )}
+      {adminHref && <AdminFixLink href={adminHref} />}
     </div>
   );
 }

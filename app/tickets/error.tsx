@@ -2,6 +2,7 @@
 
 import { NavigationLink as Link } from '@/components/shared/NavigationFeedback';
 import { useEffect } from 'react';
+import AdminFixLink from '@/components/shared/AdminFixLink';
 
 /**
  * Doubles as the route's error boundary and as the error state the page
@@ -51,6 +52,7 @@ export default function TicketsError({
             Back Home
           </Link>
         </div>
+        {!error && <AdminFixLink href="/admin/ticketing" label="Open Ticketing in Admin" />}
       </div>
     </main>
   );

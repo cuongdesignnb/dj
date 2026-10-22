@@ -316,6 +316,7 @@ export default function ShopCatalog({
                     : 'Nothing in this category yet.'
                 }
                 fallbackDescription="New products will appear here."
+                adminHref="/admin/products"
               />
             </div>
           )}

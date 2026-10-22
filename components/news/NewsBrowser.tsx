@@ -294,7 +294,8 @@ export default function NewsBrowser({
             >
               <ListingEmptyState
                 state={emptyState}
-                fallbackTitle="New stories are being prepared."
+                adminHref="/admin/news"
+              fallbackTitle="New stories are being prepared."
                 fallbackDescription="Updates will appear here."
               />
             </div>

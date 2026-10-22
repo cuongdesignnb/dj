@@ -72,6 +72,7 @@ export default function PastEventGrid({
           >
             <ListingEmptyState
               state={emptyState}
+              adminHref="/admin/events"
               fallbackTitle="Our event archive is being prepared."
               fallbackDescription="Past event recaps and galleries will appear here."
             />

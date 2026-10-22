@@ -9,6 +9,7 @@ import { databaseUuid } from '@/server/validators/identifiers';
 import { isPageContentKey, pageContentSchema } from '@/lib/cms/page-content';
 import { eventContentTemplate, parseEventContentKey } from '@/lib/cms/event-content-template';
 import { eventScopedHref } from '@/lib/events/event-scope';
+import { ticketSetupStatus, vipSetupStatus } from '@/lib/admin/events/setup-status';
 import { isSafeCustomUrl, isValidAnchor, STATIC_ROUTES, type InternalRoute } from '@/lib/navigation/route-registry';
 
 const LOCALES = ['en', 'vi'] as const;
@@ -417,7 +418,8 @@ export async function getEventReadiness(eventId: string, mode: 'vip' | 'tickets'
     const activeTiers = await db.ticketTier.count({ where: { eventId, enabled: true } });
     if (event.ticketingEnabled && !activeTiers) warnings.push('Ticketing is enabled but no active ticket tiers exist. Configure tiers before announcing a release.');
     if (contentStatus(contentKeys[0]) !== 'PUBLISHED') warnings.push('Tickets content is not published. The public tickets page stays unavailable until it is published in the content editor.');
-    return { facts: { 'Ticketing enabled': event.ticketingEnabled, 'Sale status': event.ticketSaleStatus, 'Active tiers': activeTiers, 'Square enabled': event.ticketSquareEnabled, 'External provider configured': event.ticketExternalProviderEnabled && Boolean(event.ticketProviderUrl), 'Tickets content': contentStatus(contentKeys[0]), 'Public page': eventScopedHref('/tickets', event.slug) }, warnings };
+    const status = ticketSetupStatus({ eventId, eventPublished: event.status === 'PUBLISHED' && !event.deletedAt, publicHref: eventScopedHref('/tickets', event.slug), contentStatus: contentStatus(contentKeys[0]), activeTiers });
+    return { status, facts: { 'Ticketing enabled': event.ticketingEnabled, 'Sale status': event.ticketSaleStatus, 'Active tiers': activeTiers, 'Square enabled': event.ticketSquareEnabled, 'External provider configured': event.ticketExternalProviderEnabled && Boolean(event.ticketProviderUrl), 'Tickets content': contentStatus(contentKeys[0]), 'Public page': eventScopedHref('/tickets', event.slug) }, warnings };
   }
   const [activePackages, activeBooths, bottleOptions, defaultPackage] = await Promise.all([
     db.vipPackage.count({ where: { eventId, enabled: true } }),
@@ -431,7 +433,13 @@ export async function getEventReadiness(eventId: string, mode: 'vip' | 'tickets'
   if (event.vipDefaultPackageId && !defaultPackage) warnings.push('The selected default package is no longer available for this event. Choose an existing package.');
   if (defaultPackage && !defaultPackage.enabled) warnings.push('The selected default package is disabled. Public VIP stays unavailable; it will not silently switch to another package.');
   for (const key of contentKeys) if (contentStatus(key) !== 'PUBLISHED') warnings.push(`${key.startsWith('tables:') ? 'Tables' : 'Booking'} content is not published. Review it in the content editor.`);
-  return { facts: { 'VIP enabled': event.vipEnabled, 'Booking enabled': event.vipBookingEnabled, 'Availability mode': event.vipAvailabilityMode, 'Active packages': activePackages, 'Active booths': activeBooths, 'Bottle options': bottleOptions, 'Default package': defaultPackage?.name ?? (event.vipDefaultPackageId ? 'Unavailable' : 'None'), 'Default package enabled': defaultPackage?.enabled ?? false, 'Default package assigned bottles': defaultPackage?._count.packageBottles ?? 0, 'Tables content': contentStatus(contentKeys[0]), 'Booking content': contentStatus(contentKeys[1]), 'Public pages': `${eventScopedHref('/tables', event.slug)} · ${eventScopedHref('/book-now', event.slug)}` }, warnings };
+  const status = vipSetupStatus({
+    eventId, eventPublished: event.status === 'PUBLISHED' && !event.deletedAt, publicHref: eventScopedHref('/tables', event.slug),
+    vipEnabled: event.vipEnabled, bookingEnabled: event.vipBookingEnabled,
+    tablesContentStatus: contentStatus(contentKeys[0]), bookingContentStatus: contentStatus(contentKeys[1]),
+    activePackages, defaultPackage: !event.vipDefaultPackageId ? 'none' : !defaultPackage ? 'missing' : defaultPackage.enabled ? 'ok' : 'disabled', activeBooths,
+  });
+  return { status, facts: { 'VIP enabled': event.vipEnabled, 'Booking enabled': event.vipBookingEnabled, 'Availability mode': event.vipAvailabilityMode, 'Active packages': activePackages, 'Active booths': activeBooths, 'Bottle options': bottleOptions, 'Default package': defaultPackage?.name ?? (event.vipDefaultPackageId ? 'Unavailable' : 'None'), 'Default package enabled': defaultPackage?.enabled ?? false, 'Default package assigned bottles': defaultPackage?._count.packageBottles ?? 0, 'Tables content': contentStatus(contentKeys[0]), 'Booking content': contentStatus(contentKeys[1]), 'Public pages': `${eventScopedHref('/tables', event.slug)} · ${eventScopedHref('/book-now', event.slug)}` }, warnings };
 }
 
 export async function updateVipSettings(eventId: string, input: unknown) {

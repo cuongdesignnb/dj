@@ -65,6 +65,7 @@ export default function FeaturedEvent({
           <div className="mt-8 rounded-[18px] border border-white/[0.08] bg-rave-panel/60 px-6 py-12 text-center">
             <ListingEmptyState
               state={emptyState}
+              adminHref="/admin/events"
               fallbackTitle="No featured event right now."
               fallbackDescription="Stay connected for the next announcement."
             />

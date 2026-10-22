@@ -212,6 +212,7 @@ export default function GalleryMosaic({
           >
             <ListingEmptyState
               state={emptyState}
+              adminHref="/admin/gallery"
               fallbackTitle="The gallery is being prepared."
               fallbackDescription="Visual collections will appear here."
             />
