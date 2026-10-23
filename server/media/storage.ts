@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -99,22 +99,59 @@ export async function storeMedia(file: File | null, altText: string, uploadedBy:
   });
 }
 
-export async function mediaResponse(id: string, presentation?: string | null) {
+/** Parses a single "bytes=a-b" range; null when absent or not satisfiable as one range. */
+export function parseByteRange(header: string | null | undefined, size: number): { start: number; end: number } | 'invalid' | null {
+  if (!header) return null;
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header.trim());
+  if (!match || (!match[1] && !match[2])) return 'invalid';
+  let start: number;
+  let end: number;
+  if (!match[1]) {
+    const suffix = Number(match[2]);
+    if (suffix === 0) return 'invalid';
+    start = Math.max(size - suffix, 0);
+    end = size - 1;
+  } else {
+    start = Number(match[1]);
+    end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
+  }
+  if (start > end || start >= size) return 'invalid';
+  return { start, end };
+}
+
+export async function mediaResponse(id: string, presentation?: string | null, range?: string | null) {
   const asset = await db.mediaAsset.findUnique({ where: { id } });
   if (!asset || asset.deletedAt) throw notFound('Media asset not found.');
   if (asset.storageDriver === 'S3') return Response.redirect(asset.publicUrl, 302);
 
   const { candidate } = localPath(asset.storageKey);
+  const headers = {
+    'Content-Type': asset.mimeType,
+    'Cache-Control': 'public, max-age=31536000, immutable',
+    'Content-Disposition': `inline; filename="${safeName(asset.storageKey.split('/').pop() ?? 'media')}"`,
+    'Accept-Ranges': 'bytes',
+  };
   try {
-    const bytes = await readFile(candidate);
-    const responseBytes = presentation === 'hero' && asset.mimeType === 'image/svg+xml' ? optimizeHeroSvg(bytes) : bytes;
-    return new Response(responseBytes, {
-      headers: {
-        'Content-Type': asset.mimeType,
-        'Content-Length': String(responseBytes.byteLength),
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Content-Disposition': `inline; filename="${safeName(asset.storageKey.split('/').pop() ?? 'media')}"`,
-      },
+    if (presentation === 'hero' && asset.mimeType === 'image/svg+xml') {
+      const responseBytes = optimizeHeroSvg(await readFile(candidate));
+      return new Response(responseBytes, { headers: { ...headers, 'Content-Length': String(responseBytes.byteLength) } });
+    }
+    const { size } = await stat(candidate);
+    // Video players (Safari/iOS in particular) only play files served in byte ranges.
+    const requested = parseByteRange(range, size);
+    if (requested === 'invalid') return new Response(null, { status: 416, headers: { ...headers, 'Content-Range': `bytes */${size}` } });
+    const { start, end } = requested ?? { start: 0, end: size - 1 };
+    const length = Math.max(end - start + 1, 0);
+    const bytes = new Uint8Array(length);
+    const file = await open(candidate, 'r');
+    try {
+      await file.read(bytes, 0, length, start);
+    } finally {
+      await file.close();
+    }
+    return new Response(bytes, {
+      status: requested ? 206 : 200,
+      headers: { ...headers, 'Content-Length': String(length), ...(requested ? { 'Content-Range': `bytes ${start}-${end}/${size}` } : {}) },
     });
   } catch {
     throw notFound('Media file not found.');

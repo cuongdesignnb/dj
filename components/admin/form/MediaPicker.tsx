@@ -8,7 +8,14 @@ import { useToast } from '../ui/Toast';
 
 const pickerInputClass = 'w-full min-h-[42px] rounded-[8px] border border-admin-border bg-admin-deep px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-rave-red focus:outline-none focus:ring-1 focus:ring-rave-red/60';
 
-export type MediaPickerFilter = 'image' | 'svg' | 'all';
+export type MediaPickerFilter = 'image' | 'svg' | 'video' | 'all';
+
+const VIDEO_NAME = /\.(mp4|m4v|webm|mov)(\?|$)/i;
+
+/** Video files preview as a muted first frame instead of an image. */
+export function isVideoChoice(choice: { src: string; label?: string; mimeType?: string }) {
+  return (choice.mimeType ?? '').toLowerCase().startsWith('video/') || VIDEO_NAME.test(choice.src) || VIDEO_NAME.test(choice.label ?? '');
+}
 
 export interface MediaChoice {
   id?: string | null;
@@ -46,6 +53,7 @@ function matchesFilter(choice: MediaChoice, filter: MediaPickerFilter) {
   const name = `${choice.label} ${choice.src}`.toLowerCase();
   const mime = choice.mimeType?.toLowerCase() ?? '';
   if (filter === 'svg') return mime === 'image/svg+xml' || name.includes('.svg');
+  if (filter === 'video') return isVideoChoice(choice);
   if (filter === 'image') return mime ? mime.startsWith('image/') : choice.kind !== 'document' && !mime.startsWith('video/') && !name.endsWith('.pdf');
   return true;
 }
@@ -143,11 +151,15 @@ export function MediaPicker({
     .filter((choice) => matchesFilter(choice, filter))
     .filter((choice) => `${choice.label} ${choice.src}`.toLowerCase().includes(query.trim().toLowerCase()));
 
-  const accept = filter === 'svg' ? '.svg,image/svg+xml' : filter === 'image' ? 'image/*' : 'image/*,video/*,application/pdf';
+  const accept = filter === 'svg' ? '.svg,image/svg+xml' : filter === 'image' ? 'image/*' : filter === 'video' ? 'video/mp4,video/webm,video/quicktime' : 'image/*,video/*,application/pdf';
   const handleUpload = async (file: File | undefined) => {
     if (!file) return;
     if (filter === 'image' && !file.type.startsWith('image/')) {
       setError('This field accepts image files only.');
+      return;
+    }
+    if (filter === 'video' && !file.type.startsWith('video/')) {
+      setError('This field accepts video files only (MP4 recommended).');
       return;
     }
     if (filter === 'svg' && !matchesFilter({ src: file.name, label: file.name, alt: '', mimeType: file.type }, 'svg')) {
@@ -196,6 +208,7 @@ export function MediaPicker({
           <input value={uploadAlt} onChange={(event) => setUploadAlt(event.target.value)} placeholder="Describe the image" className={pickerInputClass} />
         </label>
         {filter === 'svg' && <p className="text-xs text-admin-muted">SVG animation files are stored in the same library and can be reused anywhere.</p>}
+        {filter === 'video' && <p className="text-xs text-admin-muted">MP4 (H.264), up to 20 MB. A short 10–20 second loop without sound works best.</p>}
         {error && <p role="alert" className="rounded-[8px] border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{error}</p>}
         {loading ? (
           <p className="flex items-center justify-center gap-2 py-10 text-sm text-admin-muted"><LoaderCircle aria-hidden className="h-4 w-4 animate-spin" /> Loading media library…</p>
@@ -210,7 +223,9 @@ export function MediaPicker({
               <li key={choice.id ?? choice.src}>
                 <button type="button" onClick={() => onPick(choice)} className="group block w-full overflow-hidden rounded-[10px] border border-admin-border bg-admin-deep text-left hover:border-rave-red/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red">
                   <span className={`relative block aspect-[4/3] ${choice.kind === 'logo' || choice.mimeType === 'image/svg+xml' ? 'bg-[#15161c]' : ''}`}>
-                    <Image src={choice.src} alt="" fill unoptimized sizes="200px" className={choice.kind === 'logo' || choice.mimeType === 'image/svg+xml' ? 'object-contain p-3' : 'object-cover'} />
+                    {isVideoChoice(choice)
+                      ? <video src={choice.src} muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover" />
+                      : <Image src={choice.src} alt="" fill unoptimized sizes="200px" className={choice.kind === 'logo' || choice.mimeType === 'image/svg+xml' ? 'object-contain p-3' : 'object-cover'} />}
                   </span>
                   <span className="block truncate px-2 py-1.5 text-xs text-white/85">{choice.label}</span>
                 </button>

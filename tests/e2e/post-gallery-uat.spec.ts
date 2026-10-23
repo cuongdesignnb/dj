@@ -51,7 +51,8 @@ test.beforeAll(async ({ baseURL }) => {
   for (const locationKey of ['HEADER_PRIMARY', 'MOBILE_PRIMARY']) expect((await admin.patch('/api/v1/admin/navigation/locations', { data: { locationKey, menuId } })).status()).toBe(200);
   linkedEventId = fixture<{ id: string }>('linked-event', { status: 'PUBLISHED' }).id;
   const assets: Asset[] = (await (await admin.get('/api/v1/admin/media?pageSize=100')).json()).data.items;
-  const images = assets.filter((asset) => asset.kind !== 'document').slice(0, 15);
+  // Albums hold images only; the library may also contain videos (e.g. a hero background video).
+  const images = assets.filter((asset) => asset.kind !== 'document' && asset.kind !== 'video-thumbnail').slice(0, 15);
   expect(images.length).toBe(15);
   for (const [label, count, eventId] of [['DESTINY', 15, linkedEventId], ['ECHO', 9, null]] as const) {
     const slug = prefix + '-' + label.toLowerCase();

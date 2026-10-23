@@ -166,7 +166,8 @@ test('real admin form saves Draft, reloads, publishes, reorders/removes images a
 
 test('real API saves 15 existing images consistently and invalid mutations leave the album unchanged', async ({ request, page }) => {
   const albumSlug = slug('fifteen');
-  const images = media.filter((item) => item.kind !== 'document').slice(0, 15);
+  // Albums hold images only; the library may also contain videos (e.g. a hero background video).
+  const images = media.filter((item) => item.kind !== 'document' && item.kind !== 'video-thumbnail').slice(0, 15);
   expect(images).toHaveLength(15);
   const items = images.map((image, index) => ({ mediaId: image.id, altText: `Placement alt ${index}`, caption: `Caption ${index}`, category: 'crowd', sortOrder: 14 - index }));
   const response = await admin.post('/api/v1/admin/gallery', { data: { ...payload(albumSlug), eventId, items } });

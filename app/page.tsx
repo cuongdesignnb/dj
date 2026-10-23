@@ -49,6 +49,11 @@ function money(amountMinor: unknown, currency: unknown) {
   return new Intl.NumberFormat('en-AU', { style: 'currency', currency: code, maximumFractionDigits: 0 }).format(amountMinor / 100);
 }
 
+/** Site paths and https URLs only (media library files are /api/v1/media/<id>). */
+function safeMediaSrc(value: unknown): string | null {
+  return typeof value === 'string' && (/^\/(?!\/)/.test(value) || /^https:\/\//i.test(value)) ? value : null;
+}
+
 function safeExternalUrl(value: unknown) {
   return typeof value === 'string' && /^https:\/\//.test(value) ? value : null;
 }
@@ -56,6 +61,7 @@ function safeExternalUrl(value: unknown) {
 interface HomeData {
   event: HomeEvent;
   heroAnimation: HomeMedia | null;
+  heroBackground: { image: string | null; video: string | null };
   artists: HomeArtist[];
   ticketTiers: HomeTicketTier[];
   trustItems: HomeTrustItem[];
@@ -77,7 +83,9 @@ async function loadHomeData(): Promise<HomeData | null> {
 
   const homePage = Array.isArray(bootstrap?.pages) ? bootstrap.pages.find((page: ApiRecord) => page.slug === 'home') : null;
   const homeContent = homePage && typeof homePage.content === 'object' && !Array.isArray(homePage.content) ? homePage.content as ApiRecord : {};
-  const heroAnimation = media((homeContent.hero as ApiRecord | undefined)?.animation, { presentation: 'hero' });
+  const heroContent = (homeContent.hero ?? {}) as ApiRecord;
+  const heroAnimation = media(heroContent.animation, { presentation: 'hero' });
+  const heroBackground = { image: safeMediaSrc(media(heroContent.media)?.src), video: safeMediaSrc(media(heroContent.video)?.src) };
 
   const eventData: HomeEvent = {
     title: text(event.title, text(event.slug, 'Connection Rave')),
@@ -158,7 +166,7 @@ async function loadHomeData(): Promise<HomeData | null> {
     { icon: 'Users', title: 'Need help?', description: 'Contact the team for event and VIP questions.' },
   ];
 
-  return { event: eventData, heroAnimation, artists, ticketTiers, trustItems, boothPackage, footer };
+  return { event: eventData, heroAnimation, heroBackground, artists, ticketTiers, trustItems, boothPackage, footer };
 }
 
 export default async function HomePage() {
@@ -179,7 +187,7 @@ export default async function HomePage() {
   return (
     <main className="relative min-h-screen bg-rave-black text-white noise-overlay">
       <Header />
-      <HeroSection event={data.event} animation={data.heroAnimation} />
+      <HeroSection event={data.event} animation={data.heroAnimation} background={data.heroBackground} />
       <EventOverview event={data.event} />
       <LineupPreview artists={data.artists} />
       <TicketsSection ticketTiers={data.ticketTiers} trustItems={data.trustItems} />

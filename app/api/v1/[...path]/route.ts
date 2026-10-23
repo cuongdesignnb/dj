@@ -1314,7 +1314,7 @@ if (second && third === 'vip') { const result = await getPublicVip(second); if (
   if (root === 'legal' && request.method === 'GET' && (second === 'terms' || second === 'privacy')) { const document = await getPublicLegal(second, locale); if (!document) throw notFound('Legal document not found.'); return dataResponse(document); }
   if (root === 'partners' && request.method === 'GET') return dataResponse(await getPublicPartners(locale));
   if (root === 'site' && second === 'bootstrap' && request.method === 'GET') return dataResponse(await getPublicBootstrap(locale));
-  if (root === 'media' && second && request.method === 'GET') return mediaResponse(second, params.get('presentation'));
+  if (root === 'media' && second && request.method === 'GET') return mediaResponse(second, params.get('presentation'), request.headers.get('range'));
 
   if (root === 'booking-requests' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`booking:${ip(request)}`, 10, 3600); return dataResponse(await createBooking(parse(bookingSchema, await body(request))), { status: 202 }); }
   if (root === 'contact' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`contact:${ip(request)}`, 10, 3600); return dataResponse(await createContact(parse(contactSchema, await body(request))), { status: 202 }); }

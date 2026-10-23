@@ -245,3 +245,18 @@ navy black #050B12; solid accent buttons switch to dark text. Admin always keeps
 the Connection palette (wrapper + `AdminThemePin` for portalled toasts/tours).
 Uploaded images, logos and the hero SVG animation are not recoloured.
 E2E: `site-theme.spec.ts`. Full suite 48/48.
+
+## 12. Hero background video
+
+Admin › Content › Homepage › Hero now has "Hero background image" (now
+actually used; empty falls back to the featured event's hero image) and an
+optional "Hero background video" (new `videoMedia` field: picker filtered to
+videos, uploads MP4/WebM/MOV up to 20 MB, previews the first frame). The
+homepage plays the video muted, looped and inline behind the existing overlays,
+lasers, sponsors and title, with the background image as poster; visitors with
+reduced motion get the image only. `/api/v1/media/:id` now answers byte-range
+requests (206 / 416, `Accept-Ranges: bytes`) so Safari/iOS can play library
+videos. E2E: `hero-video.spec.ts` (upload through the Admin picker, Range
+responses, playback, reduced motion, removal). Gallery album tests now pick
+images only, since the library can contain videos. All 53 E2E pass when run in
+batches that respect the QA login limit.

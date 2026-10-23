@@ -128,18 +128,20 @@ function MediaField({ id, field, value, onChange, ctx, error, allow = 'image' }:
         {ref?.src ? (
           <div className="flex gap-3">
               <span className="relative block h-20 w-28 shrink-0 overflow-hidden rounded-[6px] border border-admin-border">
-              <Image src={ref.src} alt="" fill unoptimized sizes="112px" className={allow === 'svg' ? 'object-contain p-2' : 'object-cover'} />
+              {allow === 'video'
+                ? <video src={ref.src} muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover" />
+                : <Image src={ref.src} alt="" fill unoptimized sizes="112px" className={allow === 'svg' ? 'object-contain p-2' : 'object-cover'} />}
             </span>
             <div className="min-w-0 flex-1 space-y-2">
               <p className="truncate text-xs text-admin-muted">{ref.src}</p>
               <label className="block">
-                <span className="mb-1 block text-xs text-admin-muted">Alt text</span>
+                <span className="mb-1 block text-xs text-admin-muted">{allow === 'video' ? 'Description' : 'Alt text'}</span>
                 <input
                   id={id}
                   value={ref.alt ?? ''}
                   disabled={ctx.readOnly}
                   onChange={(e) => onChange({ ...ref, alt: e.target.value })}
-                  placeholder="Describe the image"
+                  placeholder={allow === 'video' ? 'Describe the video' : 'Describe the image'}
                   aria-describedby={describedBy(id, field, error)}
                   className={inputClass}
                 />
@@ -148,13 +150,13 @@ function MediaField({ id, field, value, onChange, ctx, error, allow = 'image' }:
           </div>
         ) : (
           <p className="flex items-center gap-2 py-3 text-sm text-admin-muted">
-            <ImageIcon aria-hidden className="h-4 w-4" /> No image selected.
+            <ImageIcon aria-hidden className="h-4 w-4" /> {allow === 'video' ? 'No video selected.' : 'No image selected.'}
           </p>
         )}
         {!ctx.readOnly && (
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" onClick={() => setOpen(true)} className={buttonClass.secondary}>
-              <ImageIcon aria-hidden className="h-4 w-4" /> {ref?.src ? 'Replace' : 'Choose image'}
+              <ImageIcon aria-hidden className="h-4 w-4" /> {ref?.src ? 'Replace' : allow === 'video' ? 'Choose video' : 'Choose image'}
             </button>
             {ref?.src && (
               <button type="button" onClick={() => onChange(null)} className={buttonClass.ghost}>
@@ -543,7 +545,7 @@ function blankRow(fields: FieldConfig[]): Json {
   let row: Json = {};
   for (const sub of fields) {
     const empty =
-      sub.type === 'toggle' ? false : sub.type === 'tags' || sub.type === 'multiselect' || sub.type === 'repeater' ? [] : sub.type === 'media' || sub.type === 'svgMedia' || sub.type === 'money' || sub.type === 'number' ? null : '';
+      sub.type === 'toggle' ? false : sub.type === 'tags' || sub.type === 'multiselect' || sub.type === 'repeater' ? [] : sub.type === 'media' || sub.type === 'svgMedia' || sub.type === 'videoMedia' || sub.type === 'money' || sub.type === 'number' ? null : '';
     row = setPath(row, sub.key, empty);
   }
   return row;
@@ -879,6 +881,8 @@ export default function FieldInput({
       return <MediaField {...props} />;
     case 'svgMedia':
       return <MediaField {...props} allow="svg" />;
+    case 'videoMedia':
+      return <MediaField {...props} allow="video" />;
     case 'tags':
       return <TagsField {...props} />;
     case 'blocks':

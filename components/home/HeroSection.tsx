@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Ticket } from 'lucide-react';
 import Image from 'next/image';
 import NeonButton from './NeonButton';
@@ -174,8 +174,9 @@ function EnhancedLaserBeams() {
   );
 }
 
-function HeroBackground({ image }: { image: string }) {
+function HeroBackground({ image, video }: { image: string; video: string | null }) {
   const ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
@@ -199,6 +200,25 @@ function HeroBackground({ image }: { image: string }) {
         }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       />
+
+      {/* Optional background video from Admin › Content › Homepage › Hero. The image above
+          stays as the poster and is all that reduced-motion visitors see. */}
+      {video && !reduced && (
+        <video
+          key={video}
+          src={video}
+          poster={image}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden
+          tabIndex={-1}
+          data-hero-video=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
 
       {/* Disco Ball */}
       <DiscoBall />
@@ -379,12 +399,12 @@ function AudioVisualizer() {
   );
 }
 
-export default function HeroSection({ event, animation = null }: { event: HomeEvent; animation?: HomeMedia | null }) {
+export default function HeroSection({ event, animation = null, background = { image: null, video: null } }: { event: HomeEvent; animation?: HomeMedia | null; background?: { image: string | null; video: string | null } }) {
   const sponsors = useSponsors();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[84px]">
       {/* Background layers */}
-      <HeroBackground image={event.hero?.src || '/assets/hero-crowd.jpg'} />
+      <HeroBackground image={background.image || event.hero?.src || '/assets/hero-crowd.jpg'} video={background.video} />
 
       {/* Lasers */}
       <EnhancedLaserBeams />

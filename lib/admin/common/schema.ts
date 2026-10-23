@@ -25,6 +25,7 @@ export type FieldType =
   | 'email'
   | 'media'
   | 'svgMedia'
+  | 'videoMedia'
   | 'mediaList'
   | 'localizedText'
   | 'localizedTextarea'

@@ -21,6 +21,7 @@ export const f = {
   email: (key: string, label: string, extra: Extra = {}): FieldConfig => ({ key, label, type: 'email', width: 'half', ...extra }),
   media: (key: string, label: string, extra: Extra = {}): FieldConfig => ({ key, label, type: 'media', width: 'half', ...extra }),
   svgMedia: (key: string, label: string, extra: Extra = {}): FieldConfig => ({ key, label, type: 'svgMedia', width: 'half', ...extra }),
+  videoMedia: (key: string, label: string, extra: Extra = {}): FieldConfig => ({ key, label, type: 'videoMedia', width: 'half', ...extra }),
   tags: (key: string, label: string, extra: Extra = {}): FieldConfig => ({ key, label, type: 'tags', ...extra }),
   repeater: (key: string, label: string, itemFields: FieldConfig[], extra: Extra = {}): FieldConfig => ({ key, label, type: 'repeater', itemFields, ...extra }),
   readonly: (key: string, label: string, extra: Extra = {}): FieldConfig => ({ key, label, type: 'readonly', width: 'half', ...extra }),
