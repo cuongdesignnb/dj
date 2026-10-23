@@ -57,15 +57,21 @@ test('near the bottom of the screen the menu opens upwards and follows scrolling
   // Put the last row right at the bottom edge of the viewport.
   await page.evaluate(() => {
     const button = [...document.querySelectorAll('table button[aria-label^="Actions for "]')].pop()!;
-    window.scrollBy(0, button.getBoundingClientRect().bottom - window.innerHeight + 12);
+    window.scrollBy({ top: button.getBoundingClientRect().bottom - window.innerHeight + 12, behavior: 'instant' });
   });
   await trigger.click();
   const menu = page.locator('[data-row-menu]');
   await expect(menu).toHaveAttribute('data-placement', 'top');
   await expectFullyUsable(page, menu);
-  const before = (await menu.boundingBox())!.y;
-  await page.mouse.wheel(0, -60);
-  await expect.poll(async () => Math.round((await menu.boundingBox())!.y - before)).toBeGreaterThan(20);
+  // After scrolling, the menu stays attached to its trigger (above or below it).
+  const attached = async () => {
+    const m = (await menu.boundingBox())!;
+    const t = (await trigger.boundingBox())!;
+    return Math.min(Math.abs(m.y + m.height + 4 - t.y), Math.abs(m.y - (t.y + t.height + 4))) <= 2;
+  };
+  expect(await attached()).toBe(true);
+  await page.evaluate(() => window.scrollBy({ top: -40, behavior: 'instant' }));
+  await expect.poll(attached).toBe(true);
   // Clicking outside closes it; clicking an item works.
   await page.mouse.click(5, 5);
   await expect(menu).toHaveCount(0);

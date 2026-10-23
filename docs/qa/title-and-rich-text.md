@@ -270,3 +270,8 @@ container, so menus on the last rows were cut off. It is now portalled to
 room below, follows scrolling/resizing, closes on outside click or Escape (focus
 returns to the trigger). E2E: `admin-row-menu.spec.ts` (partners, events,
 artists, flip-up near the bottom). Full suite 58/58 in login-limit-safe batches.
+Admin-wide sweep (`admin-popups-sweep.spec.ts`): visits every screen in the
+Admin menu and opens the last row's actions on each list with data (events,
+artists, products, news, gallery, partners, staff, roles), plus the top bar
+search results, notifications and account menu; every entry must be inside the
+viewport and the element actually hit. Full suite 60/60.
