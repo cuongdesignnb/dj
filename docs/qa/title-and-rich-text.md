@@ -260,3 +260,13 @@ videos. E2E: `hero-video.spec.ts` (upload through the Admin picker, Range
 responses, playback, reduced motion, removal). Gallery album tests now pick
 images only, since the library can contain videos. All 53 E2E pass when run in
 batches that respect the QA login limit.
+
+## 13. Admin row action menus no longer clipped
+
+The "⋯" row menu of the shared Admin list table (`components/admin/ui/DataTable.tsx`,
+used by every list screen) rendered inside the table's horizontal scroll
+container, so menus on the last rows were cut off. It is now portalled to
+`<body>` with fixed coordinates from the trigger, opens upwards when there is no
+room below, follows scrolling/resizing, closes on outside click or Escape (focus
+returns to the trigger). E2E: `admin-row-menu.spec.ts` (partners, events,
+artists, flip-up near the bottom). Full suite 58/58 in login-limit-safe batches.

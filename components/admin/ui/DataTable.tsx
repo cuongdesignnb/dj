@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useId, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, useTransition } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -92,15 +93,46 @@ function RowMenu({
   onDelete: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState<{ top: number; left: number; up: boolean } | null>(null);
   const box = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
   const menuId = useId();
+
+  // The menu is portalled to <body> with fixed coordinates so the table's
+  // scroll container cannot clip it; it opens upwards when there is no room below.
+  const itemCount = [row.links.view, row.links.edit, row.can.duplicate, row.links.preview, row.can.archive, row.can.delete].filter(Boolean).length;
+  const place = useCallback(() => {
+    const anchor = button.current?.getBoundingClientRect();
+    if (!anchor) return;
+    const height = menu.current?.offsetHeight || itemCount * 36 + 14;
+    const width = menu.current?.offsetWidth || 176;
+    const gap = 4;
+    const up = anchor.bottom + gap + height > window.innerHeight - 8 && anchor.top - gap - height > 8;
+    setPosition({
+      top: up ? anchor.top - gap - height : anchor.bottom + gap,
+      left: Math.max(8, Math.min(anchor.right - width, window.innerWidth - width - 8)),
+      up,
+    });
+  }, [itemCount]);
+
+  useEffect(() => {
+    if (!open) return;
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+    };
+  }, [open, place]);
 
   useEffect(() => {
     if (!open) return;
     const close = (e: Event) => {
       if (e instanceof KeyboardEvent && e.key !== 'Escape') return;
-      if (e instanceof PointerEvent && box.current?.contains(e.target as Node)) return;
+      if (e instanceof PointerEvent && (box.current?.contains(e.target as Node) || menu.current?.contains(e.target as Node))) return;
       setOpen(false);
+      if (e instanceof KeyboardEvent) button.current?.focus();
     };
     document.addEventListener('pointerdown', close);
     document.addEventListener('keydown', close);
@@ -117,8 +149,9 @@ function RowMenu({
   return (
     <div ref={box} className="relative inline-block">
       <button
+        ref={button}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => { if (!open) place(); setOpen((v) => !v); }}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
@@ -127,8 +160,16 @@ function RowMenu({
       >
         <MoreHorizontal aria-hidden className="h-4 w-4" />
       </button>
-      {open && (
-        <div id={menuId} role="menu" className="absolute right-0 top-[calc(100%+4px)] z-30 w-44 rounded-[10px] border border-admin-border bg-admin-panel2 p-1.5 text-white shadow-2xl">
+      {open && typeof document !== 'undefined' && createPortal(
+        <div
+          ref={menu}
+          id={menuId}
+          role="menu"
+          data-row-menu=""
+          data-placement={position?.up ? 'top' : 'bottom'}
+          style={{ position: 'fixed', top: position?.top ?? -9999, left: position?.left ?? -9999, visibility: position ? 'visible' : 'hidden' }}
+          className="z-[60] w-44 rounded-[10px] border border-admin-border bg-admin-panel2 p-1.5 text-white shadow-2xl"
+        >
           {row.links.view && (
             <Link role="menuitem" href={row.links.view} className={item}>
               <Eye aria-hidden className="h-4 w-4 text-admin-muted" /> View
@@ -165,7 +206,8 @@ function RowMenu({
               <Trash2 aria-hidden className="h-4 w-4" /> Delete
             </button>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
