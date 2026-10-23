@@ -78,21 +78,48 @@ async function loadMediaChoices(): Promise<MediaChoice[]> {
   return choices;
 }
 
-export async function uploadMediaFile(file: File, altText = ''): Promise<MediaChoice> {
+/** Same limit as server/media/storage.ts; checked before sending so nobody waits for a doomed upload. */
+export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
+
+export interface UploadProgress { loaded: number; total: number }
+
+export function formatMegabytes(bytes: number) {
+  return `${(bytes / 1024 / 1024).toFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+}
+
+export class UploadCancelled extends Error {}
+
+/**
+ * Uploads through XMLHttpRequest so large files (videos) can report progress
+ * and be cancelled; fetch() cannot report upload progress.
+ */
+export async function uploadMediaFile(file: File, altText = '', options: { onProgress?: (progress: UploadProgress) => void; signal?: AbortSignal } = {}): Promise<MediaChoice> {
+  if (file.size > MAX_UPLOAD_BYTES) throw new Error(`This file is ${formatMegabytes(file.size)}. Files must be 20 MB or smaller; compress the video and try again.`);
   const sessionResponse = await fetch('/api/v1/auth/session', { credentials: 'include', headers: { accept: 'application/json' } });
   const sessionPayload = await readJson(sessionResponse);
   const sessionData = isRecord(sessionPayload.data) ? sessionPayload.data : {};
   const form = new FormData();
   form.set('file', file);
   form.set('altText', altText.trim());
-  const response = await fetch('/api/v1/admin/media/upload', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { accept: 'application/json', 'x-csrf-token': typeof sessionData.csrfToken === 'string' ? sessionData.csrfToken : '' },
-    body: form,
+  const { status, payload } = await new Promise<{ status: number; payload: Record<string, unknown> }>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/v1/admin/media/upload');
+    xhr.withCredentials = true;
+    xhr.setRequestHeader('accept', 'application/json');
+    xhr.setRequestHeader('x-csrf-token', typeof sessionData.csrfToken === 'string' ? sessionData.csrfToken : '');
+    xhr.upload.onprogress = (event) => options.onProgress?.({ loaded: event.loaded, total: event.lengthComputable ? event.total : file.size });
+    xhr.onload = () => {
+      let parsed: unknown = null;
+      try { parsed = JSON.parse(xhr.responseText); } catch { /* proxy error pages are HTML */ }
+      resolve({ status: xhr.status, payload: isRecord(parsed) ? parsed : {} });
+    };
+    xhr.onerror = () => reject(new Error('The upload was interrupted. Check the connection and try again.'));
+    xhr.onabort = () => reject(new UploadCancelled('Upload cancelled.'));
+    options.signal?.addEventListener('abort', () => xhr.abort(), { once: true });
+    xhr.send(form);
   });
-  const payload = await readJson(response);
-  if (!response.ok) throw new Error(typeof payload.message === 'string' ? payload.message : 'Could not upload this file.');
+  if (status === 413) throw new Error('The server refused this file because it is too large. Keep uploads under 20 MB.');
+  if (status < 200 || status >= 300) throw new Error(typeof payload.message === 'string' ? payload.message : `Could not upload this file (error ${status || 'network'}).`);
   const choice = mediaChoiceFrom(payload.data);
   if (!choice) throw new Error('The uploaded file could not be added to the media library.');
   return choice;
@@ -120,6 +147,9 @@ export function MediaPicker({
   const [choices, setChoices] = useState<MediaChoice[]>(media);
   const [hasLoaded, setHasLoaded] = useState(media.length > 0);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<UploadProgress | null>(null);
+  const [startedAt, setStartedAt] = useState(0);
+  const uploadAbort = useRef<AbortController | null>(null);
   const [uploadAlt, setUploadAlt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -144,6 +174,7 @@ export function MediaPicker({
 
   const loading = open && !hasLoaded;
   const handleClose = () => {
+    uploadAbort.current?.abort();
     setError(null);
     onClose();
   };
@@ -168,17 +199,24 @@ export function MediaPicker({
     }
     setUploading(true);
     setError(null);
+    setProgress({ loaded: 0, total: file.size });
+    setStartedAt(Date.now());
+    const controller = new AbortController();
+    uploadAbort.current = controller;
     try {
-      const choice = await uploadMediaFile(file, uploadAlt);
+      const choice = await uploadMediaFile(file, uploadAlt, { onProgress: setProgress, signal: controller.signal });
       setChoices((current) => [choice, ...current.filter((item) => item.id !== choice.id)]);
       setUploadAlt('');
       onPick(choice);
       toast('success', 'Uploaded to the media library and selected.');
     } catch (reason: unknown) {
+      if (reason instanceof UploadCancelled) return;
       const failure = reason instanceof Error ? reason.message : 'Could not upload this file.';
       setError(failure);
       toast('error', failure);
     } finally {
+      uploadAbort.current = null;
+      setProgress(null);
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';
     }
@@ -205,8 +243,9 @@ export function MediaPicker({
         </div>
         <label className="block">
           <span className="mb-1.5 block text-xs text-admin-muted">Alt text for a new upload (optional)</span>
-          <input value={uploadAlt} onChange={(event) => setUploadAlt(event.target.value)} placeholder="Describe the image" className={pickerInputClass} />
+          <input value={uploadAlt} onChange={(event) => setUploadAlt(event.target.value)} placeholder={filter === 'video' ? 'Describe the video' : 'Describe the image'} className={pickerInputClass} />
         </label>
+        {uploading && progress && <UploadProgressBar progress={progress} startedAt={startedAt} onCancel={() => uploadAbort.current?.abort()} />}
         {filter === 'svg' && <p className="text-xs text-admin-muted">SVG animation files are stored in the same library and can be reused anywhere.</p>}
         {filter === 'video' && <p className="text-xs text-admin-muted">MP4 (H.264), up to 20 MB. A short 10–20 second loop without sound works best.</p>}
         {error && <p role="alert" className="rounded-[8px] border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{error}</p>}
@@ -235,5 +274,26 @@ export function MediaPicker({
         )}
       </div>
     </Modal>
+  );
+}
+
+/** Percentage, megabytes and a rough time left, so a long video upload is visibly moving. */
+export function UploadProgressBar({ progress, startedAt, onCancel }: { progress: UploadProgress; startedAt: number; onCancel: () => void }) {
+  const total = Math.max(progress.total, 1);
+  const percent = Math.min(100, Math.round((progress.loaded / total) * 100));
+  const elapsed = (Date.now() - startedAt) / 1000;
+  const rate = elapsed > 1 ? progress.loaded / elapsed : 0;
+  const remaining = rate > 0 && percent < 100 ? Math.ceil((total - progress.loaded) / rate) : null;
+  const status = percent >= 100 ? 'Processing on the server…' : `${percent}% · ${formatMegabytes(progress.loaded)} of ${formatMegabytes(total)}${remaining !== null ? ` · about ${remaining < 60 ? `${remaining}s` : `${Math.ceil(remaining / 60)} min`} left` : ''}`;
+  return (
+    <div data-upload-progress="" className="rounded-[10px] border border-admin-border bg-admin-deep p-3">
+      <div className="flex items-center justify-between gap-3 text-xs text-white/85">
+        <span role="status" aria-live="polite">{status}</span>
+        {percent < 100 && <button type="button" onClick={onCancel} className="text-admin-muted underline hover:text-white">Cancel</button>}
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-label="Upload progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
+        <div className="h-full rounded-full bg-rave-red transition-[width] duration-200" style={{ width: `${percent}%` }} />
+      </div>
+    </div>
   );
 }

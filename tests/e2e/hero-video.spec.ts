@@ -87,3 +87,33 @@ test('removing the video brings the hero back to the image', async ({ page }) =>
   await page.goto('/');
   await expect(page.locator('video[data-hero-video]')).toHaveCount(0);
 });
+
+test('uploads show live progress and can be cancelled; files over 20 MB are refused before sending', async ({ browser }) => {
+  const context = await browser.newContext({ storageState: editorState });
+  const page = await context.newPage();
+  // ~100 KB/s upload so the 0.5 MB test video takes a few seconds.
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 20, downloadThroughput: -1, uploadThroughput: 100 * 1024 });
+  const uploads: string[] = [];
+  page.on('request', (request) => { if (request.url().includes('/api/v1/admin/media/upload')) uploads.push(request.url()); });
+
+  await page.goto('/admin/content/home');
+  const field = page.getByText('Hero background video', { exact: true }).locator('xpath=ancestor::*[.//button][1]');
+  await field.getByRole('button', { name: /Choose video|Replace/ }).click();
+  const dialog = page.getByRole('dialog');
+
+  await dialog.locator('input[type="file"]').setInputFiles({ name: 'too-big.mp4', mimeType: 'video/mp4', buffer: Buffer.alloc(21 * 1024 * 1024) });
+  await expect(dialog.getByRole('alert')).toContainText('This file is 21 MB. Files must be 20 MB or smaller');
+  expect(uploads).toEqual([]);
+
+  await dialog.locator('input[type="file"]').setInputFiles(path.resolve('tests/fixtures/media/qa-hero.webm'));
+  const bar = dialog.getByRole('progressbar', { name: 'Upload progress' });
+  await expect(bar).toBeVisible();
+  await expect(dialog.locator('[data-upload-progress] [role="status"]')).toContainText(/\d+% · [\d.]+ MB of 0\.5 MB/);
+  await expect.poll(async () => Number(await bar.getAttribute('aria-valuenow')), { timeout: 15_000 }).toBeGreaterThan(10);
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(bar).toBeHidden();
+  await expect(dialog.getByRole('alert')).toHaveCount(0);
+  await context.close();
+});

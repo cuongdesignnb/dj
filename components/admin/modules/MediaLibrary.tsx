@@ -7,7 +7,7 @@ import { Check, ChevronLeft, ChevronRight, Copy, LayoutGrid, List, Search, Trash
 import { deleteRecords, saveRecord } from '@/app/admin/actions';
 import type { FilterConfig } from '@/lib/admin/common/schema';
 import { inputClass } from '../form/FieldInput';
-import { uploadMediaFile } from '../form/MediaPicker';
+import { UploadCancelled, UploadProgressBar, uploadMediaFile, type UploadProgress } from '../form/MediaPicker';
 import { ConfirmDialog, Drawer, buttonClass } from '../ui/Dialog';
 import { EmptyState, ErrorState } from '../ui/States';
 import StatusBadge from '../ui/StatusBadge';
@@ -70,6 +70,9 @@ export default function MediaLibrary({
   const [uploadAlt, setUploadAlt] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [uploadStartedAt, setUploadStartedAt] = useState(0);
+  const uploadAbort = useRef<AbortController | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const view = query.view === 'list' ? 'list' : 'grid';
@@ -158,18 +161,25 @@ export default function MediaLibrary({
     }
     setUploading(true);
     setUploadError(null);
+    setUploadProgress({ loaded: 0, total: uploadFile.size });
+    setUploadStartedAt(Date.now());
+    const controller = new AbortController();
+    uploadAbort.current = controller;
     try {
-      await uploadMediaFile(uploadFile, uploadAlt);
+      await uploadMediaFile(uploadFile, uploadAlt, { onProgress: setUploadProgress, signal: controller.signal });
       toast('success', 'Uploaded to the media library.');
       setUploadOpen(false);
       setUploadFile(null);
       setUploadAlt('');
       start(() => router.refresh());
     } catch (reason: unknown) {
+      if (reason instanceof UploadCancelled) return;
       const failure = reason instanceof Error ? reason.message : 'Could not upload this file.';
       setUploadError(failure);
       toast('error', failure);
     } finally {
+      uploadAbort.current = null;
+      setUploadProgress(null);
       setUploading(false);
     }
   };
@@ -388,6 +398,7 @@ export default function MediaLibrary({
             <span className="mb-1.5 block text-sm font-medium text-white/90">Alt text (optional)</span>
             <textarea rows={3} value={uploadAlt} disabled={uploading} onChange={(event) => setUploadAlt(event.target.value)} placeholder="Describe the image for screen readers" className={inputClass} />
           </label>
+          {uploading && uploadProgress && <UploadProgressBar progress={uploadProgress} startedAt={uploadStartedAt} onCancel={() => uploadAbort.current?.abort()} />}
           {uploadError && <p role="alert" className="rounded-[8px] border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">{uploadError}</p>}
         </div>
       </Drawer>
