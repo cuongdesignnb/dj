@@ -275,3 +275,12 @@ Admin menu and opens the last row's actions on each list with data (events,
 artists, products, news, gallery, partners, staff, roles), plus the top bar
 search results, notifications and account menu; every entry must be inside the
 viewport and the element actually hit. Full suite 60/60.
+
+## 14. Home lineup: first artist card stayed blank
+
+Each card image in `components/home/LineupPreview.tsx` had its own
+`whileInView` clip-path reveal, separate from the card's. On production the
+first card's image loaded at ~3.3 s but was still clipped after 10+ s while the
+others revealed at ~4.6 s. The image reveal now follows the card's own in-view
+variants, so it opens together with the card. `lineup-preview.spec.ts` (desktop
+and iPhone) fails 4/4 on the old code and passes on the fix. Full suite 62/62.

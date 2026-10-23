@@ -59,6 +59,11 @@ function TiltCard({ children, className = '' }: { children: React.ReactNode; cla
   );
 }
 
+const imageReveal = {
+  hidden: { clipPath: 'inset(100% 0 0 0)' },
+  visible: { clipPath: 'inset(0% 0 0 0)', transition: { duration: 0.6, delay: 0.2 } },
+};
+
 function ArtistCard({ artist, index }: ArtistCardProps) {
   return (
     <motion.div
@@ -107,14 +112,12 @@ function ArtistCard({ artist, index }: ArtistCardProps) {
 
             {/* Card Image Body */}
             <div className="relative aspect-[4/4.5] overflow-hidden bg-rave-deep">
-              {/* Image with clip-path reveal on hover */}
+              {/* Image reveal follows the card's own in-view state. A second, separate
+                  in-view observer here could miss the first card, leaving it blank. */}
               <motion.div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: `url(${artist.image})` }}
-                initial={{ clipPath: 'inset(100% 0 0 0)' }}
-                whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                variants={imageReveal}
               />
 
               {/* Fallback gradient if no image */}
