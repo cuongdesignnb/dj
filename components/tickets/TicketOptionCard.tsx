@@ -35,8 +35,8 @@ export default function TicketOptionCard({
       transition={{ type: 'spring', stiffness: 320, damping: 26 }}
       className={`relative rounded-[18px] border bg-rave-panel/80 p-5 transition-[border-color,box-shadow] duration-300 sm:p-6 ${
         selected
-          ? 'border-rave-red shadow-[0_0_34px_rgba(255,23,61,0.28)]'
-          : 'border-white/[0.08] hover:border-rave-red/40 hover:shadow-[0_18px_50px_rgba(255,23,61,0.16)]'
+          ? 'border-rave-red shadow-[0_0_34px_rgb(var(--rave-accent-rgb)/0.28)]'
+          : 'border-white/[0.08] hover:border-rave-red/40 hover:shadow-[0_18px_50px_rgb(var(--rave-accent-rgb)/0.16)]'
       }`}
     >
       {selected && (
@@ -45,7 +45,7 @@ export default function TicketOptionCard({
           initial={reduced ? false : { scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 420, damping: 18 }}
-          className="absolute -right-2.5 -top-2.5 grid h-8 w-8 place-items-center rounded-full bg-rave-red text-white shadow-[0_0_18px_rgba(255,23,61,0.6)]"
+          className="absolute -right-2.5 -top-2.5 grid h-8 w-8 place-items-center rounded-full bg-rave-red text-white shadow-[0_0_18px_rgb(var(--rave-accent-rgb)/0.6)]"
         >
           <Check className="h-4 w-4" />
         </motion.span>

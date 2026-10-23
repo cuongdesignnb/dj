@@ -69,13 +69,13 @@ export default function EventFinalCta({ event, routes }: Props) {
       <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none">
         <motion.div
           className="absolute -top-24 left-1/4 w-[420px] h-[420px] rounded-full blur-[140px]"
-          style={{ background: 'radial-gradient(circle, rgba(255,23,61,0.18), transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.18), transparent 70%)' }}
           animate={ambient ? { opacity: [0.4, 0.7, 0.4], y: [0, 20, 0] } : undefined}
           transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
           className="absolute -bottom-32 right-1/4 w-[380px] h-[380px] rounded-full blur-[140px]"
-          style={{ background: 'radial-gradient(circle, rgba(139,44,255,0.16), transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgb(var(--rave-purple-rgb)/0.16), transparent 70%)' }}
           animate={ambient ? { opacity: [0.3, 0.55, 0.3], y: [0, -20, 0] } : undefined}
           transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
         />

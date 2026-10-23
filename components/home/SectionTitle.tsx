@@ -48,7 +48,7 @@ export default function SectionTitle({ eyebrow, title, subtitle, align = 'center
           animate={isInView ? { width: '100%' } : { width: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{
-            boxShadow: '0 0 15px rgba(255, 23, 61, 0.6), 0 0 30px rgba(255, 23, 61, 0.3)',
+            boxShadow: '0 0 15px rgb(var(--rave-accent-rgb)/0.6), 0 0 30px rgb(var(--rave-accent-rgb)/0.3)',
           }}
         />
 

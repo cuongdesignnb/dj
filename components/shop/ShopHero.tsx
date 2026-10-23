@@ -91,7 +91,7 @@ export default function ShopHero({ hero }: { hero: ShopPageData['hero'] }) {
           className="pointer-events-none absolute inset-0 -z-10"
           style={{
             background:
-              'radial-gradient(circle at 12% 18%, rgba(255,23,61,0.16), transparent 55%), radial-gradient(circle at 88% 40%, rgba(255,23,61,0.14), transparent 55%)',
+              'radial-gradient(circle at 12% 18%, rgb(var(--rave-accent-rgb)/0.16), transparent 55%), radial-gradient(circle at 88% 40%, rgb(var(--rave-accent-rgb)/0.14), transparent 55%)',
           }}
         />
 
@@ -138,7 +138,7 @@ export default function ShopHero({ hero }: { hero: ShopPageData['hero'] }) {
               <motion.div variants={shopReveal} className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
                   href={hero.primaryCta.href}
-                  className="group/cta inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
+                  className="group/cta inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
                 >
                   {hero.primaryCta.label}
                   <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />
@@ -165,7 +165,7 @@ export default function ShopHero({ hero }: { hero: ShopPageData['hero'] }) {
                   rawX.set(0);
                   rawY.set(0);
                 }}
-                className="relative aspect-[16/12] overflow-hidden rounded-[22px] border border-white/[0.08] shadow-[0_30px_80px_rgba(255,23,61,0.18)]"
+                className="relative aspect-[16/12] overflow-hidden rounded-[22px] border border-white/[0.08] shadow-[0_30px_80px_rgb(var(--rave-accent-rgb)/0.18)]"
               >
                 {/* Backdrop: the crowd photo pushed deep into red. */}
                 <Image
@@ -181,7 +181,7 @@ export default function ShopHero({ hero }: { hero: ShopPageData['hero'] }) {
                   className="absolute inset-0"
                   style={{
                     background:
-                      'radial-gradient(ellipse at 55% 35%, rgba(255,23,61,0.35), transparent 60%), linear-gradient(180deg, rgba(3,3,5,0.35) 0%, rgba(3,3,5,0.85) 100%)',
+                      'radial-gradient(ellipse at 55% 35%, rgb(var(--rave-accent-rgb)/0.35), transparent 60%), linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.35) 0%, rgb(var(--rave-black-rgb)/0.85) 100%)',
                   }}
                 />
 

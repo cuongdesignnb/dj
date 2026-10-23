@@ -36,7 +36,7 @@ export default function ClubMap({
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-60px' }}
-        className="relative overflow-hidden rounded-[18px] border border-white/[0.08] bg-[#07070D] p-4 sm:p-6"
+        className="relative overflow-hidden rounded-[18px] border border-white/[0.08] bg-[var(--color-rave-deep)] p-4 sm:p-6"
       >
         {/* The plan itself is decorative; the booth buttons carry the meaning. */}
         <div className="relative aspect-[4/3] w-full sm:aspect-[16/10]">
@@ -44,7 +44,7 @@ export default function ClubMap({
             {/* Stage */}
             <div
               className="absolute left-1/2 top-[3%] h-[13%] w-[42%] -translate-x-1/2 rounded-b-[18px] border border-rave-red/50 bg-rave-red/[0.07]"
-              style={{ boxShadow: '0 0 30px rgba(255,23,61,0.28)' }}
+              style={{ boxShadow: '0 0 30px rgb(var(--rave-accent-rgb)/0.28)' }}
             >
               <span className="grid h-full place-items-center font-heading text-[10px] uppercase tracking-[0.3em] text-white sm:text-xs">
                 Stage
@@ -119,7 +119,7 @@ export default function ClubMap({
                   // chips below the map.
                   className={`absolute grid min-h-[44px] min-w-[44px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[8px] border px-2 font-heading text-[10px] font-bold uppercase tracking-[0.12em] transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-not-allowed disabled:opacity-40 sm:px-4 sm:text-xs ${
                     selected
-                      ? 'border-rave-red bg-rave-red/25 text-white shadow-[0_0_20px_rgba(255,23,61,0.55)]'
+                      ? 'border-rave-red bg-rave-red/25 text-white shadow-[0_0_20px_rgb(var(--rave-accent-rgb)/0.55)]'
                       : 'border-rave-red/40 bg-black/50 text-white/85 hover:border-rave-red hover:bg-rave-red/10'
                   }`}
                 >

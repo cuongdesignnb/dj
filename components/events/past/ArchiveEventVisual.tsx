@@ -30,7 +30,7 @@ export default function ArchiveEventVisual({
       className="absolute inset-0 overflow-hidden bg-[#08080F]"
       style={{
         background:
-          'radial-gradient(120% 95% at 50% 4%, rgba(255,23,61,0.26), transparent 58%), radial-gradient(95% 70% at 50% 100%, rgba(139,44,255,0.16), transparent 62%), #08080F',
+          'radial-gradient(120% 95% at 50% 4%, rgb(var(--rave-accent-rgb)/0.26), transparent 58%), radial-gradient(95% 70% at 50% 100%, rgb(var(--rave-purple-rgb)/0.16), transparent 62%), #08080F',
       }}
     >
       {/* Light rig beams */}
@@ -38,7 +38,7 @@ export default function ArchiveEventVisual({
         className="absolute inset-x-0 top-0 h-2/3 opacity-70"
         style={{
           background:
-            'conic-gradient(from 198deg at 50% -8%, transparent 0deg, rgba(255,23,61,0.18) 10deg, transparent 22deg, transparent 38deg, rgba(255,23,61,0.14) 50deg, transparent 62deg, transparent 94deg, rgba(255,10,120,0.12) 106deg, transparent 118deg)',
+            'conic-gradient(from 198deg at 50% -8%, transparent 0deg, rgb(var(--rave-accent-rgb)/0.18) 10deg, transparent 22deg, transparent 38deg, rgb(var(--rave-accent-rgb)/0.14) 50deg, transparent 62deg, transparent 94deg, rgb(var(--rave-magenta-rgb)/0.12) 106deg, transparent 118deg)',
         }}
       />
 
@@ -48,7 +48,7 @@ export default function ArchiveEventVisual({
           className={`rounded-full border-2 border-rave-red/70 ${
             feature ? 'h-40 w-40 sm:h-52 sm:w-52' : 'h-20 w-20 sm:h-24 sm:w-24'
           }`}
-          style={{ boxShadow: '0 0 30px rgba(255,23,61,0.5), inset 0 0 26px rgba(255,23,61,0.22)' }}
+          style={{ boxShadow: '0 0 30px rgb(var(--rave-accent-rgb)/0.5), inset 0 0 26px rgb(var(--rave-accent-rgb)/0.22)' }}
           animate={reduced ? undefined : { opacity: [0.75, 1, 0.75] }}
           transition={reduced ? undefined : { duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -73,7 +73,7 @@ export default function ArchiveEventVisual({
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(180deg, rgba(3,3,5,0.30) 0%, rgba(3,3,5,0) 34%, rgba(3,3,5,0.90) 100%)',
+            'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.30) 0%, rgb(var(--rave-black-rgb)/0) 34%, rgb(var(--rave-black-rgb)/0.90) 100%)',
         }}
       />
 
@@ -84,7 +84,7 @@ export default function ArchiveEventVisual({
             className={`font-heading font-black uppercase leading-none tracking-[0.12em] text-white ${
               feature ? 'text-3xl sm:text-5xl' : 'text-lg sm:text-xl'
             }`}
-            style={{ textShadow: '0 0 22px rgba(255,23,61,0.55)' }}
+            style={{ textShadow: '0 0 22px rgb(var(--rave-accent-rgb)/0.55)' }}
           >
             {title}
           </span>

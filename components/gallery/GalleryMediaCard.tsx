@@ -52,7 +52,7 @@ export default function GalleryMediaCard({
       animate="rest"
       onClick={() => onOpen(item)}
       aria-label={label}
-      className={`group/tile relative block w-full overflow-hidden rounded-[16px] border border-white/[0.08] transition-[border-color,box-shadow] duration-300 hover:border-rave-red/60 hover:shadow-[0_20px_50px_rgba(255,23,61,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black ${className}`}
+      className={`group/tile relative block w-full overflow-hidden rounded-[16px] border border-white/[0.08] transition-[border-color,box-shadow] duration-300 hover:border-rave-red/60 hover:shadow-[0_20px_50px_rgb(var(--rave-accent-rgb)/0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black ${className}`}
     >
       <motion.span
         variants={{ rest: { scale: 1 }, hover: { scale: reduced ? 1 : 1.035 } }}
@@ -75,7 +75,7 @@ export default function GalleryMediaCard({
         className="absolute inset-0 transition-opacity duration-300 group-hover/tile:opacity-90"
         style={{
           background:
-            'linear-gradient(180deg, rgba(3,3,5,0.05) 0%, rgba(3,3,5,0) 45%, rgba(3,3,5,0.85) 100%)',
+            'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.05) 0%, rgb(var(--rave-black-rgb)/0) 45%, rgb(var(--rave-black-rgb)/0.85) 100%)',
         }}
       />
 

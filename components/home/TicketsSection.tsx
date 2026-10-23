@@ -1,5 +1,7 @@
 'use client';
 
+import { useSitePalette } from '@/components/shared/SiteBranding';
+import { rgba } from '@/lib/site-theme';
 import { useEffect, useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Ticket, Zap, Flame, Clock, ShieldCheck, BadgeCheck, Users } from 'lucide-react';
@@ -68,6 +70,7 @@ function AnimatedPrice({ price, isNeon = false }: { price: string; isNeon?: bool
 }
 
 export default function TicketsSection({ ticketTiers, trustItems }: { ticketTiers: HomeTicketTier[]; trustItems: HomeTrustItem[] }) {
+  const palette = useSitePalette();
   return (
     <section id="tickets" className="relative py-20 md:py-28 overflow-hidden bg-rave-black">
       {/* Background Grid */}
@@ -95,7 +98,7 @@ export default function TicketsSection({ ticketTiers, trustItems }: { ticketTier
       <div
         className="absolute top-0 left-0 right-0 h-px animate-border-glow"
         style={{
-          background: 'linear-gradient(to right, transparent, rgba(255, 23, 61, 0.5), transparent)',
+          background: 'linear-gradient(to right, transparent, rgb(var(--rave-accent-rgb)/0.5), transparent)',
         }}
       />
 
@@ -154,17 +157,17 @@ export default function TicketsSection({ ticketTiers, trustItems }: { ticketTier
                   y: -12,
                   scale: 1.02,
                   boxShadow: isStudent
-                    ? '0 0 50px rgba(227, 28, 53, 0.5)'
+                    ? `0 0 50px ${rgba(palette.strong, 0.5)}`
                     : isFinalRelease
-                    ? '0 0 45px rgba(255, 23, 61, 0.45)'
+                    ? `0 0 45px ${rgba(palette.accent, 0.45)}`
                     : '0 0 35px rgba(255, 255, 255, 0.1)',
                 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 22 }}
                 className={`relative flex flex-col rounded-2xl overflow-hidden p-6 sm:p-8 select-none ${
                   isStudent
-                    ? 'bg-gradient-to-b from-[#D10A24] to-[#990B1E] border border-rave-red/50 shadow-[0_0_25px_rgba(227,28,53,0.25)] text-white'
+                    ? 'bg-gradient-to-b from-[var(--rave-strong-from)] to-[var(--rave-strong-to)] border border-rave-red/50 shadow-[0_0_25px_rgb(var(--rave-strong-rgb)/0.25)] text-white'
                     : isFinalRelease
-                    ? 'bg-gradient-to-b from-[#0F0F16] to-[#05050A] border border-rave-red/45 shadow-[0_0_20px_rgba(255,23,61,0.12)]'
+                    ? 'bg-gradient-to-b from-[#0F0F16] to-[#05050A] border border-rave-red/45 shadow-[0_0_20px_rgb(var(--rave-accent-rgb)/0.12)]'
                     : 'bg-gradient-to-b from-[#0B0B10] to-[#040408] border border-white/[0.06]'
                 }`}
               >
@@ -241,7 +244,7 @@ export default function TicketsSection({ ticketTiers, trustItems }: { ticketTier
                     href="/tickets"
                     hideChevron={true}
                     intense={true}
-                    className="w-full justify-center !bg-white !text-[#D10A24] hover:!bg-white/95 !rounded-full !py-4 shadow-[0_0_20px_rgba(255,255,255,0.35)] font-bold"
+                    className="w-full justify-center !bg-white !text-[var(--rave-strong-from)] hover:!bg-white/95 !rounded-full !py-4 shadow-[0_0_20px_rgba(255,255,255,0.35)] font-bold"
                   >
                     View online ticket options
                   </NeonButton>
@@ -281,8 +284,8 @@ export default function TicketsSection({ ticketTiers, trustItems }: { ticketTier
                 variants={fadeUp}
                 className="flex items-center gap-4 p-5 rounded-xl bg-rave-panel/50 border border-white/[0.06]"
                 whileHover={{
-                  borderColor: 'rgba(255, 23, 61, 0.3)',
-                  boxShadow: '0 0 20px rgba(255, 23, 61, 0.1)',
+                  borderColor: rgba(palette.accent, 0.3),
+                  boxShadow: `0 0 20px ${rgba(palette.accent, 0.1)}`,
                 }}
                 transition={{ duration: 0.3 }}
               >

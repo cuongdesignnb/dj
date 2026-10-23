@@ -164,7 +164,7 @@ test('B: malformed or unknown event slugs render not-found, never another event'
     for (const query of ['?event=no-such-event-qa', '?event=..%2Fadmin']) {
       const response = await page.goto(route + query);
       expect(response!.status(), route + query).toBeLessThan(500);
-      await expect(page.getByText(/could not be found/i).first(), route + query).toBeVisible();
+      await expect(page.getByRole('heading', { name: "This page doesn't exist" }), route + query).toBeVisible();
       await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
       await expect(page).not.toHaveTitle(/DESTINY|QA Multi Event/);
     }

@@ -229,7 +229,7 @@ export function LaserLights() {
   const beams = useMemo(() => {
     return Array.from({ length: 8 }, (_, i) => ({
       id: i,
-      color: ['#ff173d', '#8b2cff', '#2e6bff', '#ff0a78'][i % 4],
+      color: ['var(--color-rave-red)', 'var(--color-rave-purple)', 'var(--color-rave-blue)', 'var(--color-rave-magenta)'][i % 4],
       angle: -60 + i * 15,
       delay: i * 0.3,
     }));

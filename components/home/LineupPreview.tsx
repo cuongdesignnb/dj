@@ -203,7 +203,7 @@ export default function LineupPreview({ artists }: { artists: HomeArtist[] }) {
       <motion.div
         className="absolute top-0 left-0 right-0 h-px"
         style={{
-          background: 'linear-gradient(to right, transparent, rgba(255, 23, 61, 0.5), transparent)',
+          background: 'linear-gradient(to right, transparent, rgb(var(--rave-accent-rgb)/0.5), transparent)',
         }}
         animate={{
           opacity: [0.3, 0.8, 0.3],
@@ -250,7 +250,7 @@ export default function LineupPreview({ artists }: { artists: HomeArtist[] }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={() => scroll('left')}
-              className="absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-rave-black/85 border border-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rave-red/20 hover:border-rave-red hover:shadow-[0_0_12px_rgba(255,23,61,0.4)] transition-all duration-300"
+              className="absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-rave-black/85 border border-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rave-red/20 hover:border-rave-red hover:shadow-[0_0_12px_rgb(var(--rave-accent-rgb)/0.4)] transition-all duration-300"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -262,7 +262,7 @@ export default function LineupPreview({ artists }: { artists: HomeArtist[] }) {
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               onClick={() => scroll('right')}
-              className="absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-rave-black/85 border border-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rave-red/20 hover:border-rave-red hover:shadow-[0_0_12px_rgba(255,23,61,0.4)] transition-all duration-300"
+              className="absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-rave-black/85 border border-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-rave-red/20 hover:border-rave-red hover:shadow-[0_0_12px_rgb(var(--rave-accent-rgb)/0.4)] transition-all duration-300"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >

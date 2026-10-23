@@ -64,7 +64,7 @@ export default function EventsSectionHeading({
           className={`block h-[3px] w-20 sm:w-24 mt-1 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red ${
             isCenter ? 'self-center' : 'self-start'
           }`}
-          style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55), 0 0 36px rgba(255,23,61,0.3)' }}
+          style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55), 0 0 36px rgb(var(--rave-accent-rgb)/0.3)' }}
         />
       )}
     </motion.div>

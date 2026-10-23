@@ -38,7 +38,7 @@ export default function AboutCTA({ cta }: Props) {
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(180deg, rgba(3,3,5,0.55), rgba(3,3,5,0.85) 60%, rgba(3,3,5,0.95))',
+                'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.55), rgb(var(--rave-black-rgb)/0.85) 60%, rgb(var(--rave-black-rgb)/0.95))',
             }}
           />
         </div>
@@ -54,7 +54,7 @@ export default function AboutCTA({ cta }: Props) {
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             background:
-              'radial-gradient(60% 60% at 50% 50%, rgba(255,23,61,0.32), transparent 70%)',
+              'radial-gradient(60% 60% at 50% 50%, rgb(var(--rave-accent-rgb)/0.32), transparent 70%)',
           }}
         />
       )}

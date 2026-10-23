@@ -62,7 +62,7 @@ export default function PartnershipTypes({ types }: Props) {
                   whileHover={reduced ? undefined : { y: -8, scale: 1.015 }}
                   animate="rest"
                   transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-                  className="group h-full flex flex-col gap-4 p-6 sm:p-7 rounded-[18px] border border-white/[0.08] bg-rave-panel/40 hover:border-rave-red/55 hover:shadow-[0_0_28px_rgba(255,23,61,0.18)] transition-colors"
+                  className="group h-full flex flex-col gap-4 p-6 sm:p-7 rounded-[18px] border border-white/[0.08] bg-rave-panel/40 hover:border-rave-red/55 hover:shadow-[0_0_28px_rgb(var(--rave-accent-rgb)/0.18)] transition-colors"
                 >
                   <motion.div
                     whileHover={reduced ? undefined : { scale: 1.08 }}

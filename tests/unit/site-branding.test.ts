@@ -8,7 +8,7 @@ describe('site branding from Admin › Settings › Site', () => {
       logo: { src: '/assets/new-logo.svg', alt: 'Connection Rave', mediaId: 'm1' },
       favicon: { src: 'https://cdn.example.com/icon.png', alt: '' },
       name: 'Connection Rave',
-    })).toEqual({ name: 'Connection Rave', logo: { src: '/assets/new-logo.svg', alt: 'Connection Rave' }, favicon: 'https://cdn.example.com/icon.png' });
+    })).toEqual({ name: 'Connection Rave', logo: { src: '/assets/new-logo.svg', alt: 'Connection Rave' }, favicon: 'https://cdn.example.com/icon.png', theme: 'connection' });
   });
 
   it('falls back to the bundled brand when nothing usable is stored', () => {
@@ -28,5 +28,12 @@ describe('site branding from Admin › Settings › Site', () => {
     expect(normaliseBranding({ logo: { src: '/assets/a.svg', alt: '' }, favicon: null, name: 'Connection' }).logo.alt).toBe('Connection');
     expect(organizationSchema('/assets/a.svg').logo).toMatch(/\/assets\/a\.svg$/);
     expect(organizationSchema('https://cdn.example.com/a.svg').logo).toBe('https://cdn.example.com/a.svg');
+  });
+
+  it('accepts only the listed site themes', () => {
+    expect(normaliseBranding({ logo: null, favicon: null, name: null, theme: 'highland' }).theme).toBe('highland');
+    for (const theme of [undefined, null, '', 'HIGHLAND', 'neon', { value: 'highland' }]) {
+      expect(normaliseBranding({ logo: null, favicon: null, name: null, theme }).theme).toBe('connection');
+    }
   });
 });

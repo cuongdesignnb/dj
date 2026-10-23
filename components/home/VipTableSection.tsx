@@ -62,7 +62,7 @@ export default function VipTableSection({ boothPackage }: { boothPackage: HomeBo
       <motion.div
         className="absolute top-0 left-0 right-0 h-px"
         style={{
-          background: 'linear-gradient(to right, transparent, rgba(255, 23, 61, 0.5), transparent)',
+          background: 'linear-gradient(to right, transparent, rgb(var(--rave-accent-rgb)/0.5), transparent)',
         }}
         animate={{
           opacity: [0.3, 0.8, 0.3],
@@ -220,7 +220,7 @@ export default function VipTableSection({ boothPackage }: { boothPackage: HomeBo
                 <motion.div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{
-                    background: 'radial-gradient(ellipse at center, rgba(255,23,61,0.2) 0%, transparent 70%)',
+                    background: 'radial-gradient(ellipse at center, rgb(var(--rave-accent-rgb)/0.2) 0%, transparent 70%)',
                   }}
                 />
 
@@ -248,7 +248,7 @@ export default function VipTableSection({ boothPackage }: { boothPackage: HomeBo
                 <motion.div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{
-                    background: 'radial-gradient(ellipse at center, rgba(139,44,255,0.2) 0%, transparent 70%)',
+                    background: 'radial-gradient(ellipse at center, rgb(var(--rave-purple-rgb)/0.2) 0%, transparent 70%)',
                   }}
                 />
 

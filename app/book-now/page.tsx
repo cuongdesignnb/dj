@@ -35,7 +35,7 @@ function ExperienceTabs({ labels, ticketsHref }: { labels: { tickets: string; vi
       </Link>
       <span
         aria-current="page"
-        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[14px] border border-rave-red bg-rave-red/12 px-6 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_20px_rgba(255,23,61,0.28)]"
+        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[14px] border border-rave-red bg-rave-red/12 px-6 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_20px_rgb(var(--rave-accent-rgb)/0.28)]"
       >
         {labels.vip}
       </span>

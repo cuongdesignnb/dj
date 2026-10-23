@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useSiteBranding } from '@/components/shared/SiteBranding';
 
 interface Shard {
   // Original triangle vertices (in canvas pixel space)
@@ -376,6 +377,7 @@ export default function DESTINYShatter({
   dustCount = 70,
   pauseOffscreen = true,
 }: DESTINYShatterProps) {
+  const { theme } = useSiteBranding();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fallbackRef = useRef<HTMLElement>(null);
@@ -885,7 +887,7 @@ export default function DESTINYShatter({
           fontSize: 'inherit',
           opacity: showFallback ? 1 : 0,
           textShadow:
-            '0 0 18px rgba(255, 23, 61, 0.5), 0 0 36px rgba(255, 23, 61, 0.35)',
+            '0 0 18px rgb(var(--rave-accent-rgb)/0.5), 0 0 36px rgb(var(--rave-accent-rgb)/0.35)',
           WebkitTextStroke: '0px',
           margin: 0,
         }}
@@ -897,7 +899,8 @@ export default function DESTINYShatter({
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
-        style={{ width: '100%', height: '100%' }}
+        // The shards are drawn in pink; the Highland theme turns them ice cyan.
+        style={{ width: '100%', height: '100%', filter: theme === 'highland' ? 'hue-rotate(215deg) saturate(1.15)' : undefined }}
         aria-hidden
       />
     </div>

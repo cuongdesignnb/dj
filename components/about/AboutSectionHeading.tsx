@@ -65,7 +65,7 @@ export default function AboutSectionHeading({
           aria-hidden
           variants={aboutReveal}
           className="block origin-left h-[3px] w-20 sm:w-24 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-          style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55), 0 0 36px rgba(255,23,61,0.3)' }}
+          style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55), 0 0 36px rgb(var(--rave-accent-rgb)/0.3)' }}
         />
       )}
     </motion.div>

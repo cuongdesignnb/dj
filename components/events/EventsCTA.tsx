@@ -49,7 +49,7 @@ export default function EventsCTA({
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(90deg, rgba(3,3,5,0.94) 0%, rgba(3,3,5,0.86) 45%, rgba(3,3,5,0.80) 100%)',
+                'linear-gradient(90deg, rgb(var(--rave-black-rgb)/0.94) 0%, rgb(var(--rave-black-rgb)/0.86) 45%, rgb(var(--rave-black-rgb)/0.80) 100%)',
             }}
           />
         </motion.div>

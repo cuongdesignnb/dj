@@ -37,7 +37,7 @@ export default function EventAction({
 
   const tones: Record<Tone, string> = {
     primary:
-      'bg-gradient-to-r from-rave-red to-rave-red2 text-white hover:brightness-110 shadow-[0_0_22px_rgba(255,23,61,0.35)]',
+      'bg-gradient-to-r from-rave-red to-rave-red2 text-white hover:brightness-110 shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)]',
     secondary:
       'border border-white/15 bg-white/[0.02] text-white hover:border-rave-red/60 hover:bg-rave-red/10',
   };

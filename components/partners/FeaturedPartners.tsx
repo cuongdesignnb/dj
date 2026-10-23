@@ -60,7 +60,7 @@ export default function FeaturedPartners({ partners }: Props) {
                       variants={partnerReveal}
                       className="relative h-12 sm:h-14 w-full max-w-[220px] grid place-items-start"
                     >
-                      <PartnerLogo logo={p.logo} name={p.name} className="max-h-full w-auto object-contain opacity-95 group-hover:drop-shadow-[0_0_14px_rgba(255,23,61,0.45)] transition" />
+                      <PartnerLogo logo={p.logo} name={p.name} className="max-h-full w-auto object-contain opacity-95 group-hover:drop-shadow-[0_0_14px_rgb(var(--rave-accent-rgb)/0.45)] transition" />
                     </motion.div>
                     {p.tagline && (
                       <motion.div
@@ -87,7 +87,7 @@ export default function FeaturedPartners({ partners }: Props) {
                         className="absolute inset-0"
                         style={{
                           background:
-                            'linear-gradient(135deg, rgba(7,7,13,0.85) 0%, rgba(7,7,13,0.5) 35%, rgba(7,7,13,0.10) 70%, rgba(7,7,13,0.95) 100%), linear-gradient(120deg, rgba(255,23,61,0.18), transparent 60%)',
+                            'linear-gradient(135deg, rgb(var(--rave-deep-rgb)/0.85) 0%, rgb(var(--rave-deep-rgb)/0.5) 35%, rgb(var(--rave-deep-rgb)/0.10) 70%, rgb(var(--rave-deep-rgb)/0.95) 100%), linear-gradient(120deg, rgb(var(--rave-accent-rgb)/0.18), transparent 60%)',
                           mixBlendMode: 'normal',
                         }}
                       />

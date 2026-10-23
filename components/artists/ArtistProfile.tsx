@@ -26,7 +26,7 @@ function SectionHeading({ title, titleId }: { title: string; titleId: string }) 
       <span
         aria-hidden
         className="mt-3 block h-[3px] w-20 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-        style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+        style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
       />
     </div>
   );
@@ -71,7 +71,7 @@ export default function ArtistProfile({
           className="pointer-events-none absolute inset-0 -z-10"
           style={{
             background:
-              'radial-gradient(circle at 20% 22%, rgba(255,23,61,0.18), transparent 58%), radial-gradient(circle at 88% 78%, rgba(139,44,255,0.10), transparent 62%)',
+              'radial-gradient(circle at 20% 22%, rgb(var(--rave-accent-rgb)/0.18), transparent 58%), radial-gradient(circle at 88% 78%, rgb(var(--rave-purple-rgb)/0.10), transparent 62%)',
           }}
         />
 
@@ -85,7 +85,7 @@ export default function ArtistProfile({
             {/* Portrait */}
             <motion.div
               variants={artistImageReveal}
-              className="relative aspect-[4/5] overflow-hidden rounded-[20px] border border-rave-red/25 shadow-[0_30px_80px_rgba(255,23,61,0.22)] sm:aspect-[5/4] lg:aspect-[4/5]"
+              className="relative aspect-[4/5] overflow-hidden rounded-[20px] border border-rave-red/25 shadow-[0_30px_80px_rgb(var(--rave-accent-rgb)/0.22)] sm:aspect-[5/4] lg:aspect-[4/5]"
             >
               <Image
                 src={(artist.heroImage ?? artist.portrait).src}
@@ -101,7 +101,7 @@ export default function ArtistProfile({
                 className="absolute inset-0"
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(3,3,5,0.35) 0%, rgba(3,3,5,0) 28%, rgba(3,3,5,0) 62%, rgba(3,3,5,0.75) 100%)',
+                    'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.35) 0%, rgb(var(--rave-black-rgb)/0) 28%, rgb(var(--rave-black-rgb)/0) 62%, rgb(var(--rave-black-rgb)/0.75) 100%)',
                 }}
               />
               <div
@@ -168,7 +168,7 @@ export default function ArtistProfile({
               <motion.div variants={artistReveal} className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
                   href="/tickets"
-                  className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
+                  className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
                 >
                   Get Tickets
                   <ArrowRight
@@ -240,7 +240,7 @@ export default function ArtistProfile({
                 <span
                   aria-hidden
                   className="mt-3 block h-[3px] w-16 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-                  style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                  style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
                 />
 
                 <dl className="mt-5 flex flex-col gap-3 text-sm">
@@ -364,7 +364,7 @@ export default function ArtistProfile({
             >
               <Link
                 href="/tickets"
-                className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
+                className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
               >
                 Get Tickets
                 <ArrowRight

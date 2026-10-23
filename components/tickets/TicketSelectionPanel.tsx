@@ -102,7 +102,7 @@ export default function TicketSelectionPanel({
       <span
         aria-hidden
         className="mt-3 block h-[3px] w-16 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-        style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+        style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
       />
 
       {/* Event mini-card */}
@@ -122,7 +122,7 @@ export default function TicketSelectionPanel({
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(180deg, rgba(3,3,5,0.55) 0%, rgba(3,3,5,0.80) 100%)',
+                'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.55) 0%, rgb(var(--rave-black-rgb)/0.80) 100%)',
             }}
           />
           <div className="absolute inset-0 grid place-items-center text-center">
@@ -201,7 +201,7 @@ export default function TicketSelectionPanel({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.25 }}
             className="font-heading text-3xl font-black tabular-nums text-rave-red"
-            style={{ textShadow: '0 0 18px rgba(255,23,61,0.45)' }}
+            style={{ textShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.45)' }}
           >
             {formatMoney(subtotal)}
           </motion.span>
@@ -249,7 +249,7 @@ export default function TicketSelectionPanel({
             <button
               type="submit"
               disabled={checkoutBusy}
-              className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgba(255,23,61,0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-wait disabled:opacity-70 sm:text-base"
+              className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgb(var(--rave-accent-rgb)/0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-wait disabled:opacity-70 sm:text-base"
             >
               <span>{checkoutBusy ? 'Starting checkout…' : 'Continue to secure payment'}</span>
               <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />
@@ -267,7 +267,7 @@ export default function TicketSelectionPanel({
             href={provider.checkoutUrl as string}
             target="_blank"
             rel="noopener noreferrer"
-            className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgba(255,23,61,0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
+            className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgb(var(--rave-accent-rgb)/0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
           >
             <span>{ctaLabel}</span>
             <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />

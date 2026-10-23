@@ -56,7 +56,7 @@ export default function FaqCategories({
                 aria-hidden
                 layoutId="faq-category-active"
                 transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-                className="absolute inset-0 -z-0 bg-rave-red shadow-[0_0_24px_rgba(255,23,61,0.35)]"
+                className="absolute inset-0 -z-0 bg-rave-red shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.35)]"
               />
             )}
             <Icon aria-hidden className="relative h-6 w-6 shrink-0 lg:h-7 lg:w-7" strokeWidth={1.6} />

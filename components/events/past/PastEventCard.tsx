@@ -39,7 +39,7 @@ export default function PastEventCard({ event }: { event: PastEventSummary }) {
         whileFocus={reduced ? undefined : 'hover'}
         variants={{ rest: { y: 0, scale: 1 }, hover: { y: -8, scale: 1.012 } }}
         transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-        className="relative flex h-full flex-col overflow-hidden rounded-[18px] border border-white/[0.08] bg-rave-panel/80 transition-[border-color,box-shadow] duration-300 focus-within:border-rave-red/50 hover:border-rave-red/50 hover:shadow-[0_22px_60px_rgba(255,23,61,0.22)] @[27rem]:flex-row"
+        className="relative flex h-full flex-col overflow-hidden rounded-[18px] border border-white/[0.08] bg-rave-panel/80 transition-[border-color,box-shadow] duration-300 focus-within:border-rave-red/50 hover:border-rave-red/50 hover:shadow-[0_22px_60px_rgb(var(--rave-accent-rgb)/0.22)] @[27rem]:flex-row"
       >
         {/* Visual */}
         <div className="relative w-full shrink-0 overflow-hidden @[27rem]:w-[44%]">

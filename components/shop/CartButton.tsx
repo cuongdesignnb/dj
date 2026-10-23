@@ -38,7 +38,7 @@ export default function CartButton() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-            className="fixed bottom-5 right-5 z-40 inline-flex min-h-[52px] items-center gap-2.5 rounded-full border border-rave-red/60 bg-rave-black/90 px-5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_10px_40px_rgba(255,23,61,0.35)] backdrop-blur-md transition-colors hover:bg-rave-red/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
+            className="fixed bottom-5 right-5 z-40 inline-flex min-h-[52px] items-center gap-2.5 rounded-full border border-rave-red/60 bg-rave-black/90 px-5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_10px_40px_rgb(var(--rave-accent-rgb)/0.35)] backdrop-blur-md transition-colors hover:bg-rave-red/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
           >
             <ShoppingBag aria-hidden className="h-5 w-5 text-rave-red" />
             Cart{' '}

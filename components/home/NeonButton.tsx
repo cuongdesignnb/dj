@@ -83,14 +83,14 @@ export default function NeonButton({
           <div
             className="absolute inset-0 pointer-events-none rounded-[inherit]"
             style={{
-              boxShadow: '0 0 40px rgba(255, 23, 61, 0.5), 0 0 80px rgba(255, 23, 61, 0.3)',
+              boxShadow: '0 0 40px rgb(var(--rave-accent-rgb)/0.5), 0 0 80px rgb(var(--rave-accent-rgb)/0.3)',
               filter: 'blur(20px)',
             }}
           />
           <div
             className="absolute -inset-1 pointer-events-none rounded-[inherit] animate-pulse-scale opacity-50"
             style={{
-              background: 'radial-gradient(circle, rgba(255, 23, 61, 0.3) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.3) 0%, transparent 70%)',
             }}
           />
         </>

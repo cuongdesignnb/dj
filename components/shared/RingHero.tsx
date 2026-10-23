@@ -74,11 +74,11 @@ export default function RingHero({
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(circle at 52% 38%, rgba(255,23,61,0.45), transparent 42%), linear-gradient(180deg, rgba(3,3,5,0) 55%, #030305 100%)',
+                'radial-gradient(circle at 52% 38%, rgb(var(--rave-accent-rgb)/0.45), transparent 42%), linear-gradient(180deg, rgb(var(--rave-black-rgb)/0) 55%, var(--color-rave-black) 100%)',
             }}
           />
           {/* Connection ring over the stage. */}
-          <div className="absolute left-1/2 top-[44%] hidden h-44 w-44 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[6px] border-rave-red shadow-[0_0_70px_rgba(255,23,61,0.85),inset_0_0_45px_rgba(255,23,61,0.55)] md:grid lg:h-52 lg:w-52">
+          <div className="absolute left-1/2 top-[44%] hidden h-44 w-44 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[6px] border-rave-red shadow-[0_0_70px_rgb(var(--rave-accent-rgb)/0.85),inset_0_0_45px_rgb(var(--rave-accent-rgb)/0.55)] md:grid lg:h-52 lg:w-52">
             <div className="grid h-[72%] w-[72%] place-items-center rounded-full border-2 border-rave-red/60">
               <span className="font-heading text-6xl font-bold text-white lg:text-7xl">C</span>
             </div>
@@ -89,7 +89,7 @@ export default function RingHero({
           className="absolute inset-0 -z-10"
           style={{
             background:
-              'linear-gradient(90deg, #030305 0%, #030305 44%, rgba(3,3,5,0.6) 58%, rgba(3,3,5,0.1) 78%, rgba(3,3,5,0.35) 100%)',
+              'linear-gradient(90deg, var(--color-rave-black) 0%, var(--color-rave-black) 44%, rgb(var(--rave-black-rgb)/0.6) 58%, rgb(var(--rave-black-rgb)/0.1) 78%, rgb(var(--rave-black-rgb)/0.35) 100%)',
           }}
         />
         <motion.div

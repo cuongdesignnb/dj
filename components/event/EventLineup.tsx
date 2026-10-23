@@ -96,7 +96,7 @@ export default function EventLineup({ event, routes }: Props) {
                     className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{
                       background:
-                        'linear-gradient(120deg, rgba(255,23,61,0.18) 0%, rgba(139,44,255,0.16) 60%, transparent 100%)',
+                        'linear-gradient(120deg, rgb(var(--rave-accent-rgb)/0.18) 0%, rgb(var(--rave-purple-rgb)/0.16) 60%, transparent 100%)',
                       mixBlendMode: 'screen',
                     }}
                   />

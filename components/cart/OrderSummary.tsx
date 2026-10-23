@@ -163,7 +163,7 @@ export default function OrderSummary({
           aria-busy={loading || undefined}
           aria-describedby="checkout-status"
           whileTap={unavailable || loading || blocked ? undefined : { scale: 0.97 }}
-          className="group/checkout relative inline-flex min-h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[12px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 font-heading text-lg font-semibold uppercase tracking-wider text-white shadow-[0_0_24px_rgba(255,23,61,0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-panel disabled:cursor-not-allowed disabled:from-white/10 disabled:to-white/10 disabled:text-white/60 disabled:shadow-none"
+          className="group/checkout relative inline-flex min-h-[56px] w-full items-center justify-center gap-2 overflow-hidden rounded-[12px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 font-heading text-lg font-semibold uppercase tracking-wider text-white shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-panel disabled:cursor-not-allowed disabled:from-white/10 disabled:to-white/10 disabled:text-white/60 disabled:shadow-none"
         >
           <span
             aria-hidden

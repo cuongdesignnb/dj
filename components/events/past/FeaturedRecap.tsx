@@ -90,7 +90,7 @@ export default function FeaturedRecap({
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
-          background: 'radial-gradient(60% 50% at 20% 30%, rgba(255,23,61,0.10), transparent 60%)',
+          background: 'radial-gradient(60% 50% at 20% 30%, rgb(var(--rave-accent-rgb)/0.10), transparent 60%)',
         }}
       />
 
@@ -124,7 +124,7 @@ export default function FeaturedRecap({
               pointerX.set(0);
               pointerY.set(0);
             }}
-            className="relative aspect-[4/5] overflow-hidden rounded-[18px] border border-rave-red/30 shadow-[0_30px_80px_rgba(255,23,61,0.22)]"
+            className="relative aspect-[4/5] overflow-hidden rounded-[18px] border border-rave-red/30 shadow-[0_30px_80px_rgb(var(--rave-accent-rgb)/0.22)]"
           >
             {recap.image.src ? (
               <Image

@@ -32,7 +32,7 @@ export default function NewsCard({
       >
         <Link
           href={`/news/${article.slug}`}
-          className="flex h-full flex-col overflow-hidden rounded-[18px] border border-white/[0.08] bg-rave-panel/70 transition-[border-color,box-shadow] duration-300 hover:border-rave-red/60 hover:shadow-[0_22px_60px_rgba(255,23,61,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
+          className="flex h-full flex-col overflow-hidden rounded-[18px] border border-white/[0.08] bg-rave-panel/70 transition-[border-color,box-shadow] duration-300 hover:border-rave-red/60 hover:shadow-[0_22px_60px_rgb(var(--rave-accent-rgb)/0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
         >
           <div className="relative aspect-[16/10] w-full overflow-hidden">
             <motion.div
@@ -55,7 +55,7 @@ export default function NewsCard({
               className="absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(180deg, rgba(3,3,5,0.1) 0%, rgba(3,3,5,0) 55%, rgba(3,3,5,0.55) 100%)',
+                  'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.1) 0%, rgb(var(--rave-black-rgb)/0) 55%, rgb(var(--rave-black-rgb)/0.55) 100%)',
               }}
             />
           </div>

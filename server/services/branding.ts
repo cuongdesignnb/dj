@@ -7,11 +7,11 @@ import { DEFAULT_SITE_BRANDING, normaliseBranding, type SiteBranding } from '@/l
 
 const loadBranding = unstable_cache(
   async (): Promise<SiteBranding> => {
-    const rows = await db.siteSetting.findMany({ where: { key: { in: ['site.logo', 'site.favicon', 'site.name'] } }, select: { key: true, valueJson: true } });
+    const rows = await db.siteSetting.findMany({ where: { key: { in: ['site.logo', 'site.favicon', 'site.name', 'site.theme'] } }, select: { key: true, valueJson: true } });
     const value = (key: string) => rows.find((row) => row.key === key)?.valueJson ?? null;
-    return normaliseBranding({ logo: value('site.logo'), favicon: value('site.favicon'), name: value('site.name') });
+    return normaliseBranding({ logo: value('site.logo'), favicon: value('site.favicon'), name: value('site.name'), theme: value('site.theme') });
   },
-  ['site-branding-v1'],
+  ['site-branding-v2'],
   // Saving Settings › Site revalidates this tag (server/cache/public-revalidation.ts).
   { tags: [PUBLIC_CACHE_TAGS.site], revalidate: 300 },
 );

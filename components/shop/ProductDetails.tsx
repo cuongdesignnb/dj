@@ -73,7 +73,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                 className="absolute inset-0 -z-10"
                 style={{
                   background:
-                    'linear-gradient(90deg, rgba(3,3,5,0.96) 0%, rgba(3,3,5,0.85) 55%, rgba(40,4,12,0.7) 100%)',
+                    'linear-gradient(90deg, rgb(var(--rave-black-rgb)/0.96) 0%, rgb(var(--rave-black-rgb)/0.85) 55%, rgba(40,4,12,0.7) 100%)',
                 }}
               />
 

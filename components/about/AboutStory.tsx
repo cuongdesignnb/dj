@@ -57,7 +57,7 @@ export default function AboutStory({ story }: Props) {
               className="absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(180deg, rgba(7,7,13,0.10) 0%, rgba(7,7,13,0.0) 40%, rgba(7,7,13,0.7) 100%), linear-gradient(120deg, rgba(255,23,61,0.10), transparent 60%)',
+                  'linear-gradient(180deg, rgb(var(--rave-deep-rgb)/0.10) 0%, rgb(var(--rave-deep-rgb)/0.0) 40%, rgb(var(--rave-deep-rgb)/0.7) 100%), linear-gradient(120deg, rgb(var(--rave-accent-rgb)/0.10), transparent 60%)',
                 mixBlendMode: 'screen',
               }}
             />
@@ -117,7 +117,7 @@ export default function AboutStory({ story }: Props) {
                 className={`absolute top-3 left-4 font-heading text-5xl leading-none text-rave-red ${
                   reduced ? '' : 'animate-pulse-glow'
                 }`}
-                style={{ textShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                style={{ textShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
               >
                 “
               </span>

@@ -54,7 +54,7 @@ export default function AboutPartners({ partners }: Props) {
                     logo={partner.logo}
                     name={partner.name}
                     className={`max-h-full w-auto object-contain opacity-60 group-hover:opacity-100 transition-opacity ${
-                      reduced ? '' : 'group-hover:drop-shadow-[0_0_18px_rgba(255,23,61,0.45)]'
+                      reduced ? '' : 'group-hover:drop-shadow-[0_0_18px_rgb(var(--rave-accent-rgb)/0.45)]'
                     }`}
                   />
                   {!reduced && (

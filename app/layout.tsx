@@ -62,6 +62,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
+      data-theme={branding.theme}
       className={`${inter.variable} ${oswald.variable} h-full scroll-smooth`}
     >
       <body className="min-h-full flex flex-col bg-rave-black text-white antialiased font-body">

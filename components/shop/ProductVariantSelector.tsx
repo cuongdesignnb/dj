@@ -84,7 +84,7 @@ export function SizeSelector({
                 aria-hidden
                 layoutId={reduced ? undefined : 'size-selection'}
                 transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                className="absolute inset-0 rounded-[9px] bg-rave-red/20 shadow-[0_0_18px_rgba(255,23,61,0.35)]"
+                className="absolute inset-0 rounded-[9px] bg-rave-red/20 shadow-[0_0_18px_rgb(var(--rave-accent-rgb)/0.35)]"
               />
             )}
             <span className="relative">{size.label}</span>
@@ -131,7 +131,7 @@ export function ColorSelector({
               aria-hidden
               className={`grid h-11 w-11 place-items-center rounded-full border-2 transition-[border-color,box-shadow] duration-300 ${
                 selected
-                  ? 'border-rave-red shadow-[0_0_16px_rgba(255,23,61,0.45)]'
+                  ? 'border-rave-red shadow-[0_0_16px_rgb(var(--rave-accent-rgb)/0.45)]'
                   : 'border-white/25 group-hover/swatch:border-white/50'
               }`}
             >

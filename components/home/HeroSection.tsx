@@ -14,6 +14,8 @@ import { stableUnit, stableSigned } from '@/lib/stable-visual';
 import type { HomeEvent, HomeMedia } from './types';
 import RichText from '@/components/shared/RichText';
 import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
+import { useSitePalette } from '@/components/shared/SiteBranding';
+import { hex } from '@/lib/site-theme';
 
 interface Particle {
   width: number;
@@ -37,10 +39,10 @@ function FloatingParticles() {
       left: `${stableUnit(index + 61) * 100}%`,
       top: `${stableUnit(index + 91) * 100}%`,
       background: [
-        'rgba(255,23,61,0.6)',
-        'rgba(139,44,255,0.5)',
-        'rgba(46,107,255,0.5)',
-        'rgba(255,10,120,0.5)',
+        'rgb(var(--rave-accent-rgb)/0.6)',
+        'rgb(var(--rave-purple-rgb)/0.5)',
+        'rgb(var(--rave-blue-rgb)/0.5)',
+        'rgb(var(--rave-magenta-rgb)/0.5)',
       ][Math.floor(stableUnit(index + 121) * 4)],
       yMove: -30 - stableUnit(index + 151) * 40,
       xMove: stableSigned(index + 181, 10),
@@ -218,7 +220,7 @@ function HeroBackground({ image }: { image: string }) {
       {/* Animated ambient glow - bass pulse effect */}
       <motion.div
         className="absolute inset-0 will-change-[transform,opacity]"
-        style={{ background: 'radial-gradient(ellipse at center, rgba(255,23,61,0.12) 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, rgb(var(--rave-accent-rgb)/0.12) 0%, transparent 70%)' }}
         animate={{ opacity: [0.67, 1, 0.67] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
       />
@@ -229,7 +231,7 @@ function HeroBackground({ image }: { image: string }) {
         style={{
           top: '20%',
           left: '10%',
-          background: 'radial-gradient(circle, rgba(255,23,61,0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.15) 0%, transparent 70%)',
           filter: 'blur(60px)',
         }}
         animate={{
@@ -246,7 +248,7 @@ function HeroBackground({ image }: { image: string }) {
         style={{
           top: '30%',
           right: '15%',
-          background: 'radial-gradient(circle, rgba(139,44,255,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgb(var(--rave-purple-rgb)/0.12) 0%, transparent 70%)',
           filter: 'blur(50px)',
         }}
         animate={{
@@ -263,7 +265,7 @@ function HeroBackground({ image }: { image: string }) {
         style={{
           bottom: '25%',
           left: '30%',
-          background: 'radial-gradient(circle, rgba(255,10,120,0.1) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgb(var(--rave-magenta-rgb)/0.1) 0%, transparent 70%)',
           filter: 'blur(45px)',
         }}
         animate={{
@@ -279,7 +281,7 @@ function HeroBackground({ image }: { image: string }) {
       <motion.div
         className="absolute inset-0 will-change-[transform,opacity]"
         style={{
-          background: 'linear-gradient(135deg, rgba(255,23,61,0.05) 0%, rgba(139,44,255,0.05) 50%, rgba(46,107,255,0.05) 100%)',
+          background: 'linear-gradient(135deg, rgb(var(--rave-accent-rgb)/0.05) 0%, rgb(var(--rave-purple-rgb)/0.05) 50%, rgb(var(--rave-blue-rgb)/0.05) 100%)',
           mixBlendMode: 'screen',
         }}
         animate={{
@@ -356,6 +358,7 @@ function DestinyTitle({ text, animation }: { text: string; animation: HomeMedia 
 }
 
 function AudioVisualizer() {
+  const palette = useSitePalette();
   return (
     <motion.div
       initial={{ opacity: 0, scaleY: 0 }}
@@ -368,7 +371,7 @@ function AudioVisualizer() {
         width={5}
         height={45}
         gap={4}
-        colors={['#ff173d', '#ff304f', '#ff0a78', '#8b2cff', '#ff173d']}
+        colors={[hex(palette.accent), hex(palette.accent2), hex(palette.magenta), hex(palette.purple), hex(palette.accent)]}
         minHeight={0.25}
         maxHeight={1}
       />
@@ -510,7 +513,7 @@ export default function HeroSection({ event, animation = null }: { event: HomeEv
                   »
                 </span>
               }
-              className="!px-10 !py-4.5 !rounded-full !text-base sm:!text-lg border border-white/15 hover:border-rave-red shadow-[0_0_30px_rgba(255,23,61,0.65)] hover:shadow-[0_0_40px_rgba(255,23,61,0.85)]"
+              className="!px-10 !py-4.5 !rounded-full !text-base sm:!text-lg border border-white/15 hover:border-rave-red shadow-[0_0_30px_rgb(var(--rave-accent-rgb)/0.65)] hover:shadow-[0_0_40px_rgb(var(--rave-accent-rgb)/0.85)]"
             >
               View Ticket Details
             </NeonButton>

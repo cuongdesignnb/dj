@@ -93,7 +93,7 @@ export default function ProductGallery({
                   aria-label={`Show ${image.label ?? `image ${index + 1}`}`}
                   className={`relative block aspect-square w-full overflow-hidden rounded-[12px] border-2 transition-[border-color,box-shadow] duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black ${
                     selected
-                      ? 'border-rave-red shadow-[0_0_18px_rgba(255,23,61,0.4)]'
+                      ? 'border-rave-red shadow-[0_0_18px_rgb(var(--rave-accent-rgb)/0.4)]'
                       : 'border-white/10 opacity-75 hover:border-white/35 hover:opacity-100'
                   }`}
                 >

@@ -37,7 +37,7 @@ export default function EventCard({ event }: EventCardProps) {
         whileFocus={reduced ? undefined : 'hover'}
         variants={{ rest: { y: 0, scale: 1 }, hover: { y: -8, scale: 1.012 } }}
         transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-        className="relative flex h-full flex-col overflow-hidden rounded-[18px] border border-white/[0.08] bg-rave-panel/80 transition-[border-color,box-shadow] duration-300 hover:border-rave-red/50 hover:shadow-[0_22px_60px_rgba(255,23,61,0.22)] focus-within:border-rave-red/50 @[27rem]:flex-row"
+        className="relative flex h-full flex-col overflow-hidden rounded-[18px] border border-white/[0.08] bg-rave-panel/80 transition-[border-color,box-shadow] duration-300 hover:border-rave-red/50 hover:shadow-[0_22px_60px_rgb(var(--rave-accent-rgb)/0.22)] focus-within:border-rave-red/50 @[27rem]:flex-row"
       >
         {/* Visual */}
         <div className="relative w-full shrink-0 overflow-hidden @[27rem]:w-[44%]">
@@ -63,7 +63,7 @@ export default function EventCard({ event }: EventCardProps) {
                   className="absolute inset-0"
                   style={{
                     background:
-                      'linear-gradient(180deg, rgba(3,3,5,0.15) 0%, rgba(3,3,5,0) 45%, rgba(3,3,5,0.55) 100%)',
+                      'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.15) 0%, rgb(var(--rave-black-rgb)/0) 45%, rgb(var(--rave-black-rgb)/0.55) 100%)',
                   }}
                 />
               </motion.div>

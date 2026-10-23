@@ -252,7 +252,7 @@ export default function BookingRequestForm({
                   <span
                     aria-hidden
                     className="mt-3 block h-[3px] w-16 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-                    style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                    style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
                   />
                 </div>
                 <p className="font-heading text-[10px] uppercase tracking-[0.26em] text-rave-muted sm:text-[11px]">
@@ -350,7 +350,7 @@ export default function BookingRequestForm({
                   <span
                     aria-hidden
                     className="mt-3 block h-[3px] w-16 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-                    style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                    style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
                   />
                 </div>
                 <p className="font-heading text-[10px] uppercase tracking-[0.26em] text-rave-muted sm:text-[11px]">
@@ -488,7 +488,7 @@ export default function BookingRequestForm({
                 <button
                   type="submit"
                   disabled={submitting || result?.status === 'received'}
-                  className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgba(255,23,61,0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-wait disabled:opacity-70 sm:text-base"
+                  className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgb(var(--rave-accent-rgb)/0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-wait disabled:opacity-70 sm:text-base"
                 >
                   <span>{submitting ? '…' : content.submitLabel}</span>
                   <ArrowRight
@@ -583,7 +583,7 @@ export default function BookingRequestForm({
               <span
                 aria-hidden
                 className="mt-3 block h-[3px] w-16 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-                style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
               />
 
               <div className="relative mt-5 h-28 overflow-hidden rounded-[16px] border border-white/[0.08] sm:h-32">
@@ -601,7 +601,7 @@ export default function BookingRequestForm({
                   className="absolute inset-0"
                   style={{
                     background:
-                      'linear-gradient(180deg, rgba(3,3,5,0.55) 0%, rgba(3,3,5,0.80) 100%)',
+                      'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.55) 0%, rgb(var(--rave-black-rgb)/0.80) 100%)',
                   }}
                 />
                 <div className="absolute inset-0 grid place-items-center text-center">
@@ -706,7 +706,7 @@ export default function BookingRequestForm({
                 <span
                   aria-hidden
                   className="mt-3 block h-[3px] w-14 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-                  style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                  style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
                 />
 
                 <motion.ol

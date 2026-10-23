@@ -74,7 +74,7 @@ export default function AddToCartButton({
   const added = status.kind === 'added';
   const base =
     tone === 'primary'
-      ? 'bg-gradient-to-r from-rave-red to-rave-red2 text-white shadow-[0_0_24px_rgba(255,23,61,0.35)] hover:brightness-110'
+      ? 'bg-gradient-to-r from-rave-red to-rave-red2 text-white shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.35)] hover:brightness-110'
       : 'border border-white/25 bg-white/[0.02] text-white hover:border-rave-red/60 hover:bg-rave-red/10';
 
   return (

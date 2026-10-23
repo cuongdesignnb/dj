@@ -20,7 +20,7 @@ export default function SectionHeading({
         <span
           aria-hidden
           className="mt-2.5 block h-[3px] w-16 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-          style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+          style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
         />
       </div>
       {context && (

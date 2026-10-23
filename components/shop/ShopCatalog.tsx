@@ -63,7 +63,7 @@ function FeaturedProduct({
       variants={shopStagger}
       initial="hidden"
       animate={animate ? 'visible' : 'hidden'}
-      className="relative mt-6 overflow-hidden rounded-[20px] border border-rave-red/40 bg-rave-panel/70 shadow-[0_0_40px_rgba(255,23,61,0.12)]"
+      className="relative mt-6 overflow-hidden rounded-[20px] border border-rave-red/40 bg-rave-panel/70 shadow-[0_0_40px_rgb(var(--rave-accent-rgb)/0.12)]"
     >
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         <motion.div
@@ -125,7 +125,7 @@ function FeaturedProduct({
           <motion.div variants={shopReveal} className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
             <Link
               href={`/shop/${product.slug}`}
-              className="group/cta inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[12px] bg-gradient-to-r from-rave-red to-rave-red2 px-5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
+              className="group/cta inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[12px] bg-gradient-to-r from-rave-red to-rave-red2 px-5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
             >
               View Product
               <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />
@@ -234,7 +234,7 @@ export default function ShopCatalog({
                   onClick={() => select(option)}
                   className={`relative inline-flex min-h-[48px] items-center gap-2.5 rounded-[12px] border px-5 font-heading text-sm font-semibold uppercase tracking-wider transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black ${
                     active
-                      ? 'border-rave-red bg-rave-red text-white shadow-[0_0_20px_rgba(255,23,61,0.35)]'
+                      ? 'border-rave-red bg-rave-red text-white shadow-[0_0_20px_rgb(var(--rave-accent-rgb)/0.35)]'
                       : 'border-white/[0.14] bg-white/[0.02] text-white/85 hover:border-white/35 hover:text-white'
                   }`}
                 >

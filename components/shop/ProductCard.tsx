@@ -29,7 +29,7 @@ export default function ProductCard({
     <motion.article variants={shopReveal} className="h-full">
       <Link
         href={`/shop/${product.slug}`}
-        className={`group/card flex h-full flex-col overflow-hidden rounded-[18px] border bg-rave-panel/70 transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1.5 hover:border-rave-red/70 hover:shadow-[0_22px_60px_rgba(255,23,61,0.22)] focus:outline-none focus-visible:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black motion-reduce:transform-none ${
+        className={`group/card flex h-full flex-col overflow-hidden rounded-[18px] border bg-rave-panel/70 transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1.5 hover:border-rave-red/70 hover:shadow-[0_22px_60px_rgb(var(--rave-accent-rgb)/0.22)] focus:outline-none focus-visible:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black motion-reduce:transform-none ${
           product.featured ? 'border-rave-red/45' : 'border-white/[0.08]'
         }`}
       >

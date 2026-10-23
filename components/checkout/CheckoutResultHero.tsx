@@ -67,7 +67,7 @@ export default function CheckoutResultHero({
   const success = tone === 'success';
 
   const ring = success
-    ? 'border-rave-red text-rave-red shadow-[0_0_70px_rgba(255,23,61,0.75),inset_0_0_40px_rgba(255,23,61,0.45)]'
+    ? 'border-rave-red text-rave-red shadow-[0_0_70px_rgb(var(--rave-accent-rgb)/0.75),inset_0_0_40px_rgb(var(--rave-accent-rgb)/0.45)]'
     : tone === 'problem'
       ? 'border-white/40 text-white/85'
       : 'border-white/30 text-white/80';
@@ -99,15 +99,15 @@ export default function CheckoutResultHero({
             className="absolute inset-0"
             style={{
               background: success
-                ? 'linear-gradient(90deg, rgba(3,3,5,0.2) 0%, rgba(3,3,5,0.55) 60%, #030305 100%), radial-gradient(circle at 45% 40%, rgba(255,23,61,0.35), transparent 55%)'
-                : 'linear-gradient(90deg, rgba(3,3,5,0.45) 0%, rgba(3,3,5,0.75) 60%, #030305 100%)',
+                ? 'linear-gradient(90deg, rgb(var(--rave-black-rgb)/0.2) 0%, rgb(var(--rave-black-rgb)/0.55) 60%, var(--color-rave-black) 100%), radial-gradient(circle at 45% 40%, rgb(var(--rave-accent-rgb)/0.35), transparent 55%)'
+                : 'linear-gradient(90deg, rgb(var(--rave-black-rgb)/0.45) 0%, rgb(var(--rave-black-rgb)/0.75) 60%, var(--color-rave-black) 100%)',
             }}
           />
         </div>
         <div
           aria-hidden
           className="absolute inset-0 -z-10 md:hidden"
-          style={{ background: 'linear-gradient(180deg, rgba(3,3,5,0.3) 0%, #030305 70%)' }}
+          style={{ background: 'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.3) 0%, var(--color-rave-black) 70%)' }}
         />
 
         <Container>
@@ -176,7 +176,7 @@ export default function CheckoutResultHero({
                         aria-hidden
                         className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 ${
                           step.state === 'done'
-                            ? 'border-rave-red text-rave-red shadow-[0_0_14px_rgba(255,23,61,0.45)]'
+                            ? 'border-rave-red text-rave-red shadow-[0_0_14px_rgb(var(--rave-accent-rgb)/0.45)]'
                             : step.state === 'active'
                               ? 'border-white/60 text-white'
                               : 'border-white/20 text-white/30'

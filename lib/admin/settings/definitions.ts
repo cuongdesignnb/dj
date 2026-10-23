@@ -1,4 +1,5 @@
 import { f, opts, section } from '@/lib/admin/common/fields';
+import { SITE_THEMES, SITE_THEME_LABELS } from '@/lib/site-theme';
 import type { SingletonDefinition } from '@/lib/admin/common/resource';
 
 // Settings. Secrets are never returned to the browser: the integration record
@@ -17,6 +18,7 @@ export const siteSettingsDefinition: SingletonDefinition = {
     tagline: 'Sound Meets Soul',
     logo: { src: '/assets/logo-connection.svg', alt: 'Connection logo', mediaId: null },
     favicon: null,
+    theme: 'connection',
     defaultTitle: 'Connection Rave',
     defaultDescription: '',
     ogImage: null,
@@ -37,6 +39,7 @@ export const siteSettingsDefinition: SingletonDefinition = {
         f.text('tagline', 'Tagline', { width: 'half' }),
         f.media('logo', 'Logo'),
         f.media('favicon', 'Favicon'),
+        f.select('theme', 'Site colour theme', opts(...SITE_THEMES.map((value) => [value, SITE_THEME_LABELS[value]] as [string, string])), { help: 'Colours of the public website. Admin keeps its own colours.' }),
       ]),
       section('seo', 'Default SEO', [
         f.text('defaultTitle', 'Default title', { required: true, maxLength: 70 }),

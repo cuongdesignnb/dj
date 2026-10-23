@@ -100,7 +100,7 @@ export default function PageHero({
           className="pointer-events-none absolute inset-0 -z-10"
           style={{
             background:
-              'radial-gradient(circle at 12% 18%, rgba(255,23,61,0.16), transparent 55%), radial-gradient(circle at 90% 80%, rgba(139,44,255,0.10), transparent 60%)',
+              'radial-gradient(circle at 12% 18%, rgb(var(--rave-accent-rgb)/0.16), transparent 55%), radial-gradient(circle at 90% 80%, rgb(var(--rave-purple-rgb)/0.10), transparent 60%)',
           }}
         />
 
@@ -174,7 +174,7 @@ export default function PageHero({
                       href={action.href}
                       className={`group/cta inline-flex items-center justify-center gap-2 rounded-[14px] px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base ${
                         (action.tone ?? 'primary') === 'primary'
-                          ? 'bg-gradient-to-r from-rave-red to-rave-red2 text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] hover:brightness-110'
+                          ? 'bg-gradient-to-r from-rave-red to-rave-red2 text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] hover:brightness-110'
                           : 'border border-white/15 bg-white/[0.02] text-white hover:border-rave-red/60 hover:bg-rave-red/10'
                       }`}
                     >
@@ -205,7 +205,7 @@ export default function PageHero({
                   tiltX.set(0);
                   tiltY.set(0);
                 }}
-                className="relative aspect-[16/11] overflow-hidden rounded-[20px] border border-white/[0.08] shadow-[0_30px_80px_rgba(255,23,61,0.18)]"
+                className="relative aspect-[16/11] overflow-hidden rounded-[20px] border border-white/[0.08] shadow-[0_30px_80px_rgb(var(--rave-accent-rgb)/0.18)]"
               >
                 <Image
                   src={visual.src}
@@ -220,7 +220,7 @@ export default function PageHero({
                   className="absolute inset-0"
                   style={{
                     background:
-                      'linear-gradient(90deg, rgba(3,3,5,0.55) 0%, rgba(3,3,5,0) 45%), linear-gradient(180deg, rgba(3,3,5,0) 45%, rgba(3,3,5,0.6) 100%)',
+                      'linear-gradient(90deg, rgb(var(--rave-black-rgb)/0.55) 0%, rgb(var(--rave-black-rgb)/0) 45%), linear-gradient(180deg, rgb(var(--rave-black-rgb)/0) 45%, rgb(var(--rave-black-rgb)/0.6) 100%)',
                   }}
                 />
 
@@ -276,7 +276,7 @@ export default function PageHero({
                     className="absolute -inset-2 -z-10 rounded-[24px] blur-2xl"
                     style={{
                       background:
-                        'radial-gradient(60% 60% at 50% 50%, rgba(255,23,61,0.45), transparent 70%)',
+                        'radial-gradient(60% 60% at 50% 50%, rgb(var(--rave-accent-rgb)/0.45), transparent 70%)',
                     }}
                     animate={inView ? { opacity: [0.35, 0.55, 0.35] } : { opacity: 0 }}
                     transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}

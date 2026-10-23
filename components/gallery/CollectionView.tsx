@@ -52,7 +52,7 @@ function Heading({
         <span
           aria-hidden
           className="mt-3 block h-[3px] w-20 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red sm:w-24"
-          style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+          style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
         />
       </div>
       {context && (
@@ -160,7 +160,7 @@ export default function CollectionView({ collection }: { collection: GalleryColl
                   }}
                   className={`inline-flex min-h-[44px] items-center gap-2 rounded-[14px] border px-5 font-heading text-xs font-semibold uppercase tracking-[0.12em] transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-sm ${
                     active
-                      ? 'border-rave-red bg-rave-red text-white shadow-[0_0_20px_rgba(255,23,61,0.35)]'
+                      ? 'border-rave-red bg-rave-red text-white shadow-[0_0_20px_rgb(var(--rave-accent-rgb)/0.35)]'
                       : 'border-white/[0.12] bg-white/[0.02] text-rave-muted hover:border-white/30 hover:text-white'
                   }`}
                 >
@@ -215,7 +215,7 @@ export default function CollectionView({ collection }: { collection: GalleryColl
               <span
                 aria-hidden
                 className="mt-3 block h-[3px] w-14 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-                style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
               />
 
               {collection.description && (

@@ -62,7 +62,7 @@ export default function AboutEcosystem({ items }: Props) {
                     className="absolute inset-0 transition-opacity duration-500"
                     style={{
                       background:
-                        'linear-gradient(180deg, rgba(7,7,13,0.10) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.95) 100%), linear-gradient(120deg, rgba(255,23,61,0.18), rgba(139,44,255,0.10) 60%, transparent 100%)',
+                        'linear-gradient(180deg, rgb(var(--rave-deep-rgb)/0.10) 0%, rgb(var(--rave-deep-rgb)/0.55) 60%, rgb(var(--rave-deep-rgb)/0.95) 100%), linear-gradient(120deg, rgb(var(--rave-accent-rgb)/0.18), rgb(var(--rave-purple-rgb)/0.10) 60%, transparent 100%)',
                     }}
                   />
                 </motion.div>

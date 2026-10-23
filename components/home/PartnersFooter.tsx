@@ -10,7 +10,8 @@ import type { HomeFooterData, HomePartner } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import RichText from '@/components/shared/RichText';
 import { useToast } from '@/components/shared/toast/ToastProvider';
-import { SiteLogo } from '@/components/shared/SiteBranding';
+import { SiteLogo, useSitePalette } from '@/components/shared/SiteBranding';
+import { rgba } from '@/lib/site-theme';
 import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -72,7 +73,7 @@ function MarqueeStrip({ partners }: { partners: HomePartner[] }) {
           <motion.span
             key={`${p.id}-${i}`}
             className="font-heading text-sm tracking-wider text-white/40 hover:text-white transition-colors duration-300 mx-8 cursor-default"
-            whileHover={{ scale: 1.1, color: '#ff173d' }}
+            whileHover={{ scale: 1.1, color: 'var(--color-rave-red)' }}
           >
             {p.label}
           </motion.span>
@@ -87,6 +88,7 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
   const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const toast = useToast();
   const sponsors = useSponsors();
+  const palette = useSitePalette();
   const sponsorNames = new Set(sponsors.map((sponsor) => sponsor.name.toLowerCase()));
   const textPartners = footer.partners.filter((partner) => !sponsorNames.has(partner.label.toLowerCase()));
   const [global, setGlobal] = useState<{ tagline?: string; footerDescription?: string; copyright?: string }>({});
@@ -169,7 +171,7 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                       <motion.span
                         key={p.id}
                         className="font-heading text-sm tracking-wider text-white/60 hover:text-white transition-colors uppercase cursor-default"
-                        whileHover={{ scale: 1.1, color: '#ff173d' }}
+                        whileHover={{ scale: 1.1, color: 'var(--color-rave-red)' }}
                         transition={{ type: 'spring', stiffness: 400 }}
                       >
                         {p.label}
@@ -305,8 +307,8 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                     className="flex-1 min-w-0 bg-rave-panel border border-white/[0.08] rounded-l-xl px-4 py-2.5 text-sm text-white placeholder:text-rave-muted/50 focus:outline-none transition-colors"
                     aria-label="Email for newsletter"
                     whileFocus={{
-                      borderColor: 'rgba(255, 23, 61, 0.5)',
-                      boxShadow: '0 0 15px rgba(255, 23, 61, 0.2)',
+                      borderColor: rgba(palette.accent, 0.5),
+                      boxShadow: `0 0 15px ${rgba(palette.accent, 0.2)}`,
                     }}
                   />
                   <motion.button

@@ -39,19 +39,83 @@
   --font-body: var(--font-inter), 'Inter', sans-serif;
 }
 
+/*
+ * Site colour themes (Admin › Settings › Site › Site colour theme), set as
+ * data-theme on <html>. Components use the --color-rave-* tokens and, for
+ * translucent glows, rgb(var(--rave-*-rgb)/alpha). Admin pins "connection".
+ */
+:root,
+[data-theme="connection"] {
+  --rave-accent-rgb: 255 23 61;
+  --rave-accent2-rgb: 255 48 79;
+  --rave-magenta-rgb: 255 10 120;
+  --rave-purple-rgb: 139 44 255;
+  --rave-blue-rgb: 46 107 255;
+  --rave-black-rgb: 3 3 5;
+  --rave-deep-rgb: 7 7 13;
+  --rave-strong-rgb: 227 28 53;
+  --rave-strong-from: #D10A24;
+  --rave-strong-to: #990B1E;
+  --rave-on-accent: #FFFFFF;
+  --color-rave-black: #030305;
+  --color-rave-deep: #07070D;
+  --color-rave-panel: #0B0B12;
+  --color-rave-panel2: #111119;
+  --color-rave-red: #FF173D;
+  --color-rave-red2: #FF304F;
+  --color-rave-magenta: #FF0A78;
+  --color-rave-purple: #8B2CFF;
+  --color-rave-blue: #2E6BFF;
+  --color-rave-muted: #A6A6B2;
+}
+
+/* Highland (Hi-Land Tour poster): ice cyan and electric blue on navy black. */
+[data-theme="highland"] {
+  --rave-accent-rgb: 85 230 242;
+  --rave-accent2-rgb: 168 243 255;
+  --rave-magenta-rgb: 47 184 255;
+  --rave-purple-rgb: 28 111 209;
+  --rave-blue-rgb: 143 216 255;
+  --rave-black-rgb: 5 11 18;
+  --rave-deep-rgb: 8 17 27;
+  --rave-strong-rgb: 21 147 184;
+  --rave-strong-from: #1593B8;
+  --rave-strong-to: #0B4F74;
+  --rave-on-accent: #04202A;
+  --color-rave-black: #050B12;
+  --color-rave-deep: #08111B;
+  --color-rave-panel: #0C1824;
+  --color-rave-panel2: #112131;
+  --color-rave-red: #55E6F2;
+  --color-rave-red2: #A8F3FF;
+  --color-rave-magenta: #2FB8FF;
+  --color-rave-purple: #1C6FD1;
+  --color-rave-blue: #8FD8FF;
+  --color-rave-muted: #A3B4C4;
+}
+
+/* Ice cyan is light: solid accent buttons and badges get dark text in Highland. */
+[data-theme="highland"] :is(.bg-rave-red, .bg-rave-red2, .from-rave-red),
+[data-theme="highland"] :is(.bg-rave-red, .bg-rave-red2, .from-rave-red) :is(.text-white, .text-rave-white) {
+  color: var(--rave-on-accent);
+}
+[data-theme="highland"] ::selection {
+  color: var(--rave-on-accent);
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background: #030305;
+  background: var(--color-rave-black);
   color: #fff;
   overflow-x: hidden;
   font-family: var(--font-body), 'Inter', sans-serif;
 }
 
 ::selection {
-  background: rgba(255, 23, 61, 0.75);
+  background: rgb(var(--rave-accent-rgb)/0.75);
   color: #fff;
 }
 
@@ -82,15 +146,15 @@ body {
 /* Neon effects */
 .neon-red {
   box-shadow:
-    0 0 12px rgba(255, 23, 61, 0.45),
-    0 0 28px rgba(255, 23, 61, 0.25),
-    inset 0 0 18px rgba(255, 23, 61, 0.10);
+    0 0 12px rgb(var(--rave-accent-rgb)/0.45),
+    0 0 28px rgb(var(--rave-accent-rgb)/0.25),
+    inset 0 0 18px rgb(var(--rave-accent-rgb)/0.10);
 }
 
 .neon-text {
   text-shadow:
-    0 0 8px rgba(255, 23, 61, 0.65),
-    0 0 24px rgba(255, 23, 61, 0.35);
+    0 0 8px rgb(var(--rave-accent-rgb)/0.65),
+    0 0 24px rgb(var(--rave-accent-rgb)/0.35);
 }
 
 .glass-panel {
@@ -100,22 +164,22 @@ body {
 }
 
 .neon-border {
-  border: 1px solid rgba(255, 23, 61, 0.65);
+  border: 1px solid rgb(var(--rave-accent-rgb)/0.65);
   box-shadow:
-    0 0 14px rgba(255, 23, 61, .35),
-    inset 0 0 18px rgba(255, 23, 61, .08);
+    0 0 14px rgb(var(--rave-accent-rgb)/.35),
+    inset 0 0 18px rgb(var(--rave-accent-rgb)/.08);
 }
 
 .neon-border-soft {
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 0 20px rgba(255, 23, 61, .12),
+    0 0 20px rgb(var(--rave-accent-rgb)/.12),
     inset 0 0 20px rgba(255, 255, 255, .03);
 }
 
 .text-neon-red {
-  color: #ff173d;
-  text-shadow: 0 0 18px rgba(255,23,61,.55);
+  color: var(--color-rave-red);
+  text-shadow: 0 0 18px rgb(var(--rave-accent-rgb)/.55);
 }
 
 /* Scrollbar */
@@ -123,14 +187,14 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #07070D;
+  background: var(--color-rave-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 23, 61, 0.4);
+  background: rgb(var(--rave-accent-rgb)/0.4);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 23, 61, 0.6);
+  background: rgb(var(--rave-accent-rgb)/0.6);
 }
 
 /* Keyframes */
@@ -141,10 +205,10 @@ body {
 
 @keyframes pulse-glow {
   0%, 100% { 
-    text-shadow: 0 0 20px rgba(255, 23, 61, 0.4), 0 0 40px rgba(255, 23, 61, 0.2);
+    text-shadow: 0 0 20px rgb(var(--rave-accent-rgb)/0.4), 0 0 40px rgb(var(--rave-accent-rgb)/0.2);
   }
   50% { 
-    text-shadow: 0 0 30px rgba(255, 23, 61, 0.7), 0 0 60px rgba(255, 23, 61, 0.4), 0 0 90px rgba(255, 23, 61, 0.2);
+    text-shadow: 0 0 30px rgb(var(--rave-accent-rgb)/0.7), 0 0 60px rgb(var(--rave-accent-rgb)/0.4), 0 0 90px rgb(var(--rave-accent-rgb)/0.2);
   }
 }
 
@@ -194,10 +258,10 @@ body {
 @keyframes neon-flicker {
   0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
     text-shadow:
-      0 0 7px #ff173d,
-      0 0 15px #ff173d,
-      0 0 30px #ff173d,
-      0 0 60px #ff173d;
+      0 0 7px var(--color-rave-red),
+      0 0 15px var(--color-rave-red),
+      0 0 30px var(--color-rave-red),
+      0 0 60px var(--color-rave-red);
     opacity: 1;
   }
   20%, 24%, 55% {
@@ -210,23 +274,23 @@ body {
 @keyframes neon-glow-pulse {
   0%, 100% {
     text-shadow:
-      0 0 5px rgba(255, 23, 61, 0.5),
-      0 0 15px rgba(255, 23, 61, 0.4),
-      0 0 30px rgba(255, 23, 61, 0.3);
+      0 0 5px rgb(var(--rave-accent-rgb)/0.5),
+      0 0 15px rgb(var(--rave-accent-rgb)/0.4),
+      0 0 30px rgb(var(--rave-accent-rgb)/0.3);
     box-shadow:
-      0 0 10px rgba(255, 23, 61, 0.3),
-      0 0 25px rgba(255, 23, 61, 0.2);
+      0 0 10px rgb(var(--rave-accent-rgb)/0.3),
+      0 0 25px rgb(var(--rave-accent-rgb)/0.2);
   }
   50% {
     text-shadow:
-      0 0 10px rgba(255, 23, 61, 0.8),
-      0 0 25px rgba(255, 23, 61, 0.6),
-      0 0 50px rgba(255, 23, 61, 0.4),
-      0 0 80px rgba(255, 23, 61, 0.2);
+      0 0 10px rgb(var(--rave-accent-rgb)/0.8),
+      0 0 25px rgb(var(--rave-accent-rgb)/0.6),
+      0 0 50px rgb(var(--rave-accent-rgb)/0.4),
+      0 0 80px rgb(var(--rave-accent-rgb)/0.2);
     box-shadow:
-      0 0 20px rgba(255, 23, 61, 0.5),
-      0 0 40px rgba(255, 23, 61, 0.3),
-      0 0 60px rgba(255, 23, 61, 0.1);
+      0 0 20px rgb(var(--rave-accent-rgb)/0.5),
+      0 0 40px rgb(var(--rave-accent-rgb)/0.3),
+      0 0 60px rgb(var(--rave-accent-rgb)/0.1);
   }
 }
 
@@ -309,10 +373,10 @@ body {
 /* Border glow expand */
 @keyframes border-glow-expand {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(255, 23, 61, 0.3), inset 0 0 10px rgba(255, 23, 61, 0.1);
+    box-shadow: 0 0 10px rgb(var(--rave-accent-rgb)/0.3), inset 0 0 10px rgb(var(--rave-accent-rgb)/0.1);
   }
   50% {
-    box-shadow: 0 0 25px rgba(255, 23, 61, 0.6), inset 0 0 20px rgba(255, 23, 61, 0.2);
+    box-shadow: 0 0 25px rgb(var(--rave-accent-rgb)/0.6), inset 0 0 20px rgb(var(--rave-accent-rgb)/0.2);
   }
 }
 
@@ -339,15 +403,15 @@ body {
 /* Rainbow glow pulse */
 @keyframes rainbow-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 23, 61, 0.6), 0 0 40px rgba(255, 23, 61, 0.4);
+    box-shadow: 0 0 20px rgb(var(--rave-accent-rgb)/0.6), 0 0 40px rgb(var(--rave-accent-rgb)/0.4);
     filter: hue-rotate(0deg);
   }
   33% {
-    box-shadow: 0 0 25px rgba(139, 44, 255, 0.6), 0 0 50px rgba(139, 44, 255, 0.4);
+    box-shadow: 0 0 25px rgb(var(--rave-purple-rgb)/0.6), 0 0 50px rgb(var(--rave-purple-rgb)/0.4);
     filter: hue-rotate(60deg);
   }
   66% {
-    box-shadow: 0 0 25px rgba(46, 107, 255, 0.6), 0 0 50px rgba(46, 107, 255, 0.4);
+    box-shadow: 0 0 25px rgb(var(--rave-blue-rgb)/0.6), 0 0 50px rgb(var(--rave-blue-rgb)/0.4);
     filter: hue-rotate(120deg);
   }
 }
@@ -355,12 +419,12 @@ body {
 /* Intense glow pulse */
 @keyframes intense-glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(255, 23, 61, 0.4), 0 0 30px rgba(255, 23, 61, 0.2), inset 0 0 15px rgba(255, 23, 61, 0.1);
-    text-shadow: 0 0 10px rgba(255, 23, 61, 0.5), 0 0 20px rgba(255, 23, 61, 0.3);
+    box-shadow: 0 0 15px rgb(var(--rave-accent-rgb)/0.4), 0 0 30px rgb(var(--rave-accent-rgb)/0.2), inset 0 0 15px rgb(var(--rave-accent-rgb)/0.1);
+    text-shadow: 0 0 10px rgb(var(--rave-accent-rgb)/0.5), 0 0 20px rgb(var(--rave-accent-rgb)/0.3);
   }
   50% {
-    box-shadow: 0 0 35px rgba(255, 23, 61, 0.7), 0 0 70px rgba(255, 23, 61, 0.5), inset 0 0 30px rgba(255, 23, 61, 0.2);
-    text-shadow: 0 0 20px rgba(255, 23, 61, 0.8), 0 0 40px rgba(255, 23, 61, 0.6), 0 0 60px rgba(255, 23, 61, 0.3);
+    box-shadow: 0 0 35px rgb(var(--rave-accent-rgb)/0.7), 0 0 70px rgb(var(--rave-accent-rgb)/0.5), inset 0 0 30px rgb(var(--rave-accent-rgb)/0.2);
+    text-shadow: 0 0 20px rgb(var(--rave-accent-rgb)/0.8), 0 0 40px rgb(var(--rave-accent-rgb)/0.6), 0 0 60px rgb(var(--rave-accent-rgb)/0.3);
   }
 }
 
@@ -409,19 +473,19 @@ body {
 /* Neon text flicker */
 @keyframes neon-text-flicker {
   0%, 100% {
-    text-shadow: 0 0 5px #ff173d, 0 0 10px #ff173d, 0 0 20px #ff173d, 0 0 40px #ff173d;
+    text-shadow: 0 0 5px var(--color-rave-red), 0 0 10px var(--color-rave-red), 0 0 20px var(--color-rave-red), 0 0 40px var(--color-rave-red);
     opacity: 1;
   }
   5%, 10% {
-    text-shadow: 0 0 2px #ff173d, 0 0 5px #ff173d;
+    text-shadow: 0 0 2px var(--color-rave-red), 0 0 5px var(--color-rave-red);
     opacity: 0.8;
   }
   15%, 85% {
-    text-shadow: 0 0 5px #ff173d, 0 0 10px #ff173d, 0 0 20px #ff173d, 0 0 40px #ff173d;
+    text-shadow: 0 0 5px var(--color-rave-red), 0 0 10px var(--color-rave-red), 0 0 20px var(--color-rave-red), 0 0 40px var(--color-rave-red);
     opacity: 1;
   }
   90%, 95% {
-    text-shadow: 0 0 2px #ff173d;
+    text-shadow: 0 0 2px var(--color-rave-red);
     opacity: 0.7;
   }
 }
@@ -462,22 +526,22 @@ body {
   0% {
     transform: scale(0.8);
     opacity: 0.8;
-    box-shadow: 0 0 0 0 rgba(255, 23, 61, 0.6);
+    box-shadow: 0 0 0 0 rgb(var(--rave-accent-rgb)/0.6);
   }
   100% {
     transform: scale(1.5);
     opacity: 0;
-    box-shadow: 0 0 0 30px rgba(255, 23, 61, 0);
+    box-shadow: 0 0 0 30px rgb(var(--rave-accent-rgb)/0);
   }
 }
 
 /* Color shift gradient */
 @keyframes color-shift {
-  0% { --glow-color: #ff173d; }
-  25% { --glow-color: #ff0a78; }
-  50% { --glow-color: #8b2cff; }
-  75% { --glow-color: #2e6bff; }
-  100% { --glow-color: #ff173d; }
+  0% { --glow-color: var(--color-rave-red); }
+  25% { --glow-color: var(--color-rave-magenta); }
+  50% { --glow-color: var(--color-rave-purple); }
+  75% { --glow-color: var(--color-rave-blue); }
+  100% { --glow-color: var(--color-rave-red); }
 }
 
 /* ====== ANIMATION UTILITY CLASSES ====== */
@@ -543,12 +607,12 @@ body {
 }
 
 .glitch-layer-1 {
-  color: #ff173d;
+  color: var(--color-rave-red);
   animation: glitch-clip-1 2s infinite;
 }
 
 .glitch-layer-2 {
-  color: #2e6bff;
+  color: var(--color-rave-blue);
   animation: glitch-clip-2 2.5s infinite;
   animation-delay: 0.5s;
 }
@@ -573,7 +637,7 @@ body {
 
 /* Aurora wave */
 .animate-aurora {
-  background: linear-gradient(90deg, #ff173d, #8b2cff, #2e6bff, #ff0a78, #ff173d);
+  background: linear-gradient(90deg, var(--color-rave-red), var(--color-rave-purple), var(--color-rave-blue), var(--color-rave-magenta), var(--color-rave-red));
   background-size: 400% 100%;
   animation: aurora-wave 8s ease-in-out infinite;
 }
@@ -592,7 +656,7 @@ body {
   content: '';
   position: absolute;
   inset: -50%;
-  background: radial-gradient(circle, rgba(255,23,61,0.3) 0%, transparent 50%);
+  background: radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.3) 0%, transparent 50%);
   animation: spotlight-sweep 3s linear infinite;
   pointer-events: none;
 }
@@ -617,18 +681,18 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  border: 2px solid rgba(255, 23, 61, 0.5);
+  border: 2px solid rgb(var(--rave-accent-rgb)/0.5);
   animation: ring-expand 1.5s ease-out infinite;
   pointer-events: none;
 }
 
 /* Gradient text with glow */
 .text-glow-gradient {
-  background: linear-gradient(135deg, #ff173d, #ff0a78, #8b2cff);
+  background: linear-gradient(135deg, var(--color-rave-red), var(--color-rave-magenta), var(--color-rave-purple));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 20px rgba(255, 23, 61, 0.5));
+  filter: drop-shadow(0 0 20px rgb(var(--rave-accent-rgb)/0.5));
 }
 
 /* Hover glow intensify */
@@ -636,7 +700,7 @@ body {
   transition: all 0.3s ease;
 }
 .hover-glow-intense:hover {
-  box-shadow: 0 0 30px rgba(255, 23, 61, 0.6), 0 0 60px rgba(255, 23, 61, 0.4), inset 0 0 20px rgba(255, 23, 61, 0.1);
+  box-shadow: 0 0 30px rgb(var(--rave-accent-rgb)/0.6), 0 0 60px rgb(var(--rave-accent-rgb)/0.4), inset 0 0 20px rgb(var(--rave-accent-rgb)/0.1);
   transform: translateY(-2px);
 }
 
@@ -657,15 +721,15 @@ body {
   transform: translateX(100%);
 }
 .btn-glow-intense:hover {
-  box-shadow: 0 0 30px rgba(255, 23, 61, 0.7), 0 0 60px rgba(255, 23, 61, 0.4), 0 0 90px rgba(255, 23, 61, 0.2);
+  box-shadow: 0 0 30px rgb(var(--rave-accent-rgb)/0.7), 0 0 60px rgb(var(--rave-accent-rgb)/0.4), 0 0 90px rgb(var(--rave-accent-rgb)/0.2);
 }
 
 /* ====== CLUB & DANCE EFFECTS ====== */
 
 /* Dancing silhouette colors */
-.text-dance-red { color: rgba(255, 23, 61, 0.3); }
-.text-dance-purple { color: rgba(139, 44, 255, 0.25); }
-.text-dance-blue { color: rgba(46, 107, 255, 0.25); }
+.text-dance-red { color: rgb(var(--rave-accent-rgb)/0.3); }
+.text-dance-purple { color: rgb(var(--rave-purple-rgb)/0.25); }
+.text-dance-blue { color: rgb(var(--rave-blue-rgb)/0.25); }
 
 /* Disco ball glow */
 @keyframes disco-glow {
@@ -750,12 +814,12 @@ body {
   0% {
     transform: scale(1);
     opacity: 0.6;
-    box-shadow: 0 0 0 0 rgba(255, 23, 61, 0.4);
+    box-shadow: 0 0 0 0 rgb(var(--rave-accent-rgb)/0.4);
   }
   100% {
     transform: scale(1.5);
     opacity: 0;
-    box-shadow: 0 0 0 30px rgba(255, 23, 61, 0);
+    box-shadow: 0 0 0 30px rgb(var(--rave-accent-rgb)/0);
   }
 }
 

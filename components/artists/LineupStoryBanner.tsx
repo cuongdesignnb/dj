@@ -47,7 +47,7 @@ export default function LineupStoryBanner({
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(90deg, rgba(3,3,5,0.94) 0%, rgba(3,3,5,0.84) 50%, rgba(3,3,5,0.74) 100%)',
+                'linear-gradient(90deg, rgb(var(--rave-black-rgb)/0.94) 0%, rgb(var(--rave-black-rgb)/0.84) 50%, rgb(var(--rave-black-rgb)/0.74) 100%)',
             }}
           />
         </motion.div>

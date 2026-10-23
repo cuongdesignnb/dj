@@ -213,3 +213,35 @@ says what visitors currently see and links to the exact Admin screen.
 
 E2E: `admin-setup-status.spec.ts` (own `qa-setup-status` event via
 `tests/fixtures/setup-status-qa.mjs`, signed in as qa-editor).
+
+## 10. Branded 404 and link aliases
+
+`app/not-found.tsx` replaces Next's bare "This page could not be found" for
+unmatched URLs and for notFound() outside segments with their own page
+(news/gallery/lineup/shop/event keep theirs). It has the site header and
+footer, "Back to home" / "See events" and quick links; Next adds `noindex` to
+404 responses. On a 404 whose path contains capitals (phone autocorrect,
+"/Tickets"), the page retries once in lowercase.
+
+`next.config.ts` adds temporary (307) redirects for common guesses, keeping the
+query string: /home, /index.html → /; /ticket → /tickets; /table, /vip,
+/vip-tables → /tables; /booking, /book, /booknow → /book-now; /artists →
+/lineup; /merch, /store → /shop; /sponsors, /partner → /partners; /photos →
+/gallery; /about-us → /about; /contact-us → /contact. E2E: `not-found.spec.ts`.
+
+## 11. Site colour themes (Connection / Highland)
+
+Admin › Settings › Site › "Site colour theme" (`site.theme`, values
+`connection` default and `highland`; anything else is rejected with 422).
+The root layout sets `data-theme` on `<html>` from the cached branding
+(`public:site`, revalidated on save). `app/globals.css` defines both palettes
+as the `--color-rave-*` tokens plus `--rave-*-rgb` channels; ~90 public
+components that hard-coded the neon red/purple/blue now use
+`rgb(var(--rave-accent-rgb)/alpha)` or `var(--color-rave-*)`. Motion colour
+animations and the hero audio bars take literal colours from
+`useSitePalette()` (lib/site-theme.ts); the DESTINY shard canvas is hue-rotated.
+Highland follows the Hi-Land Tour poster: ice cyan #55E6F2 / electric blue on
+navy black #050B12; solid accent buttons switch to dark text. Admin always keeps
+the Connection palette (wrapper + `AdminThemePin` for portalled toasts/tours).
+Uploaded images, logos and the hero SVG animation are not recoloured.
+E2E: `site-theme.spec.ts`. Full suite 48/48.

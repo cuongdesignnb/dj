@@ -3,6 +3,7 @@
 import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { DEFAULT_SITE_BRANDING, type SiteBranding } from '@/lib/site-branding';
+import { SITE_PALETTES, type SitePalette } from '@/lib/site-theme';
 
 const BrandingContext = createContext<SiteBranding>(DEFAULT_SITE_BRANDING);
 
@@ -13,6 +14,11 @@ export function SiteBrandingProvider({ value, children }: { value: SiteBranding;
 
 export function useSiteBranding(): SiteBranding {
   return useContext(BrandingContext);
+}
+
+/** Literal colours of the active theme, for Motion colour animations and canvas. */
+export function useSitePalette(): SitePalette {
+  return SITE_PALETTES[useContext(BrandingContext).theme];
 }
 
 /**

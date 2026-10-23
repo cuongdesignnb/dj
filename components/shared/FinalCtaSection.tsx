@@ -61,7 +61,7 @@ export default function FinalCtaSection({
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(90deg, rgba(3,3,5,0.94) 0%, rgba(3,3,5,0.86) 45%, rgba(3,3,5,0.80) 100%)',
+                'linear-gradient(90deg, rgb(var(--rave-black-rgb)/0.94) 0%, rgb(var(--rave-black-rgb)/0.86) 45%, rgb(var(--rave-black-rgb)/0.80) 100%)',
             }}
           />
         </motion.div>
@@ -100,7 +100,7 @@ export default function FinalCtaSection({
           >
             <Link
               href={cta.primary.href}
-              className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
+              className="group/cta inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
             >
               <span>{cta.primary.label}</span>
               <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />

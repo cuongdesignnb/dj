@@ -69,7 +69,7 @@ export default function ActivationOpportunities({ lead, opportunities }: Props) 
               className="absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(180deg, rgba(7,7,13,0.30) 0%, rgba(7,7,13,0.55) 60%, rgba(7,7,13,0.92) 100%), linear-gradient(120deg, rgba(255,23,61,0.18), transparent 60%)',
+                  'linear-gradient(180deg, rgb(var(--rave-deep-rgb)/0.30) 0%, rgb(var(--rave-deep-rgb)/0.55) 60%, rgb(var(--rave-deep-rgb)/0.92) 100%), linear-gradient(120deg, rgb(var(--rave-accent-rgb)/0.18), transparent 60%)',
               }}
             />
             <motion.div
@@ -88,7 +88,7 @@ export default function ActivationOpportunities({ lead, opportunities }: Props) 
                 variants={partnerReveal}
                 aria-hidden
                 className="block origin-left h-[2px] w-12 mt-5 mb-4 rounded-full bg-gradient-to-r from-rave-red to-rave-magenta"
-                style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+                style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
               />
               <motion.p
                 variants={partnerReveal}

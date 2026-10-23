@@ -19,7 +19,7 @@ export default function ComingSoonEventVisual({ label = 'COMING SOON' }: { label
       className="absolute inset-0 overflow-hidden bg-[#08080F]"
       style={{
         background:
-          'radial-gradient(120% 90% at 50% 8%, rgba(255,23,61,0.22), transparent 58%), radial-gradient(90% 70% at 50% 100%, rgba(139,44,255,0.16), transparent 62%), #08080F',
+          'radial-gradient(120% 90% at 50% 8%, rgb(var(--rave-accent-rgb)/0.22), transparent 58%), radial-gradient(90% 70% at 50% 100%, rgb(var(--rave-purple-rgb)/0.16), transparent 62%), #08080F',
       }}
     >
       {/* Light beams from the rig */}
@@ -27,7 +27,7 @@ export default function ComingSoonEventVisual({ label = 'COMING SOON' }: { label
         className="absolute inset-x-0 top-0 h-2/3 opacity-60"
         style={{
           background:
-            'conic-gradient(from 200deg at 50% -10%, transparent 0deg, rgba(255,23,61,0.16) 12deg, transparent 24deg, transparent 40deg, rgba(255,23,61,0.12) 52deg, transparent 64deg, transparent 96deg, rgba(46,107,255,0.12) 108deg, transparent 120deg)',
+            'conic-gradient(from 200deg at 50% -10%, transparent 0deg, rgb(var(--rave-accent-rgb)/0.16) 12deg, transparent 24deg, transparent 40deg, rgb(var(--rave-accent-rgb)/0.12) 52deg, transparent 64deg, transparent 96deg, rgb(var(--rave-blue-rgb)/0.12) 108deg, transparent 120deg)',
         }}
       />
 
@@ -35,13 +35,13 @@ export default function ComingSoonEventVisual({ label = 'COMING SOON' }: { label
       <div className="absolute inset-0 grid place-items-center">
         <motion.div
           className="relative grid h-24 w-24 place-items-center rounded-full border-2 border-rave-red/70 sm:h-28 sm:w-28"
-          style={{ boxShadow: '0 0 28px rgba(255,23,61,0.5), inset 0 0 22px rgba(255,23,61,0.22)' }}
+          style={{ boxShadow: '0 0 28px rgb(var(--rave-accent-rgb)/0.5), inset 0 0 22px rgb(var(--rave-accent-rgb)/0.22)' }}
           animate={reduced ? undefined : { opacity: [0.78, 1, 0.78] }}
           transition={reduced ? undefined : { duration: 5, repeat: Infinity, ease: 'easeInOut' }}
         >
           <span
             className="font-heading text-4xl font-bold leading-none text-rave-red sm:text-5xl"
-            style={{ textShadow: '0 0 18px rgba(255,23,61,0.6)' }}
+            style={{ textShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.6)' }}
           >
             ?
           </span>
@@ -67,7 +67,7 @@ export default function ComingSoonEventVisual({ label = 'COMING SOON' }: { label
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(180deg, rgba(3,3,5,0.25) 0%, rgba(3,3,5,0) 40%, rgba(3,3,5,0.88) 100%)',
+            'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.25) 0%, rgb(var(--rave-black-rgb)/0) 40%, rgb(var(--rave-black-rgb)/0.88) 100%)',
         }}
       />
 

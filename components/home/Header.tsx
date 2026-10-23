@@ -147,7 +147,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                       <>
                         <motion.span
                           layoutId="nav-underline"
-                          className="absolute bottom-1 left-4 right-4 h-[2px] bg-rave-red rounded-full shadow-[0_0_8px_#ff173d]"
+                          className="absolute bottom-1 left-4 right-4 h-[2px] bg-rave-red rounded-full shadow-[0_0_8px_var(--color-rave-red)]"
                           initial={{ scaleX: 1 }}
                         />
                         <span
@@ -178,7 +178,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
             >
               {resolvedCtaHref && resolvedCtaLabel && <Link
                 href={resolvedCtaHref}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-rave-red to-rave-red2 text-white font-heading uppercase tracking-wider text-sm font-bold border border-white/15 hover:border-rave-red shadow-[0_0_24px_rgba(255,23,61,0.45)] hover:shadow-[0_0_36px_rgba(255,23,61,0.65)] transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-rave-red to-rave-red2 text-white font-heading uppercase tracking-wider text-sm font-bold border border-white/15 hover:border-rave-red shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.45)] hover:shadow-[0_0_36px_rgb(var(--rave-accent-rgb)/0.65)] transition-all"
               >
                 <span>{resolvedCtaLabel}</span>
                 <span aria-hidden>»</span>
@@ -266,7 +266,7 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                         aria-current={active ? 'page' : undefined}
                         className={`block font-heading uppercase tracking-[0.2em] text-lg py-3 px-4 rounded-xl transition-all duration-300 ${
                           active
-                            ? 'text-rave-red bg-rave-red/10 border-l-2 border-rave-red shadow-[0_0_15px_rgba(255,23,61,0.3)]'
+                            ? 'text-rave-red bg-rave-red/10 border-l-2 border-rave-red shadow-[0_0_15px_rgb(var(--rave-accent-rgb)/0.3)]'
                             : 'text-white/70 hover:text-white hover:bg-white/5'
                         }`}
                       >

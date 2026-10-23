@@ -4,6 +4,28 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: '/event', destination: '/events/destiny', permanent: true },
+      // Common guesses and shortened links. Temporary (307) so a path can later
+      // become a real page without browsers remembering the redirect; the query
+      // string (e.g. ?event=<slug>) is kept.
+      ...([
+        ['/home', '/'],
+        ['/index.html', '/'],
+        ['/ticket', '/tickets'],
+        ['/table', '/tables'],
+        ['/vip', '/tables'],
+        ['/vip-tables', '/tables'],
+        ['/booking', '/book-now'],
+        ['/book', '/book-now'],
+        ['/booknow', '/book-now'],
+        ['/artists', '/lineup'],
+        ['/merch', '/shop'],
+        ['/store', '/shop'],
+        ['/sponsors', '/partners'],
+        ['/partner', '/partners'],
+        ['/photos', '/gallery'],
+        ['/about-us', '/about'],
+        ['/contact-us', '/contact'],
+      ] as const).map(([source, destination]) => ({ source, destination, permanent: false })),
     ];
   },
   async headers() {

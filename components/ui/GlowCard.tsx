@@ -15,7 +15,7 @@ type GlowCardProps = {
 export default function GlowCard({
   children,
   className = '',
-  glowColor = 'rgba(255,23,61,0.35)',
+  glowColor = 'rgb(var(--rave-accent-rgb)/0.35)',
   hover = true,
   neonBorder = false,
   intense = false,

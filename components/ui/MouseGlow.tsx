@@ -13,11 +13,11 @@ interface Sparkle {
 }
 
 const MOUSE_GLOW_COLORS = [
-  'rgba(255, 23, 61, 0.9)',
-  'rgba(139, 44, 255, 0.8)',
-  'rgba(255, 10, 120, 0.8)',
-  'rgba(46, 107, 255, 0.7)',
-  'rgba(255, 48, 79, 0.9)',
+  'rgb(var(--rave-accent-rgb)/0.9)',
+  'rgb(var(--rave-purple-rgb)/0.8)',
+  'rgb(var(--rave-magenta-rgb)/0.8)',
+  'rgb(var(--rave-blue-rgb)/0.7)',
+  'rgb(var(--rave-accent2-rgb)/0.9)',
 ];
 
 const subscribeToHydration = () => () => {};
@@ -83,7 +83,7 @@ export default function MouseGlow() {
         style={{
           left: glowX,
           top: glowY,
-          background: 'radial-gradient(circle, rgba(255,23,61,0.5) 0%, rgba(139,44,255,0.35) 40%, rgba(46,107,255,0.15) 70%, transparent 100%)',
+          background: 'radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.5) 0%, rgb(var(--rave-purple-rgb)/0.35) 40%, rgb(var(--rave-blue-rgb)/0.15) 70%, transparent 100%)',
           filter: 'blur(40px)',
         }}
       />
@@ -94,7 +94,7 @@ export default function MouseGlow() {
         style={{
           left: glow2X,
           top: glow2Y,
-          background: 'radial-gradient(circle, rgba(255,23,61,0.7) 0%, rgba(255,10,120,0.5) 50%, transparent 100%)',
+          background: 'radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.7) 0%, rgb(var(--rave-magenta-rgb)/0.5) 50%, transparent 100%)',
           filter: 'blur(25px)',
         }}
       />
@@ -105,7 +105,7 @@ export default function MouseGlow() {
         style={{
           left: glow2X,
           top: glow2Y,
-          background: 'radial-gradient(circle, rgba(255,23,61,0.9) 0%, rgba(255,48,79,0.6) 50%, transparent 100%)',
+          background: 'radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.9) 0%, rgb(var(--rave-accent2-rgb)/0.6) 50%, transparent 100%)',
           filter: 'blur(10px)',
         }}
       />

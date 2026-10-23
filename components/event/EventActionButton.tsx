@@ -23,7 +23,7 @@ export default function EventActionButton({
 
   const variants = {
     primary:
-      'bg-gradient-to-r from-rave-red to-rave-red2 text-white border border-white/10 hover:brightness-110 shadow-[0_0_24px_rgba(255,23,61,0.45)] hover:shadow-[0_0_36px_rgba(255,23,61,0.65)]',
+      'bg-gradient-to-r from-rave-red to-rave-red2 text-white border border-white/10 hover:brightness-110 shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.45)] hover:shadow-[0_0_36px_rgb(var(--rave-accent-rgb)/0.65)]',
     secondary:
       'bg-transparent text-white border border-rave-red/45 hover:border-rave-red hover:bg-rave-red/10',
     ghost:

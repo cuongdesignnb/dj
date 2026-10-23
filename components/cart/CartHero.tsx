@@ -60,7 +60,7 @@ export default function CartHero({
             className="object-cover opacity-60"
           />
           {/* Ring mark over the stage. */}
-          <div className="absolute left-[46%] top-[18%] hidden h-40 w-40 -translate-x-1/2 rounded-full border-[6px] border-rave-red shadow-[0_0_60px_rgba(255,23,61,0.8),inset_0_0_40px_rgba(255,23,61,0.5)] md:grid md:place-items-center">
+          <div className="absolute left-[46%] top-[18%] hidden h-40 w-40 -translate-x-1/2 rounded-full border-[6px] border-rave-red shadow-[0_0_60px_rgb(var(--rave-accent-rgb)/0.8),inset_0_0_40px_rgb(var(--rave-accent-rgb)/0.5)] md:grid md:place-items-center">
             <span className="font-heading text-6xl font-bold text-white">C</span>
           </div>
         </motion.div>
@@ -69,7 +69,7 @@ export default function CartHero({
           className="absolute inset-0 -z-10"
           style={{
             background:
-              'linear-gradient(90deg, #030305 0%, rgba(3,3,5,0.92) 34%, rgba(3,3,5,0.35) 70%, rgba(3,3,5,0.55) 100%), linear-gradient(180deg, rgba(255,23,61,0.10) 0%, rgba(3,3,5,0) 40%, #030305 100%)',
+              'linear-gradient(90deg, var(--color-rave-black) 0%, rgb(var(--rave-black-rgb)/0.92) 34%, rgb(var(--rave-black-rgb)/0.35) 70%, rgb(var(--rave-black-rgb)/0.55) 100%), linear-gradient(180deg, rgb(var(--rave-accent-rgb)/0.10) 0%, rgb(var(--rave-black-rgb)/0) 40%, var(--color-rave-black) 100%)',
           }}
         />
 

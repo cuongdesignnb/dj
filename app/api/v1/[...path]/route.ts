@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { SITE_THEMES, normaliseTheme } from '@/lib/site-theme';
 import argon2 from 'argon2';
 import { Prisma } from '@prisma/client';
 import { db } from '@/server/db/client';
@@ -268,13 +269,14 @@ async function readContentSingleton(slug: string, key: SingletonKey) {
 
 async function readSiteSingleton() {
   const defaults = singletonDefaults('settings-site');
-  const values = await settingMap(['site.name', 'site.tagline', 'site.logo', 'site.favicon', 'seo.default_title', 'seo.default_description', 'seo.default_og_image', 'site.default_event_id', 'site.footer_tagline', 'legal.terms_path', 'legal.privacy_path', 'site.maintenance', 'site.maintenance_message']);
+  const values = await settingMap(['site.name', 'site.tagline', 'site.logo', 'site.favicon', 'site.theme', 'seo.default_title', 'seo.default_description', 'seo.default_og_image', 'site.default_event_id', 'site.footer_tagline', 'legal.terms_path', 'legal.privacy_path', 'site.maintenance', 'site.maintenance_message']);
   return {
     ...defaults,
     siteName: settingValue(values, 'site.name', defaults.siteName),
     tagline: settingValue(values, 'site.tagline', defaults.tagline),
     logo: mediaSetting(values, 'site.logo', defaults.logo),
     favicon: mediaSetting(values, 'site.favicon', defaults.favicon),
+    theme: normaliseTheme(settingValue(values, 'site.theme', defaults.theme)),
     defaultTitle: settingValue(values, 'seo.default_title', defaults.defaultTitle),
     defaultDescription: settingValue(values, 'seo.default_description', defaults.defaultDescription),
     ogImage: mediaSetting(values, 'seo.default_og_image', defaults.ogImage),
@@ -420,7 +422,8 @@ async function writeIntegrationsSingleton(values: JsonRecord) {
 async function writeAdminSingleton(route: { key: SingletonKey; pageSlug?: string }, values: JsonRecord, requestId: string, actorUserId: string) {
   if (route.pageSlug) return writeContentSingleton(route.pageSlug, route.key, values, requestId, actorUserId);
   if (route.key === 'settings-site') {
-    await writeSettings(values, { siteName: 'site.name', tagline: 'site.tagline', logo: 'site.logo', favicon: 'site.favicon', defaultTitle: 'seo.default_title', defaultDescription: 'seo.default_description', ogImage: 'seo.default_og_image', defaultEventId: 'site.default_event_id', footerTagline: 'site.footer_tagline', termsPath: 'legal.terms_path', privacyPath: 'legal.privacy_path', maintenance: 'site.maintenance', maintenanceMessage: 'site.maintenance_message' });
+    if ('theme' in values && !(SITE_THEMES as readonly unknown[]).includes(values.theme)) throw validationError({ theme: 'Choose one of the listed themes.' });
+    await writeSettings(values, { siteName: 'site.name', tagline: 'site.tagline', logo: 'site.logo', favicon: 'site.favicon', theme: 'site.theme', defaultTitle: 'seo.default_title', defaultDescription: 'seo.default_description', ogImage: 'seo.default_og_image', defaultEventId: 'site.default_event_id', footerTagline: 'site.footer_tagline', termsPath: 'legal.terms_path', privacyPath: 'legal.privacy_path', maintenance: 'site.maintenance', maintenanceMessage: 'site.maintenance_message' });
     return readSiteSingleton();
   }
   if (route.key === 'settings-social') {

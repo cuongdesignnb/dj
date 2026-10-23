@@ -182,9 +182,9 @@ export const hoverLift: Variants = {
 };
 
 export const hoverGlow: Variants = {
-  rest: { boxShadow: "0 0 10px rgba(255, 23, 61, 0.2)" },
+  rest: { boxShadow: "0 0 10px rgb(var(--rave-accent-rgb)/0.2)" },
   hover: {
-    boxShadow: "0 0 30px rgba(255, 23, 61, 0.5)",
+    boxShadow: "0 0 30px rgb(var(--rave-accent-rgb)/0.5)",
     transition: springSnappy
   },
 };

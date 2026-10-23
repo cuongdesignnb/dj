@@ -50,7 +50,7 @@ export default function FeaturedCollection({
             <span
               aria-hidden
               className="mt-3 block h-[3px] w-20 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red sm:w-24"
-              style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+              style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
             />
           </div>
           <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:pb-2 sm:text-xs">
@@ -83,7 +83,7 @@ export default function FeaturedCollection({
                 className="absolute inset-0"
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(3,3,5,0.2) 0%, rgba(3,3,5,0) 45%, rgba(3,3,5,0.85) 100%)',
+                    'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.2) 0%, rgb(var(--rave-black-rgb)/0) 45%, rgb(var(--rave-black-rgb)/0.85) 100%)',
                 }}
               />
               <div className="absolute inset-x-0 bottom-0 p-4 text-center">
@@ -154,7 +154,7 @@ export default function FeaturedCollection({
 
               <Link
                 href={`/gallery/${collection.slug}`}
-                className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-5 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
+                className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-5 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black"
               >
                 Open Collection
                 <ArrowRight

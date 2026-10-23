@@ -110,7 +110,7 @@ export default function CartClient({
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/shop"
-                  className="group/cta inline-flex min-h-[52px] items-center gap-2 rounded-[12px] bg-gradient-to-r from-rave-red to-rave-red2 px-7 font-heading text-base font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgba(255,23,61,0.35)] transition-all hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-panel"
+                  className="group/cta inline-flex min-h-[52px] items-center gap-2 rounded-[12px] bg-gradient-to-r from-rave-red to-rave-red2 px-7 font-heading text-base font-semibold uppercase tracking-wider text-white shadow-[0_0_22px_rgb(var(--rave-accent-rgb)/0.35)] transition-all hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-panel"
                 >
                   Browse Merchandise
                   <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />

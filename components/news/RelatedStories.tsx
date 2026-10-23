@@ -32,7 +32,7 @@ export default function RelatedStories({ articles }: { articles: NewsArticle[] }
             <span
               aria-hidden
               className="mt-3 block h-[3px] w-20 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red sm:w-24"
-              style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55)' }}
+              style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55)' }}
             />
           </div>
           <p className="font-heading text-[11px] uppercase tracking-[0.26em] text-rave-muted sm:pb-2 sm:text-xs">

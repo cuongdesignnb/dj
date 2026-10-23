@@ -61,7 +61,7 @@ export default function BottleSelector({
                 transition={{ type: 'spring', stiffness: 320, damping: 26 }}
                 className={`group relative flex h-full w-full flex-col items-center gap-3 rounded-[16px] border p-4 text-center transition-[border-color,box-shadow,opacity] duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black disabled:cursor-not-allowed disabled:opacity-40 ${
                   isSelected
-                    ? 'border-rave-red bg-rave-red/[0.07] shadow-[0_0_28px_rgba(255,23,61,0.26)]'
+                    ? 'border-rave-red bg-rave-red/[0.07] shadow-[0_0_28px_rgb(var(--rave-accent-rgb)/0.26)]'
                     : `border-white/[0.08] bg-rave-panel/70 ${atCap ? 'opacity-60' : 'hover:border-rave-red/40'}`
                 }`}
               >

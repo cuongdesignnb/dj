@@ -92,7 +92,7 @@ function TiltPoster({
         variants={cardItem}
         initial="hidden"
         animate="visible"
-        className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-rave-red/40 shadow-[0_0_40px_rgba(255,23,61,0.25)] bg-rave-panel"
+        className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-rave-red/40 shadow-[0_0_40px_rgb(var(--rave-accent-rgb)/0.25)] bg-rave-panel"
       >
         <Image
           src={src}
@@ -144,7 +144,7 @@ function TiltPoster({
                   position: 'absolute',
                   inset: 0,
                   background:
-                    'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.18) 48%, rgba(255,23,61,0.32) 52%, rgba(255,255,255,0.18) 56%, transparent 75%)',
+                    'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.18) 48%, rgb(var(--rave-accent-rgb)/0.32) 52%, rgba(255,255,255,0.18) 56%, transparent 75%)',
                 }}
               />
             </div>
@@ -157,8 +157,8 @@ function TiltPoster({
           className="absolute inset-0 rounded-2xl pointer-events-none ring-1 ring-inset transition-shadow duration-300"
           style={{
             boxShadow: hover
-              ? 'inset 0 0 60px rgba(255,23,61,0.4), 0 0 60px rgba(255,23,61,0.35)'
-              : 'inset 0 0 30px rgba(255,23,61,0.18)',
+              ? 'inset 0 0 60px rgb(var(--rave-accent-rgb)/0.4), 0 0 60px rgb(var(--rave-accent-rgb)/0.35)'
+              : 'inset 0 0 30px rgb(var(--rave-accent-rgb)/0.18)',
           }}
         />
       </motion.div>
@@ -205,7 +205,7 @@ export default function EventHero({ event, routes }: EventHeroProps) {
       <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none">
         <motion.div
           className="absolute -top-32 -left-40 w-[520px] h-[520px] rounded-full blur-[140px]"
-          style={{ background: 'radial-gradient(circle, rgba(255,23,61,0.18), transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgb(var(--rave-accent-rgb)/0.18), transparent 70%)' }}
           animate={
             lightDriftEnabled
               ? { x: [0, 40, -10, 0], y: [0, 30, -20, 0], opacity: [0.45, 0.7, 0.5, 0.45] }
@@ -215,7 +215,7 @@ export default function EventHero({ event, routes }: EventHeroProps) {
         />
         <motion.div
           className="absolute top-1/3 -right-40 w-[480px] h-[480px] rounded-full blur-[140px]"
-          style={{ background: 'radial-gradient(circle, rgba(139,44,255,0.15), transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgb(var(--rave-purple-rgb)/0.15), transparent 70%)' }}
           animate={
             lightDriftEnabled
               ? { x: [0, -30, 20, 0], y: [0, -20, 30, 0], opacity: [0.35, 0.55, 0.4, 0.35] }
@@ -225,7 +225,7 @@ export default function EventHero({ event, routes }: EventHeroProps) {
         />
         <motion.div
           className="absolute bottom-0 left-1/3 w-[360px] h-[360px] rounded-full blur-[120px]"
-          style={{ background: 'radial-gradient(circle, rgba(46,107,255,0.10), transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgb(var(--rave-blue-rgb)/0.10), transparent 70%)' }}
           animate={
             lightDriftEnabled
               ? { opacity: [0.3, 0.5, 0.3] }

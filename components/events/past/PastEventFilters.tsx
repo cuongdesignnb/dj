@@ -82,7 +82,7 @@ export default function PastEventFilters({
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             className={`inline-flex items-center gap-2 rounded-[14px] border px-4 py-2.5 font-heading text-xs font-semibold uppercase tracking-[0.12em] transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-sm ${
               active
-                ? 'border-rave-red bg-rave-red/12 text-white shadow-[0_0_20px_rgba(255,23,61,0.28)]'
+                ? 'border-rave-red bg-rave-red/12 text-white shadow-[0_0_20px_rgb(var(--rave-accent-rgb)/0.28)]'
                 : 'border-white/[0.10] bg-white/[0.02] text-rave-muted hover:border-white/25 hover:bg-white/[0.05] hover:text-white'
             }`}
           >

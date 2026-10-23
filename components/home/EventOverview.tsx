@@ -65,7 +65,7 @@ export default function EventOverview({ event }: { event: HomeEvent }) {
             {/* Glowing neon red line - pointing to Slide 3 requirement */}
             <motion.div 
               variants={fadeUp}
-              className="w-28 h-[3px] bg-rave-red shadow-[0_0_12px_#ff173d] rounded-full my-6"
+              className="w-28 h-[3px] bg-rave-red shadow-[0_0_12px_var(--color-rave-red)] rounded-full my-6"
             />
 
             {/* Description Paragraphs */}
@@ -145,7 +145,7 @@ export default function EventOverview({ event }: { event: HomeEvent }) {
                     »
                   </span>
                 }
-                className="!px-10 !py-4.5 !rounded-full !text-base sm:!text-lg border border-white/15 hover:border-rave-red shadow-[0_0_30px_rgba(255,23,61,0.65)] hover:shadow-[0_0_40px_rgba(255,23,61,0.85)]"
+                className="!px-10 !py-4.5 !rounded-full !text-base sm:!text-lg border border-white/15 hover:border-rave-red shadow-[0_0_30px_rgb(var(--rave-accent-rgb)/0.65)] hover:shadow-[0_0_40px_rgb(var(--rave-accent-rgb)/0.85)]"
               >
                 GET YOUR TICKET NOW
               </NeonButton>

@@ -78,7 +78,7 @@ export default function LegalSidebar({
       <span
         aria-hidden
         className="mx-2 mt-2 block h-[3px] w-10 rounded-full bg-rave-red"
-        style={{ boxShadow: '0 0 14px rgba(255,23,61,0.55)' }}
+        style={{ boxShadow: '0 0 14px rgb(var(--rave-accent-rgb)/0.55)' }}
       />
       <ol className={`mt-4 flex flex-col ${withIcons ? 'gap-2' : 'divide-y divide-white/[0.08]'}`}>
         {items.map((item) => {

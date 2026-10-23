@@ -109,7 +109,7 @@ export default function AboutValues({ values }: Props) {
                       <span
                         className={`w-9 h-9 grid place-items-center rounded-full border ${
                           value.spotlight
-                            ? 'border-rave-red bg-rave-red/15 text-rave-red shadow-[0_0_20px_rgba(255,23,61,0.4)]'
+                            ? 'border-rave-red bg-rave-red/15 text-rave-red shadow-[0_0_20px_rgb(var(--rave-accent-rgb)/0.4)]'
                             : 'border-white/15 text-white/80'
                         } group-hover:text-rave-red group-hover:border-rave-red/60 transition-colors`}
                       >
@@ -136,7 +136,7 @@ export default function AboutValues({ values }: Props) {
                     className="absolute inset-0 rounded-[inherit] pointer-events-none"
                     style={{
                       boxShadow:
-                        '0 0 0 1px rgba(255,23,61,0.30), 0 0 26px rgba(255,23,61,0.20), inset 0 0 22px rgba(255,23,61,0.08)',
+                        '0 0 0 1px rgb(var(--rave-accent-rgb)/0.30), 0 0 26px rgb(var(--rave-accent-rgb)/0.20), inset 0 0 22px rgb(var(--rave-accent-rgb)/0.08)',
                     }}
                   />
                 )}

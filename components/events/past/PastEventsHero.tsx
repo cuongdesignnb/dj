@@ -56,7 +56,7 @@ export default function PastEventsHero({
           className="pointer-events-none absolute inset-0 -z-10"
           style={{
             background:
-              'radial-gradient(circle at 12% 18%, rgba(255,23,61,0.16), transparent 55%), radial-gradient(circle at 90% 80%, rgba(139,44,255,0.10), transparent 60%)',
+              'radial-gradient(circle at 12% 18%, rgb(var(--rave-accent-rgb)/0.16), transparent 55%), radial-gradient(circle at 90% 80%, rgb(var(--rave-purple-rgb)/0.10), transparent 60%)',
           }}
         />
 
@@ -129,7 +129,7 @@ export default function PastEventsHero({
                   tiltX.set(0);
                   tiltY.set(0);
                 }}
-                className="relative aspect-[4/5] overflow-hidden rounded-[20px] border border-white/[0.08] shadow-[0_30px_80px_rgba(255,23,61,0.18)] sm:aspect-[5/6]"
+                className="relative aspect-[4/5] overflow-hidden rounded-[20px] border border-white/[0.08] shadow-[0_30px_80px_rgb(var(--rave-accent-rgb)/0.18)] sm:aspect-[5/6]"
               >
                 <Image
                   src={hero.visual.src}
@@ -144,7 +144,7 @@ export default function PastEventsHero({
                   className="absolute inset-0"
                   style={{
                     background:
-                      'linear-gradient(180deg, rgba(3,3,5,0.30) 0%, rgba(3,3,5,0) 30%, rgba(3,3,5,0.65) 100%), linear-gradient(120deg, rgba(255,23,61,0.18), rgba(139,44,255,0.10) 60%, transparent 100%)',
+                      'linear-gradient(180deg, rgb(var(--rave-black-rgb)/0.30) 0%, rgb(var(--rave-black-rgb)/0) 30%, rgb(var(--rave-black-rgb)/0.65) 100%), linear-gradient(120deg, rgb(var(--rave-accent-rgb)/0.18), rgb(var(--rave-purple-rgb)/0.10) 60%, transparent 100%)',
                     mixBlendMode: 'screen',
                   }}
                 />
@@ -193,7 +193,7 @@ export default function PastEventsHero({
                     className="absolute -inset-2 -z-10 rounded-[24px] blur-2xl"
                     style={{
                       background:
-                        'radial-gradient(60% 60% at 50% 50%, rgba(255,23,61,0.45), transparent 70%)',
+                        'radial-gradient(60% 60% at 50% 50%, rgb(var(--rave-accent-rgb)/0.45), transparent 70%)',
                     }}
                     animate={inView ? { opacity: [0.35, 0.55, 0.35] } : { opacity: 0 }}
                     transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}

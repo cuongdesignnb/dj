@@ -43,7 +43,7 @@ export default function EventSectionHeading({ eyebrow, title, id, align = 'left'
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
           className="block origin-left h-[3px] mt-3 w-24 sm:w-28 rounded-full bg-gradient-to-r from-rave-red via-rave-magenta to-rave-red"
-          style={{ boxShadow: '0 0 18px rgba(255,23,61,0.55), 0 0 36px rgba(255,23,61,0.3)' }}
+          style={{ boxShadow: '0 0 18px rgb(var(--rave-accent-rgb)/0.55), 0 0 36px rgb(var(--rave-accent-rgb)/0.3)' }}
         />
       </div>
     </div>
