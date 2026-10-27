@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
-      { source: '/event', destination: '/events/destiny', permanent: true },
       // Common guesses and shortened links. Temporary (307) so a path can later
       // become a real page without browsers remembering the redirect; the query
       // string (e.g. ?event=<slug>) is kept.

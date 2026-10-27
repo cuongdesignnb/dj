@@ -149,7 +149,7 @@ export class HttpTicketsRepository implements TicketsRepository {
   }
 }
 
-/** Event served by /tickets when no `?event=` is given. */
+/** Last-resort event for /tickets; pages pass the current event chosen in Admin. */
 export const DEFAULT_TICKETS_EVENT_SLUG = 'destiny';
 
 export interface TicketsDataEnv {

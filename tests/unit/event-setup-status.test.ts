@@ -29,6 +29,19 @@ describe('ticketSetupStatus', () => {
   });
 });
 
+describe('ticketSetupStatus with an external seller', () => {
+  it('is live without tiers when a provider link is set, and says so', () => {
+    const status = ticketSetupStatus({ eventId: id, eventPublished: true, publicHref: '/tickets', contentStatus: 'PUBLISHED', activeTiers: 0, providerReady: true });
+    expect(status.live).toBe(true);
+    expect(status.checks.find((c) => c.id === 'tiers')?.title).toBe('Tickets sold through an external provider');
+  });
+  it('still blocks without tiers or provider, and mentions the provider option', () => {
+    const status = ticketSetupStatus({ eventId: id, eventPublished: true, publicHref: '/tickets', contentStatus: 'PUBLISHED', activeTiers: 0, providerReady: false });
+    expect(status.live).toBe(false);
+    expect(status.checks.find((c) => c.id === 'tiers')?.detail).toContain('provider link in Ticket Settings');
+  });
+});
+
 describe('vipSetupStatus', () => {
   const ready: VipFacts = { eventId: id, eventPublished: true, publicHref: '/tables', vipEnabled: true, bookingEnabled: true, tablesContentStatus: 'PUBLISHED', bookingContentStatus: 'PUBLISHED', activePackages: 1, defaultPackage: 'ok', activeBooths: 12 };
 

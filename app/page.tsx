@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { publicApi } from '@/lib/api/public';
+import { getFeaturedEventSlug } from '@/server/services/featured-event';
 import Header from '@/components/home/Header';
 import HeroSection from '@/components/home/HeroSection';
 import EventOverview from '@/components/home/EventOverview';
@@ -8,7 +9,7 @@ import LineupPreview from '@/components/home/LineupPreview';
 import TicketsSection from '@/components/home/TicketsSection';
 import VipTableSection from '@/components/home/VipTableSection';
 import PartnersFooter from '@/components/home/PartnersFooter';
-import type { HomeArtist, HomeBoothPackage, HomeEvent, HomeFooterData, HomeMedia, HomePartner, HomeTicketTier, HomeTrustItem } from '@/components/home/types';
+import type { HomeArtist, HomeBoothPackage, HomeEvent, HomeTicketProvider, HomeFooterData, HomeMedia, HomePartner, HomeTicketTier, HomeTrustItem } from '@/components/home/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,7 @@ interface HomeData {
   event: HomeEvent;
   heroAnimation: HomeMedia | null;
   heroBackground: { image: string | null; video: string | null };
+  ticketProvider: HomeTicketProvider | null;
   artists: HomeArtist[];
   ticketTiers: HomeTicketTier[];
   trustItems: HomeTrustItem[];
@@ -70,11 +72,13 @@ interface HomeData {
 }
 
 async function loadHomeData(): Promise<HomeData | null> {
+  // The current event chosen in Admin › Content › Homepage › Hero (falls back to DESTINY).
+  const slug = encodeURIComponent(await getFeaturedEventSlug());
   const [event, artistRows, ticketRows, vip, partnerRows, bootstrap] = await Promise.all([
-    readPublic<ApiRecord>('/events/destiny'),
+    readPublic<ApiRecord>(`/events/${slug}`),
     readPublic<ApiRecord[]>('/artists'),
-    readPublic<ApiRecord[]>('/events/destiny/tickets'),
-    readPublic<ApiRecord>('/events/destiny/vip'),
+    readPublic<ApiRecord>(`/events/${slug}/tickets`),
+    readPublic<ApiRecord>(`/events/${slug}/vip`),
     readPublic<ApiRecord[]>('/partners'),
     readPublic<ApiRecord>('/site/bootstrap'),
   ]);
@@ -112,7 +116,13 @@ async function loadHomeData(): Promise<HomeData | null> {
     image: media(row.portrait)?.src || media(row.heroImage)?.src || '',
   }));
 
-  const ticketTiers: HomeTicketTier[] = (Array.isArray(ticketRows) ? ticketRows : []).map((row) => {
+  // The tickets endpoint answers { settings, tiers }.
+  const tierRows: ApiRecord[] = Array.isArray(ticketRows) ? ticketRows : Array.isArray(ticketRows?.tiers) ? ticketRows.tiers : [];
+  const ticketSettings = (ticketRows && !Array.isArray(ticketRows) ? ticketRows.settings : null) as ApiRecord | null;
+  const ticketProvider: HomeTicketProvider | null = ticketSettings?.ticketExternalProviderEnabled === true && safeExternalUrl(ticketSettings.ticketProviderUrl)
+    ? { name: text(ticketSettings.ticketProviderName, 'the ticket provider'), url: safeExternalUrl(ticketSettings.ticketProviderUrl)! }
+    : null;
+  const ticketTiers: HomeTicketTier[] = tierRows.map((row) => {
     const availabilityStatus = text(row.availabilityStatus, 'UNKNOWN').toUpperCase();
     const availability = availabilityStatus === 'AVAILABLE' ? 'Availability confirmed' : availabilityStatus === 'LOW' ? 'Limited availability' : 'Availability to be confirmed';
     return {
@@ -166,7 +176,7 @@ async function loadHomeData(): Promise<HomeData | null> {
     { icon: 'Users', title: 'Need help?', description: 'Contact the team for event and VIP questions.' },
   ];
 
-  return { event: eventData, heroAnimation, heroBackground, artists, ticketTiers, trustItems, boothPackage, footer };
+  return { event: eventData, heroAnimation, heroBackground, ticketProvider, artists, ticketTiers, trustItems, boothPackage, footer };
 }
 
 export default async function HomePage() {
@@ -190,7 +200,7 @@ export default async function HomePage() {
       <HeroSection event={data.event} animation={data.heroAnimation} background={data.heroBackground} />
       <EventOverview event={data.event} />
       <LineupPreview artists={data.artists} />
-      <TicketsSection ticketTiers={data.ticketTiers} trustItems={data.trustItems} />
+      <TicketsSection ticketTiers={data.ticketTiers} trustItems={data.trustItems} provider={data.ticketProvider} eventTitle={data.event.title} />
       <VipTableSection boothPackage={data.boothPackage} />
       <PartnersFooter footer={data.footer} />
     </main>

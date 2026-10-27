@@ -11,7 +11,8 @@ import TicketInfoGrid from '@/components/tickets/TicketInfoGrid';
 import FaqAccordion from '@/components/shared/FaqAccordion';
 import FinalCtaSection from '@/components/shared/FinalCtaSection';
 
-import { DEFAULT_TICKETS_EVENT_SLUG, TICKETS_UNAVAILABLE_MESSAGE, getTicketsRepository } from '@/lib/tickets/repository';
+import { TICKETS_UNAVAILABLE_MESSAGE, getTicketsRepository } from '@/lib/tickets/repository';
+import { getFeaturedEventSlug } from '@/server/services/featured-event';
 import { eventScopeFromSearchParams } from '@/lib/events/event-scope';
 import type { TicketsPageData } from '@/lib/tickets/types';
 import TicketsError from './error';
@@ -25,10 +26,10 @@ export const dynamic = 'force-dynamic';
 type PageSearchParams = { [key: string]: string | string[] | undefined };
 
 /** One load per request for metadata and page; null means the default event. */
-const loadTicketsPage = cache(async (eventSlug: string | null): Promise<
+const loadTicketsPage = cache(async (eventSlug: string | null, currentSlug: string): Promise<
   { data: TicketsPageData } | { error: { kind: string; message: string } }
 > => {
-  const selection = getTicketsRepository(eventSlug);
+  const selection = getTicketsRepository(eventSlug ?? currentSlug);
   if (!selection.ok) {
     return { error: selection.error };
   }
@@ -48,8 +49,10 @@ const loadTicketsPage = cache(async (eventSlug: string | null): Promise<
 async function loadScopedTicketsPage(searchParams: Promise<PageSearchParams>) {
   const scope = eventScopeFromSearchParams(await searchParams);
   if (scope.kind === 'invalid') notFound();
-  const eventSlug = scope.kind === 'event' && scope.slug !== DEFAULT_TICKETS_EVENT_SLUG ? scope.slug : null;
-  const result = await loadTicketsPage(eventSlug);
+  // No `?event=` (or the current event's own slug) shows the current event chosen in Admin.
+  const currentSlug = await getFeaturedEventSlug();
+  const eventSlug = scope.kind === 'event' && scope.slug !== currentSlug ? scope.slug : null;
+  const result = await loadTicketsPage(eventSlug, currentSlug);
   if ('error' in result && result.error.kind === 'not-found') {
     if (eventSlug) notFound();
     // The default event keeps its original message when it is unpublished.

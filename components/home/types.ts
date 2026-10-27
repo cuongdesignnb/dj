@@ -26,6 +26,12 @@ export interface HomeArtist {
   image: string;
 }
 
+/** External ticket seller configured in Admin › Ticketing › Ticket Settings. */
+export interface HomeTicketProvider {
+  name: string;
+  url: string;
+}
+
 export interface HomeTicketTier {
   id: string;
   name: string;

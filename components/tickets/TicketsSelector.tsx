@@ -60,6 +60,34 @@ export default function TicketsSelector({
     [tiersById],
   );
 
+  // Sold only through an external provider (e.g. TicketsCandy): send people straight there.
+  if (tiers.length === 0 && provider.mode === 'external-link' && provider.checkoutUrl) {
+    const name = provider.providerName || 'the ticket provider';
+    return (
+      <section ref={ref} id="ticket-options" data-testid="ticket-provider-only" aria-labelledby="ticket-options-title" className="bg-rave-black py-16 md:py-24">
+        <Container>
+          <h2 id="ticket-options-title" className="font-heading text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">
+            Tickets are on sale
+          </h2>
+          <div className="mt-8 rounded-[18px] border border-rave-red/40 bg-rave-panel/60 px-6 py-14 text-center">
+            <p className="font-heading text-xl uppercase tracking-[0.12em] text-white sm:text-2xl">
+              {event.title} tickets are sold through {name}.
+            </p>
+            <a
+              href={provider.checkoutUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex min-h-[52px] items-center justify-center rounded-full bg-gradient-to-r from-rave-red to-rave-red2 px-8 font-heading text-sm font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.4)] transition hover:brightness-110"
+            >
+              Buy tickets on {name}
+              <span className="sr-only">(opens {name} in a new tab)</span>
+            </a>
+          </div>
+        </Container>
+      </section>
+    );
+  }
+
   if (tiers.length === 0) {
     return (
       <section ref={ref} id="ticket-options" data-testid="ticket-empty-state" aria-labelledby="ticket-options-title" className="bg-rave-black py-16 md:py-24">

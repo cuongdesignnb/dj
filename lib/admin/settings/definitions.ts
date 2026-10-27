@@ -47,7 +47,7 @@ export const siteSettingsDefinition: SingletonDefinition = {
         f.media('ogImage', 'Default social image'),
       ]),
       section('defaults', 'Event defaults', [
-        { key: 'defaultEventId', label: 'Featured event', type: 'select', optionSource: 'events', width: 'half' },
+        { key: 'defaultEventId', label: 'Featured event (fallback)', type: 'select', optionSource: 'events', width: 'half', help: 'Used only when Content › Homepage › Current event is empty.' },
       ]),
       section('footer', 'Footer & legal links', [
         f.text('footerTagline', 'Footer tagline', { width: 'half' }),

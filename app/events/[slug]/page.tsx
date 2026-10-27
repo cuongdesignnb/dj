@@ -18,17 +18,16 @@ import { breadcrumbSchema } from '@/lib/seo/breadcrumbs';
 import { eventSchema, jsonLd } from '@/lib/seo/structured-data';
 import type { EventPageData, FrontendRoutes } from '@/lib/events/types';
 import { eventScopedHref } from '@/lib/events/event-scope';
-import { DEFAULT_TICKETS_EVENT_SLUG } from '@/lib/tickets/repository';
-import { defaultVipEventSlug } from '@/lib/vip/repository';
+import { getFeaturedEventSlug } from '@/server/services/featured-event';
 import { getPublicSlugRedirect } from '@/server/services/slug-history';
 
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
 
 /** Ticket, VIP and booking links stay on this event; the default event keeps its plain URLs. */
-function eventRoutes(slug: string): FrontendRoutes {
-  const ticketsSlug = slug === DEFAULT_TICKETS_EVENT_SLUG ? null : slug;
-  const vipSlug = slug === defaultVipEventSlug() ? null : slug;
+function eventRoutes(slug: string, currentSlug: string): FrontendRoutes {
+  const ticketsSlug = slug === currentSlug ? null : slug;
+  const vipSlug = ticketsSlug;
   return {
     tickets: eventScopedHref('/tickets', ticketsSlug),
     tables: eventScopedHref('/tables', vipSlug),
@@ -64,7 +63,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     notFound();
   }
   const event = data.event;
-  const routes = eventRoutes(event.slug);
+  const routes = eventRoutes(event.slug, await getFeaturedEventSlug());
   const eventJsonLd = eventSchema({ name: event.name, path: `/events/${event.slug}`, image: event.poster?.src ?? null, description: event.intro, startDate: event.startsAt, endDate: event.endsAt, venue: event.venue });
   const breadcrumbs = breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Events', path: '/events' }, { name: event.title, path: `/events/${event.slug}` }]);
 

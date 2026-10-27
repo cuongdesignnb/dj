@@ -284,3 +284,31 @@ first card's image loaded at ~3.3 s but was still clipped after 10+ s while the
 others revealed at ~4.6 s. The image reveal now follows the card's own in-view
 variants, so it opens together with the card. `lineup-preview.spec.ts` (desktop
 and iPhone) fails 4/4 on the old code and passes on the fix. Full suite 62/62.
+
+## 15. Current event on the homepage; past events below
+
+The homepage, `/tickets`, `/tables`, `/book-now` and `/event` were hard-wired to
+DESTINY. `server/services/featured-event.ts` now picks the current event:
+Admin › Content › Homepage › Hero › **Current event** (new), else Settings ›
+Site › Featured event (now labelled fallback), else the next upcoming published
+event (featured first, soonest date, then oldest), else DESTINY. A choice that is
+past or unpublished is skipped. Cached on `public:site`/`home`/`events`, so
+saving Homepage, Settings or an event updates it at once. `/event` is now a 307
+to `/events/<current>` (the permanent `/event → /events/destiny` redirect is
+gone); event pages link Tickets/VIP with `?event=` unless they are current.
+
+Past events: Admin › Events › Listing stores `PAST`, but the public API filtered
+`COMPLETED`, so DESTINY (marked Past on production) still showed as upcoming
+and `/events/past` was empty. Past is now PAST/COMPLETED **or** a date that is
+over (end time, else start + 1 day); upcoming is its exact complement written
+without NOT (SQL NOT over NULL dates would drop undated events). Past lists are
+most recent first. `/events` gains a "Past events" section (up to 4, "View all
+past events"); past cards open their event page.
+
+Tickets: the home tickets block read `/events/:slug/tickets` as an array but it
+returns `{ settings, tiers }`, so it was always empty; fixed. When an event sells
+only through an external provider (Ticket Settings › External provider enabled +
+Provider URL, e.g. TicketsCandy) and has no tiers, `/tickets` and the home block
+show "Buy tickets on <provider>" instead of "being prepared", and Admin's
+setup status counts it as live. E2E: `current-event.spec.ts`; the VIP state test
+now expects the next published event when DESTINY is unpublished. Full suite green.

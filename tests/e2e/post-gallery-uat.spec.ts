@@ -112,6 +112,11 @@ test('VIP states are deterministic through direct URL, menu and reload on Tables
           await expect(page.getByRole('group', { name: 'Bottle preferences', exact: true })).toBeVisible();
           if (route === '/tables') await expect(page.locator('#club-map').getByRole('button', { name: /^Booth / }).first()).toBeEnabled();
           else await expect(page.locator('#booking-form form')).toBeVisible();
+        } else if (mode === 'service-unavailable') {
+          // DESTINY is unpublished here, so the default VIP pages move on to the next published
+          // event (the linked QA event) instead of reporting an outage; never DESTINY's data.
+          await expect(page.locator('main#main')).toContainText('QA linked event');
+          await expect(page.getByText('$3,200', { exact: true })).toHaveCount(0);
         } else await expect(page.locator('[data-vip-state="' + mode + '"]').first()).toBeVisible();
         if (!['invalid-response', 'service-unavailable'].includes(mode)) await expect(page.locator('body')).not.toContainText(/service returned data|could not read|couldn't reach the VIP service/i);
       };

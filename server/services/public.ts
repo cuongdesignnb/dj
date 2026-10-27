@@ -63,10 +63,36 @@ function eventDto(event: any, locale: Locale) {
   };
 }
 
+/** Admin › Events › Listing stores "past" as PAST; older data used COMPLETED. */
+export const PAST_LIFECYCLE = ['PAST', 'COMPLETED'];
+
+/**
+ * An event is past when it is marked Past in Admin, or when its date is over
+ * (end time, else start time plus a day), so a finished night never stays
+ * listed as upcoming because nobody flipped the switch.
+ */
+export function pastEventWhere(now = new Date()) {
+  const startedADayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  return { OR: [{ lifecycleStatus: { in: PAST_LIFECYCLE } }, { endAt: { lt: now } }, { endAt: null, startAt: { lt: startedADayAgo } }] };
+}
+
+/**
+ * The exact complement of pastEventWhere, written without NOT: in SQL a NOT over
+ * a comparison with a NULL date is unknown, which would drop every undated event.
+ */
+export function upcomingEventWhere(now = new Date()) {
+  const startedADayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  return {
+    lifecycleStatus: { notIn: PAST_LIFECYCLE },
+    OR: [{ endAt: { gte: now } }, { endAt: null, startAt: null }, { endAt: null, startAt: { gte: startedADayAgo } }],
+  };
+}
+
 export async function listPublicEvents(locale: Locale, past = false) {
   const events = await db.event.findMany({
-    where: { status: 'PUBLISHED', deletedAt: null, ...(past ? { lifecycleStatus: 'COMPLETED' } : { lifecycleStatus: { not: 'COMPLETED' } }) },
-    orderBy: [{ featured: 'desc' }, { startAt: 'asc' }, { createdAt: 'desc' }],
+    where: { status: 'PUBLISHED', deletedAt: null, ...(past ? pastEventWhere() : upcomingEventWhere()) },
+    // Upcoming: featured first, then soonest. Past: most recent first.
+    orderBy: past ? [{ startAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }] : [{ featured: 'desc' }, { startAt: 'asc' }, { createdAt: 'desc' }],
     include: {
       translations: true,
       posterMedia: true,

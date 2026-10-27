@@ -1,7 +1,8 @@
 import 'server-only';
 import { cache } from 'react';
 import { notFound } from 'next/navigation';
-import { VIP_UNAVAILABLE_MESSAGE, defaultVipEventSlug, getVipRepository } from './repository';
+import { VIP_UNAVAILABLE_MESSAGE, getVipRepository } from './repository';
+import { getFeaturedEventSlug } from '@/server/services/featured-event';
 import type { VipPageState } from './types';
 import { eventScopeFromSearchParams } from '@/lib/events/event-scope';
 
@@ -10,8 +11,8 @@ import { eventScopeFromSearchParams } from '@/lib/events/event-scope';
  * authoritative. Pass the same `eventSlug` (null = default event) from metadata
  * and page so React's cache key matches.
  */
-export const loadVipPage = cache(async (eventSlug: string | null): Promise<VipPageState> => {
-  const repository = getVipRepository(eventSlug);
+export const loadVipPage = cache(async (eventSlug: string | null, currentSlug: string): Promise<VipPageState> => {
+  const repository = getVipRepository(eventSlug ?? currentSlug);
   const loaded: VipPageState = repository.ok ? await repository.repository.getVipPage()
     : { kind: 'service-unavailable', message: repository.error.message };
   // Only `?event=` pages distinguish a missing event; the default event keeps its original closed state.
@@ -38,8 +39,9 @@ export async function loadScopedVipPage(searchParams: Promise<PageSearchParams>)
   const params = await searchParams;
   const scope = eventScopeFromSearchParams(params);
   if (scope.kind === 'invalid') notFound();
-  const eventSlug = scope.kind === 'event' && scope.slug !== defaultVipEventSlug() ? scope.slug : null;
-  const result = await loadVipPage(eventSlug);
+  const currentSlug = await getFeaturedEventSlug();
+  const eventSlug = scope.kind === 'event' && scope.slug !== currentSlug ? scope.slug : null;
+  const result = await loadVipPage(eventSlug, currentSlug);
   if (eventSlug && result.kind === 'event-not-found') notFound();
   return { params, eventSlug, result };
 }

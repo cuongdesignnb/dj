@@ -8,7 +8,7 @@ import { Ticket, Zap, Flame, Clock, ShieldCheck, BadgeCheck, Users } from 'lucid
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
-import type { HomeTicketTier, HomeTrustItem } from './types';
+import type { HomeTicketProvider, HomeTicketTier, HomeTrustItem } from './types';
 import { fadeUp, staggerContainer, bounceIn } from '@/lib/animations';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -69,7 +69,7 @@ function AnimatedPrice({ price, isNeon = false }: { price: string; isNeon?: bool
   );
 }
 
-export default function TicketsSection({ ticketTiers, trustItems }: { ticketTiers: HomeTicketTier[]; trustItems: HomeTrustItem[] }) {
+export default function TicketsSection({ ticketTiers, trustItems, provider = null, eventTitle = '' }: { ticketTiers: HomeTicketTier[]; trustItems: HomeTrustItem[]; provider?: HomeTicketProvider | null; eventTitle?: string }) {
   const palette = useSitePalette();
   return (
     <section id="tickets" className="relative py-20 md:py-28 overflow-hidden bg-rave-black">
@@ -136,6 +136,24 @@ export default function TicketsSection({ ticketTiers, trustItems }: { ticketTier
             </motion.span>
           </div>
         </motion.div>
+
+        {provider && (
+          <div data-ticket-provider="" className="mx-auto mb-14 max-w-2xl rounded-2xl border border-rave-red/40 bg-rave-panel/60 px-6 py-10 text-center">
+            <p className="font-heading text-xl font-bold uppercase tracking-[0.1em] text-white sm:text-2xl">
+              {eventTitle ? `${eventTitle} tickets are on sale` : 'Tickets are on sale'}
+            </p>
+            <p className="mt-2 text-sm text-rave-muted">Tickets are sold through {provider.name}.</p>
+            <a
+              href={provider.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rave-red to-rave-red2 px-8 font-heading text-sm font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.4)] transition hover:brightness-110"
+            >
+              Buy tickets on {provider.name}
+              <span className="sr-only">(opens {provider.name} in a new tab)</span>
+            </a>
+          </div>
+        )}
 
         {/* Ticket Cards Grid */}
         <motion.div

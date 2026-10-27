@@ -389,7 +389,7 @@ export class HttpEventsRepository implements EventsRepository {
           subtitle: row.eyebrow,
           location: [isRecord(row.venue) ? row.venue.name : '', isRecord(row.venue) ? row.venue.city : ''].filter(Boolean).join(', '),
           image: row.poster ?? row.hero,
-          status: row.lifecycleStatus === 'COMPLETED' ? 'completed' : row.featured ? 'announced' : 'coming-soon',
+          status: row.lifecycleStatus === 'COMPLETED' || row.lifecycleStatus === 'PAST' ? 'completed' : row.featured ? 'announced' : 'coming-soon',
           featured: row.featured,
           date: row.startAt,
           dateStatus: String(row.dateStatus ?? '').toLowerCase(),
@@ -397,7 +397,7 @@ export class HttpEventsRepository implements EventsRepository {
           scheduleStatus: String(row.scheduleStatus ?? '').toLowerCase(),
           genres: Array.isArray(row.genres) ? row.genres : [],
           description: row.shortDescription,
-          detailHref: row.slug === 'destiny' ? '/event' : `/events/${row.slug}`,
+          detailHref: `/events/${row.slug}`,
           ticketHref: null,
           notificationAction: null,
         });
@@ -445,7 +445,7 @@ export class HttpEventsRepository implements EventsRepository {
       const rows = Array.isArray(raw) ? raw : [];
       const events = rows.flatMap((row) => {
         if (!isRecord(row)) return [];
-        const parsed = pastEventSummary({ id: row.id, slug: row.slug, title: row.title, subtitle: row.eyebrow, image: row.poster ?? row.hero, location: [isRecord(row.venue) ? row.venue.name : '', isRecord(row.venue) ? row.venue.city : ''].filter(Boolean).join(', '), startDate: row.startAt, genres: row.genres, excerpt: row.shortDescription, featured: row.featured, isPlaceholder: false, contentTypes: [], recapHref: null, galleryHref: null, highlightsHref: null });
+        const parsed = pastEventSummary({ id: row.id, slug: row.slug, title: row.title, subtitle: row.eyebrow, image: row.poster ?? row.hero, location: [isRecord(row.venue) ? row.venue.name : '', isRecord(row.venue) ? row.venue.city : ''].filter(Boolean).join(', '), startDate: row.startAt, genres: row.genres, excerpt: row.shortDescription, featured: row.featured, isPlaceholder: false, contentTypes: [], recapHref: typeof row.slug === 'string' && row.slug ? `/events/${row.slug}` : null, galleryHref: null, highlightsHref: null });
         return parsed ? [parsed] : [];
       });
       const featured = events.find((event) => event.featured) ?? events[0] ?? null;

@@ -34,6 +34,8 @@ export interface TicketFacts {
   publicHref: string;
   contentStatus: ContentStatus;
   activeTiers: number;
+  /** External seller (e.g. TicketsCandy) switched on with a link. */
+  providerReady?: boolean;
 }
 
 export interface VipFacts {
@@ -83,9 +85,11 @@ export function ticketSetupStatus(facts: TicketFacts): SetupStatus {
     eventCheck(facts),
     contentCheck('tickets-content', 'Tickets page content', facts.contentStatus, adminEvent(facts.eventId, 'tickets/content'),
       'The Tickets page says "Ticket information for this event has not been published yet."'),
-    facts.activeTiers > 0
+    facts.activeTiers === 0 && facts.providerReady
+      ? check('tiers', 'ok', 'Tickets sold through an external provider', 'The Tickets page shows a Buy tickets button that opens the provider.', { label: 'Ticket settings', href: adminEvent(facts.eventId, 'tickets') })
+      : facts.activeTiers > 0
       ? check('tiers', 'ok', `${facts.activeTiers} ticket tier${facts.activeTiers === 1 ? '' : 's'} enabled`, 'Shown as ticket options on the Tickets page.', { label: 'Edit tiers', href: adminEvent(facts.eventId, 'tickets/tiers') })
-      : check('tiers', 'blocking', 'No ticket tiers are enabled', 'The Tickets page says "Ticket information is being prepared." Add a tier and switch Enabled on.', { label: 'Add ticket tier', href: adminEvent(facts.eventId, 'tickets/tiers') }),
+      : check('tiers', 'blocking', 'No ticket tiers are enabled', 'The Tickets page says "Ticket information is being prepared." Add a tier and switch Enabled on, or add the provider link in Ticket Settings if tickets are sold elsewhere.', { label: 'Add ticket tier', href: adminEvent(facts.eventId, 'tickets/tiers') }),
   ];
   return summarise('tickets', facts.publicHref, checks, 'Showing ticket options on the site');
 }

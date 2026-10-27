@@ -83,7 +83,7 @@ export function revalidatePublicResource(resource: string, slug?: string | null,
     add(PUBLIC_CACHE_TAGS.site);
     add(PUBLIC_CACHE_TAGS.bootstrap);
     add(PUBLIC_CACHE_TAGS.home);
-    for (const path of ['/', '/about', '/partners', '/events', '/lineup', '/tickets', '/tables', '/shop', '/news', '/gallery', '/faq', '/contact', '/terms', '/privacy']) addPath(path);
+    for (const path of ['/', '/about', '/partners', '/events', '/events/past', '/lineup', '/tickets', '/tables', '/book-now', '/shop', '/news', '/gallery', '/faq', '/contact', '/terms', '/privacy']) addPath(path);
   } else if (resource === 'page-content' && slug) {
     add(PUBLIC_CACHE_TAGS.pageContent(slug));
     for (const path of ['/', '/events', '/events/past', '/lineup', '/news', '/gallery', '/shop', '/tickets', '/tables', '/book-now']) addPath(path);

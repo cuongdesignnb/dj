@@ -8,10 +8,11 @@ import FeaturedEvent from '@/components/events/FeaturedEvent';
 import EventGrid from '@/components/events/EventGrid';
 import EventBenefits from '@/components/events/EventBenefits';
 import EventsCTA from '@/components/events/EventsCTA';
+import PastEventsTeaser from '@/components/events/PastEventsTeaser';
 import EventsFooter from '@/components/events/EventsFooter';
 
 import { getEventsRepository } from '@/lib/events/listing-repository';
-import type { EventsPageData } from '@/lib/events/listing-types';
+import type { EventsPageData, PastEventSummary } from '@/lib/events/listing-types';
 import { parseFilter } from '@/lib/events/listing-types';
 import EventsError from './error';
 import { buildMetadata } from '@/lib/seo/metadata';
@@ -44,19 +45,20 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
  * behind a stable contract rather than leaking into the page component.
  */
 async function loadEventsPage(): Promise<
-  { data: EventsPageData } | { error: { message: string } }
+  { data: EventsPageData; pastEvents: PastEventSummary[] } | { error: { message: string } }
 > {
   const selection = getEventsRepository();
   if (!selection.ok) {
     return { error: { message: selection.error.message } };
   }
 
-  const result = await selection.repository.getEventsPage();
+  const [result, past] = await Promise.all([selection.repository.getEventsPage(), selection.repository.getPastEventsPage()]);
   if (!result.ok) {
     return { error: { message: result.error.message } };
   }
 
-  return { data: result.data };
+  // Past events are optional here: the archive failing must not take the page down.
+  return { data: result.data, pastEvents: past.ok ? past.data.events : [] };
 }
 
 /**
@@ -120,6 +122,7 @@ export default async function EventsPage({
             <EventGrid events={data.events} section={eventsSection} emptyState={emptyState} />
           )}
         </EventsFilterProvider>
+        <PastEventsTeaser events={result.pastEvents} />
         {benefitsSection.enabled !== false && (
           <EventBenefits
             benefits={data.benefits}

@@ -418,7 +418,7 @@ export async function getEventReadiness(eventId: string, mode: 'vip' | 'tickets'
     const activeTiers = await db.ticketTier.count({ where: { eventId, enabled: true } });
     if (event.ticketingEnabled && !activeTiers) warnings.push('Ticketing is enabled but no active ticket tiers exist. Configure tiers before announcing a release.');
     if (contentStatus(contentKeys[0]) !== 'PUBLISHED') warnings.push('Tickets content is not published. The public tickets page stays unavailable until it is published in the content editor.');
-    const status = ticketSetupStatus({ eventId, eventPublished: event.status === 'PUBLISHED' && !event.deletedAt, publicHref: eventScopedHref('/tickets', event.slug), contentStatus: contentStatus(contentKeys[0]), activeTiers });
+    const status = ticketSetupStatus({ eventId, eventPublished: event.status === 'PUBLISHED' && !event.deletedAt, publicHref: eventScopedHref('/tickets', event.slug), contentStatus: contentStatus(contentKeys[0]), activeTiers, providerReady: event.ticketExternalProviderEnabled && /^https:\/\//i.test(event.ticketProviderUrl ?? '') });
     return { status, facts: { 'Ticketing enabled': event.ticketingEnabled, 'Sale status': event.ticketSaleStatus, 'Active tiers': activeTiers, 'Square enabled': event.ticketSquareEnabled, 'External provider configured': event.ticketExternalProviderEnabled && Boolean(event.ticketProviderUrl), 'Tickets content': contentStatus(contentKeys[0]), 'Public page': eventScopedHref('/tickets', event.slug) }, warnings };
   }
   const [activePackages, activeBooths, bottleOptions, defaultPackage] = await Promise.all([
