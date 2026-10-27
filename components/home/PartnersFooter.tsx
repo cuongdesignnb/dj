@@ -6,13 +6,14 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Container from '../ui/Container';
 import PublicMenuLinks from '@/components/shared/PublicMenuLinks';
-import type { HomeFooterData, HomePartner } from './types';
+import type { HomeFooterData } from './types';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import RichText from '@/components/shared/RichText';
 import { useToast } from '@/components/shared/toast/ToastProvider';
 import { SiteLogo, useSitePalette } from '@/components/shared/SiteBranding';
 import { rgba } from '@/lib/site-theme';
 import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
+import type { Sponsor } from '@/lib/sponsors';
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -56,28 +57,40 @@ const socialIconMap = {
   youtube: YoutubeIcon,
 };
 
-// Marquee animation for partner logos
-function MarqueeStrip({ partners }: { partners: HomePartner[] }) {
-  const source = partners.length ? partners : [{ id: 'pending', label: 'Partners to be announced', href: null }];
-  const doubledPartners = [...source, ...source, ...source];
+interface MarqueeItem { id: string; label: string; logo: Sponsor['logo'] | null }
+
+/**
+ * Seamless partner marquee. The track holds two identical halves and slides by
+ * exactly one half (-50% of the track's own width), so the loop never jumps.
+ * Each half repeats the partners until it is wider than any screen.
+ */
+function MarqueeStrip({ items }: { items: MarqueeItem[] }) {
+  const source: MarqueeItem[] = items.length ? items : [{ id: 'pending', label: 'Partners to be announced', logo: null }];
+  const perHalf = Math.max(1, Math.ceil(10 / source.length));
+  const half = Array.from({ length: perHalf }, () => source).flat();
+  // Constant speed: roughly 3.5 s per entry, whatever the number of partners.
+  const duration = `${Math.max(20, half.length * 3.5)}s`;
+
+  const renderHalf = (copy: number) => (
+    <ul className="flex shrink-0 items-center" aria-hidden={copy === 1 || undefined}>
+      {half.map((item, i) => (
+        <li key={`${copy}-${item.id}-${i}`} className="flex h-10 shrink-0 items-center px-8 md:px-12">
+          {item.logo
+            ? <PartnerLogo logo={item.logo} name={item.label} className="h-7 w-auto max-w-[150px] object-contain opacity-60 transition-opacity duration-300 hover:opacity-100" />
+            : <span className="whitespace-nowrap font-heading text-sm tracking-wider text-white/50">{item.label}</span>}
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
-    <div className="relative overflow-hidden py-4 bg-rave-panel/30">
+    <div data-partner-marquee="" className="relative overflow-hidden bg-rave-panel/30 py-4">
       {/* Fade edges */}
-      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-rave-deep to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-rave-deep to-transparent z-10 pointer-events-none" />
-
-      {/* Marquee content */}
-      <div className="flex animate-marquee whitespace-nowrap">
-        {doubledPartners.map((p, i) => (
-          <motion.span
-            key={`${p.id}-${i}`}
-            className="font-heading text-sm tracking-wider text-white/40 hover:text-white transition-colors duration-300 mx-8 cursor-default"
-            whileHover={{ scale: 1.1, color: 'var(--color-rave-red)' }}
-          >
-            {p.label}
-          </motion.span>
-        ))}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-rave-deep to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-rave-deep to-transparent" />
+      <div className="partner-marquee-track flex w-max" style={{ animationDuration: duration }}>
+        {renderHalf(0)}
+        {renderHalf(1)}
       </div>
     </div>
   );
@@ -91,6 +104,11 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
   const palette = useSitePalette();
   const sponsorNames = new Set(sponsors.map((sponsor) => sponsor.name.toLowerCase()));
   const textPartners = footer.partners.filter((partner) => !sponsorNames.has(partner.label.toLowerCase()));
+  // Sponsors with a logo first, then partners known only by name.
+  const marqueeItems: MarqueeItem[] = [
+    ...sponsors.map((sponsor) => ({ id: sponsor.id, label: sponsor.name, logo: sponsor.logo })),
+    ...textPartners.map((partner) => ({ id: partner.id, label: partner.label, logo: null })),
+  ];
   const [global, setGlobal] = useState<{ tagline?: string; footerDescription?: string; copyright?: string }>({});
 
   useEffect(() => {
@@ -122,7 +140,7 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
     <footer className="relative overflow-hidden">
       {/* Partner Strip with Marquee */}
       <div className="relative border-t border-white/[0.06] bg-rave-deep">
-        <MarqueeStrip partners={footer.partners} />
+        <MarqueeStrip items={marqueeItems} />
 
         <Container>
           <motion.div

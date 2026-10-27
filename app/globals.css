@@ -581,6 +581,17 @@ body {
   animation: border-glow-expand 2s ease-in-out infinite;
 }
 
+.partner-marquee-track {
+  animation: marquee linear infinite;
+  will-change: transform;
+}
+.partner-marquee-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .partner-marquee-track { animation: none; }
+}
+
 .animate-marquee {
   animation: marquee 20s linear infinite;
 }
