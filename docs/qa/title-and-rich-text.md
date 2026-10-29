@@ -312,3 +312,16 @@ Provider URL, e.g. TicketsCandy) and has no tiers, `/tickets` and the home block
 show "Buy tickets on <provider>" instead of "being prepared", and Admin's
 setup status counts it as live. E2E: `current-event.spec.ts`; the VIP state test
 now expects the next published event when DESTINY is unpublished. Full suite green.
+
+## 16. Two ways to buy; /event redirect; poster-blue Highland
+
+- `/tickets` always offers both: direct checkout on this site (Square flow, unchanged)
+  and, when Ticket Settings has an external provider URL, an "or — Buy on
+  <provider>" link (new tab). Previously the provider link never showed once an
+  event had tiers. The homepage hero keeps "View Ticket Details" (→ /tickets) and
+  adds "Or buy on <provider>"; the home tickets block wording adapts.
+- `/event` sends a relative Location: behind the proxy `request.url` was
+  `http://localhost:3000`, so production redirected visitors there.
+- Highland palette resampled from the Hi-Land poster: steel electric blue
+  #2AA0DF on near-black navy #04090E (dark text on solid buttons, 6.2:1).
+- Admin row-menu tests switch off smooth scrolling before measuring.

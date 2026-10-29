@@ -9,7 +9,7 @@ let editor: APIRequestContext;
 let editorState: Awaited<ReturnType<APIRequestContext['storageState']>>;
 let original: Record<string, unknown>;
 
-const ICE = 'rgb(85, 230, 242)';
+const ICE = 'rgb(42, 160, 223)';
 const RED = 'rgb(255, 23, 61)';
 
 async function accentOf(page: Page) {
@@ -57,12 +57,12 @@ test('choosing Highland in Settings › Site recolours every public page, but no
     await page.goto(path);
     await expect(page.locator('html'), path).toHaveAttribute('data-theme', 'highland');
     expect(await accentOf(page), path).toBe(ICE);
-    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), path).toBe('rgb(5, 11, 18)');
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), path).toBe('rgb(4, 9, 14)');
   }
   // Solid ice-cyan buttons use dark text so labels stay readable.
   await page.goto('/');
   const solid = page.locator('header a.bg-rave-red, header a.from-rave-red, header .bg-rave-red').first();
-  if (await solid.count()) expect(await solid.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(4, 32, 42)');
+  if (await solid.count()) expect(await solid.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(6, 23, 35)');
 
   const admin = await (await browser.newContext({ storageState: editorState })).newPage();
   await admin.goto('/admin/settings/site');

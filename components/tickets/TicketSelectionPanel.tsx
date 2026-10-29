@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, BadgeCheck, CalendarDays, CircleAlert, Clock, Mail, MapPin, ShieldCheck, User, Users } from 'lucide-react';
+import { ArrowRight, BadgeCheck, CalendarDays, CircleAlert, Clock, ExternalLink, Mail, MapPin, ShieldCheck, User, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type {
   TicketEventInfo,
@@ -45,19 +45,9 @@ export default function TicketSelectionPanel({
   const toast = useToast();
   const [checkoutBusy, setCheckoutBusy] = useState(false);
 
-  // The CTA is only a real link when a provider URL has been configured.
+  // Third-party seller link, offered as a second option next to direct checkout.
   const providerReady = provider.mode === 'external-link' && !!provider.checkoutUrl;
-  const ctaEnabled = providerReady && hasSelection;
-
-  const ctaLabel = providerReady
-    ? 'Continue to Ticket Provider'
-    : 'Ticket Provider Link Coming Soon';
-
-  const ctaNote = !providerReady
-    ? (provider.unavailableNote ?? 'Ticket link will be available soon.')
-    : !hasSelection
-      ? 'Select at least one ticket to continue.'
-      : null;
+  const ctaNote = !hasSelection ? 'Select at least one ticket to pay securely on this site.' : null;
 
   async function startTicketCheckout(formEvent: React.FormEvent<HTMLFormElement>) {
     formEvent.preventDefault();
@@ -262,25 +252,32 @@ export default function TicketSelectionPanel({
             )}
             <p className="text-xs leading-relaxed text-rave-muted/80">Price and availability are checked again on the server before the hold is created.</p>
           </form>
-        ) : ctaEnabled ? (
-          <a
-            href={provider.checkoutUrl as string}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group/cta inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-rave-red to-rave-red2 px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-white shadow-[0_0_26px_rgb(var(--rave-accent-rgb)/0.4)] transition-all duration-300 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-rave-red focus-visible:ring-offset-2 focus-visible:ring-offset-rave-black sm:text-base"
-          >
-            <span>{ctaLabel}</span>
-            <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover/cta:translate-x-1" />
-            <span className="sr-only">(opens the ticket provider in a new tab)</span>
-          </a>
         ) : (
           <button
             type="button"
             disabled
             className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[14px] border border-white/[0.12] bg-white/[0.03] px-6 py-4 font-heading text-sm font-semibold uppercase tracking-wider text-rave-muted sm:text-base"
           >
-            {ctaLabel}
+            Select tickets to pay here
           </button>
+        )}
+        {/* Option 2: the same event on the third-party seller, always offered next to direct checkout. */}
+        {providerReady && (
+          <div data-provider-option="" className="mt-5">
+            <p className="mb-3 flex items-center gap-3 font-heading text-[11px] uppercase tracking-[0.2em] text-rave-muted/80">
+              <span className="h-px flex-1 bg-white/[0.1]" aria-hidden /> or <span className="h-px flex-1 bg-white/[0.1]" aria-hidden />
+            </p>
+            <a
+              href={provider.checkoutUrl as string}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[14px] border border-rave-red/50 px-6 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:border-rave-red hover:bg-rave-red/10 sm:text-base"
+            >
+              Buy on {provider.providerName || 'the ticket provider'}
+              <ExternalLink aria-hidden className="h-4 w-4" />
+              <span className="sr-only">(opens in a new tab)</span>
+            </a>
+          </div>
         )}
         {ctaNote && (
           <div className="mt-2 text-center font-heading text-[11px] uppercase tracking-[0.16em] text-rave-muted/80">

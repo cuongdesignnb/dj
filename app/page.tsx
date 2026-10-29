@@ -197,7 +197,7 @@ export default async function HomePage() {
   return (
     <main className="relative min-h-screen bg-rave-black text-white noise-overlay">
       <Header />
-      <HeroSection event={data.event} animation={data.heroAnimation} background={data.heroBackground} />
+      <HeroSection event={data.event} animation={data.heroAnimation} background={data.heroBackground} ticketProvider={data.ticketProvider} />
       <EventOverview event={data.event} />
       <LineupPreview artists={data.artists} />
       <TicketsSection ticketTiers={data.ticketTiers} trustItems={data.trustItems} provider={data.ticketProvider} eventTitle={data.event.title} />

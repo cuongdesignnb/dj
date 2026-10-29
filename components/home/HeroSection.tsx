@@ -11,7 +11,7 @@ import AudioBars from '../ui/AudioBars';
 import DancingCrowd, { LaserLights, DiscoBall } from '../ui/DancingCrowd';
 import DESTINYShatter from '../ui/DESTINYShatter';
 import { stableUnit, stableSigned } from '@/lib/stable-visual';
-import type { HomeEvent, HomeMedia } from './types';
+import type { HomeEvent, HomeMedia, HomeTicketProvider } from './types';
 import RichText from '@/components/shared/RichText';
 import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
 import { useSitePalette } from '@/components/shared/SiteBranding';
@@ -399,7 +399,7 @@ function AudioVisualizer() {
   );
 }
 
-export default function HeroSection({ event, animation = null, background = { image: null, video: null } }: { event: HomeEvent; animation?: HomeMedia | null; background?: { image: string | null; video: string | null } }) {
+export default function HeroSection({ event, animation = null, background = { image: null, video: null }, ticketProvider = null }: { event: HomeEvent; animation?: HomeMedia | null; background?: { image: string | null; video: string | null }; ticketProvider?: HomeTicketProvider | null }) {
   const sponsors = useSponsors();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[84px]">
@@ -537,6 +537,19 @@ export default function HeroSection({ event, animation = null, background = { im
             >
               View Ticket Details
             </NeonButton>
+            {/* Second option: the same event on the third-party seller (Ticket Settings › Provider URL). */}
+            {ticketProvider && (
+              <a
+                href={ticketProvider.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-hero-provider=""
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 px-6 font-heading text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-rave-red hover:bg-rave-red/10 sm:text-sm"
+              >
+                Or buy on {ticketProvider.name} <span aria-hidden>↗</span>
+                <span className="sr-only">(opens in a new tab)</span>
+              </a>
+            )}
             <motion.span
               className="font-heading uppercase tracking-[0.2em] text-[10px] sm:text-xs text-rave-muted font-bold"
               animate={{ opacity: [0.7, 1, 0.7] }}

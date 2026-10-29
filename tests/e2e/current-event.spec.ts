@@ -66,10 +66,31 @@ test('Admin › Homepage › Current event drives the homepage, /tickets and /ev
 
   const redirect = await request.get('/event', { maxRedirects: 0 });
   expect(redirect.status()).toBe(307);
-  expect(redirect.headers().location).toMatch(/\/events\/qa-current$/);
+  // Relative, so the proxy never leaks the container's internal address.
+  expect(redirect.headers().location).toBe('/events/qa-current');
+  expect((await request.get('/event?from=menu', { maxRedirects: 0 })).headers().location).toBe('/events/qa-current?from=menu');
 
   // DESTINY itself is still reachable on its own pages.
   expect((await request.get('/tickets?event=destiny')).status()).toBe(200);
+});
+
+test('two ways to buy: direct checkout on this site and the TicketsCandy link side by side', async ({ page }) => {
+  fixture('add-direct-tier');
+  await setCurrentEvent(ids['qa-current']);
+  await page.goto('/');
+  // Hero: the main button stays on our tickets page, the seller is a second option.
+  await expect(page.getByRole('link', { name: /View Ticket Details/ }).first()).toHaveAttribute('href', '/tickets');
+  await expect(page.locator('[data-hero-provider]')).toHaveAttribute('href', PROVIDER_URL);
+  await expect(page.locator('[data-ticket-provider]')).toContainText('Buy below on this site, or get the same tickets through TicketsCandy.');
+
+  await page.goto('/tickets');
+  const option = page.locator('[data-provider-option]').getByRole('link', { name: /Buy on TicketsCandy/ });
+  await expect(option).toHaveAttribute('href', PROVIDER_URL);
+  await expect(option).toHaveAttribute('target', '_blank');
+  await page.getByRole('button', { name: 'Increase quantity for QA Direct General' }).click();
+  // Direct checkout appears and the third-party option stays available.
+  await expect(page.getByRole('button', { name: 'Continue to secure payment' })).toBeVisible();
+  await expect(option).toBeVisible();
 });
 
 test('past events (marked Past, or whose date is over) move below the upcoming list', async ({ page, request }) => {

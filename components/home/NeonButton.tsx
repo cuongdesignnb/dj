@@ -129,6 +129,24 @@ export default function NeonButton({
     </>
   );
 
+  if (href && /^https?:\/\//i.test(href)) {
+    // Another site (e.g. the ticket seller): new tab, no in-site navigation indicator.
+    return (
+      <motion.div {...motionProps} className="inline-block">
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${baseStyles} ${variants[variant]} ${
+            intense && variant === 'primary' ? 'btn-glow-intense' : ''
+          } ${className}`}
+        >
+          {enhancedContent}
+        </a>
+      </motion.div>
+    );
+  }
+
   if (href) {
     return (
       <motion.div {...motionProps} className="inline-block">

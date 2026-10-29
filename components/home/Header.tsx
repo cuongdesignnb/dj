@@ -21,6 +21,12 @@ function normalize(path: string): string {
   return path;
 }
 
+/** The header CTA can point at another site (the ticket seller): open it in a new tab. */
+function CtaLink({ href, className, onClick, children }: { href: string; className?: string; onClick?: () => void; children: React.ReactNode }) {
+  if (/^https?:\/\//i.test(href)) return <a href={href} target="_blank" rel="noopener noreferrer" className={className} onClick={onClick} data-header-cta="">{children}</a>;
+  return <Link href={href} className={className} onClick={onClick} data-header-cta="">{children}</Link>;
+}
+
 export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -176,24 +182,24 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
               transition={{ type: 'spring', stiffness: 280, damping: 22 }}
               className="relative"
             >
-              {resolvedCtaHref && resolvedCtaLabel && <Link
+              {resolvedCtaHref && resolvedCtaLabel && <CtaLink
                 href={resolvedCtaHref}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-rave-red to-rave-red2 text-white font-heading uppercase tracking-wider text-sm font-bold border border-white/15 hover:border-rave-red shadow-[0_0_24px_rgb(var(--rave-accent-rgb)/0.45)] hover:shadow-[0_0_36px_rgb(var(--rave-accent-rgb)/0.65)] transition-all"
               >
                 <span>{resolvedCtaLabel}</span>
                 <span aria-hidden>»</span>
-              </Link>}
+              </CtaLink>}
             </motion.div>
           </div>
 
           {/* Mobile Toggle */}
           <div className="flex items-center gap-3 lg:hidden">
-            {resolvedCtaHref && resolvedCtaLabel && <Link
+            {resolvedCtaHref && resolvedCtaLabel && <CtaLink
               href={resolvedCtaHref}
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-rave-red text-white font-heading uppercase tracking-wider text-xs font-bold"
             >
               {resolvedCtaLabel} »
-            </Link>}
+            </CtaLink>}
             <motion.button
               className="w-10 h-10 flex items-center justify-center text-white hover:text-rave-red transition-colors rounded-lg hover:bg-rave-red/10"
               onClick={() => setMobileOpen(true)}
@@ -283,13 +289,13 @@ export default function Header({ ctaHref, ctaLabel }: HeaderProps = {}) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                {resolvedCtaHref && resolvedCtaLabel && <Link
+                {resolvedCtaHref && resolvedCtaLabel && <CtaLink
                   href={resolvedCtaHref}
                   onClick={() => setMobileOpen(false)}
                   className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-rave-red text-white font-heading uppercase tracking-wider text-sm font-bold"
                 >
                   {resolvedCtaLabel} »
-                </Link>}
+                </CtaLink>}
                 <div className="flex items-center justify-center gap-4 mt-4">
                   {[...Array(5)].map((_, i) => (
                     <motion.div

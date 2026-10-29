@@ -40,6 +40,8 @@ async function expectUsable(page: Page, panel: Locator, entries: Locator, label:
 test('every Admin list screen: the last row action menu is fully visible and clickable', async ({ browser }) => {
   const context = await browser.newContext({ storageState: adminState, viewport: { width: 1440, height: 800 } });
   const page = await context.newPage();
+  // Measurements need the page to stop where it is put; the site scrolls smoothly.
+  await page.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.scrollBehavior = 'auto'; }); });
   const hrefs = [...new Set(ADMIN_NAV.flatMap((group) => group.items.map((item) => item.href)))].filter((href) => !href.endsWith('/new'));
   const checked: string[] = [];
   for (const href of hrefs) {
@@ -63,6 +65,8 @@ test('every Admin list screen: the last row action menu is fully visible and cli
 test('top bar search results, notifications and account menu are fully visible', async ({ browser }) => {
   const context = await browser.newContext({ storageState: adminState, viewport: { width: 1440, height: 800 } });
   const page = await context.newPage();
+  // Measurements need the page to stop where it is put; the site scrolls smoothly.
+  await page.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.scrollBehavior = 'auto'; }); });
   await page.goto('/admin/events');
   await page.getByPlaceholder('Search anything...').fill('destiny');
   const results = page.getByRole('listbox', { name: 'Search results' });

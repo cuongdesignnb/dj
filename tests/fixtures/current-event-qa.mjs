@@ -37,6 +37,13 @@ try {
       await db.pageContent.create({ data: { key, status: 'PUBLISHED', translations: { create: from.translations.map((row) => ({ locale: row.locale, contentJson: row.contentJson })) } } });
     }
     console.log(JSON.stringify(ids));
+  } else if (action === 'add-direct-tier') {
+    // A tier sold on this site (Square checkout) next to the TicketsCandy link.
+    const event = await db.event.findUniqueOrThrow({ where: { slug: 'qa-current' } });
+    const tier = await db.ticketTier.findFirst({ where: { eventId: event.id, name: 'QA Direct General' } })
+      ?? await db.ticketTier.create({ data: { eventId: event.id, name: 'QA Direct General', priceMinor: 5500, currency: 'AUD', availabilityStatus: 'AVAILABLE' } });
+    await db.ticketTier.update({ where: { id: tier.id }, data: { enabled: true, purchasableOnline: true, availabilityStatus: 'AVAILABLE' } });
+    console.log(JSON.stringify({ tierId: tier.id }));
   } else if (action === 'cleanup') {
     for (const e of EVENTS) {
       const event = await db.event.findUnique({ where: { slug: e.slug } });

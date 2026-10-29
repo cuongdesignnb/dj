@@ -69,32 +69,32 @@
   --color-rave-muted: #A6A6B2;
 }
 
-/* Highland (Hi-Land Tour poster): ice cyan and electric blue on navy black. */
+/* Highland (Hi-Land Tour poster): steel electric blue on near-black navy, sampled from the poster. */
 [data-theme="highland"] {
-  --rave-accent-rgb: 85 230 242;
-  --rave-accent2-rgb: 168 243 255;
-  --rave-magenta-rgb: 47 184 255;
-  --rave-purple-rgb: 28 111 209;
-  --rave-blue-rgb: 143 216 255;
-  --rave-black-rgb: 5 11 18;
-  --rave-deep-rgb: 8 17 27;
-  --rave-strong-rgb: 21 147 184;
-  --rave-strong-from: #1593B8;
-  --rave-strong-to: #0B4F74;
-  --rave-on-accent: #04202A;
-  --color-rave-black: #050B12;
-  --color-rave-deep: #08111B;
-  --color-rave-panel: #0C1824;
-  --color-rave-panel2: #112131;
-  --color-rave-red: #55E6F2;
-  --color-rave-red2: #A8F3FF;
-  --color-rave-magenta: #2FB8FF;
-  --color-rave-purple: #1C6FD1;
-  --color-rave-blue: #8FD8FF;
-  --color-rave-muted: #A3B4C4;
+  --rave-accent-rgb: 42 160 223;
+  --rave-accent2-rgb: 117 201 240;
+  --rave-magenta-rgb: 21 133 213;
+  --rave-purple-rgb: 28 88 156;
+  --rave-blue-rgb: 157 219 241;
+  --rave-black-rgb: 4 9 14;
+  --rave-deep-rgb: 7 14 22;
+  --rave-strong-rgb: 24 101 149;
+  --rave-strong-from: #1B74A7;
+  --rave-strong-to: #0E3E62;
+  --rave-on-accent: #061723;
+  --color-rave-black: #04090E;
+  --color-rave-deep: #070E16;
+  --color-rave-panel: #0A141F;
+  --color-rave-panel2: #0E1B28;
+  --color-rave-red: #2AA0DF;
+  --color-rave-red2: #75C9F0;
+  --color-rave-magenta: #1585D5;
+  --color-rave-purple: #1C589C;
+  --color-rave-blue: #9DDBF1;
+  --color-rave-muted: #A0B0BA;
 }
 
-/* Ice cyan is light: solid accent buttons and badges get dark text in Highland. */
+/* The poster blue is light enough that solid accent buttons and badges get dark text in Highland. */
 [data-theme="highland"] :is(.bg-rave-red, .bg-rave-red2, .from-rave-red),
 [data-theme="highland"] :is(.bg-rave-red, .bg-rave-red2, .from-rave-red) :is(.text-white, .text-rave-white) {
   color: var(--rave-on-accent);

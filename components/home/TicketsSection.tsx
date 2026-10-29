@@ -140,9 +140,11 @@ export default function TicketsSection({ ticketTiers, trustItems, provider = nul
         {provider && (
           <div data-ticket-provider="" className="mx-auto mb-14 max-w-2xl rounded-2xl border border-rave-red/40 bg-rave-panel/60 px-6 py-10 text-center">
             <p className="font-heading text-xl font-bold uppercase tracking-[0.1em] text-white sm:text-2xl">
-              {eventTitle ? `${eventTitle} tickets are on sale` : 'Tickets are on sale'}
+              {ticketTiers.length > 0 ? 'Prefer another way to buy?' : eventTitle ? `${eventTitle} tickets are on sale` : 'Tickets are on sale'}
             </p>
-            <p className="mt-2 text-sm text-rave-muted">Tickets are sold through {provider.name}.</p>
+            <p className="mt-2 text-sm text-rave-muted">
+              {ticketTiers.length > 0 ? `Buy below on this site, or get the same tickets through ${provider.name}.` : `Tickets are sold through ${provider.name}.`}
+            </p>
             <a
               href={provider.url}
               target="_blank"

@@ -899,8 +899,8 @@ export default function DESTINYShatter({
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
-        // The shards are drawn in pink; the Highland theme turns them ice cyan.
-        style={{ width: '100%', height: '100%', filter: theme === 'highland' ? 'hue-rotate(215deg) saturate(1.15)' : undefined }}
+        // The shards are drawn in pink; the Highland theme turns them poster blue.
+        style={{ width: '100%', height: '100%', filter: theme === 'highland' ? 'hue-rotate(236deg) saturate(1.1) brightness(0.92)' : undefined }}
         aria-hidden
       />
     </div>

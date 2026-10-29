@@ -34,6 +34,10 @@ for (const path of ['/admin/partners', '/admin/events', '/admin/artists']) {
   test(`the last row's actions menu on ${path} is fully visible and usable`, async ({ browser }) => {
     const context = await browser.newContext({ storageState: editorState, viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
+  // Measurements need the page to stop where it is put; the site scrolls smoothly.
+  await page.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.scrollBehavior = 'auto'; }); });
+    // Measurements need the page to stop where it is put; the site scrolls smoothly.
+    await page.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.scrollBehavior = 'auto'; }); });
     await page.goto(path);
     const triggers = page.locator('table').getByRole('button', { name: /^Actions for / });
     await expect(triggers.first()).toBeVisible();
@@ -51,6 +55,8 @@ for (const path of ['/admin/partners', '/admin/events', '/admin/artists']) {
 test('near the bottom of the screen the menu opens upwards and follows scrolling', async ({ browser }) => {
   const context = await browser.newContext({ storageState: editorState, viewport: { width: 1280, height: 640 } });
   const page = await context.newPage();
+  // Measurements need the page to stop where it is put; the site scrolls smoothly.
+  await page.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.scrollBehavior = 'auto'; }); });
   await page.goto('/admin/partners');
   const trigger = page.locator('table').getByRole('button', { name: /^Actions for / }).last();
   await trigger.scrollIntoViewIfNeeded();
