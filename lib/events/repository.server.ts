@@ -2,6 +2,7 @@ import 'server-only';
 
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { validateEventPageData } from './validation';
+import { EVENT_WALL_CLOCK_TZ } from './presentation';
 import type { EventPageData, EventRepository, RepositoryError } from './types';
 
 export type RepositoryResult =
@@ -47,7 +48,7 @@ export function toPageData(raw: unknown): EventPageData | null {
       startsAt: typeof event.startAt === 'string' ? event.startAt : null,
       endsAt: typeof event.endAt === 'string' ? event.endAt : null,
       doorsOpenAt: null,
-      timeZone: typeof event.timeZone === 'string' && event.timeZone ? event.timeZone : process.env.EVENT_TIME_ZONE?.trim() || 'UTC',
+      timeZone: EVENT_WALL_CLOCK_TZ,
       poster,
       heroBackground: hero,
       experienceImage: hero,

@@ -6,6 +6,7 @@ import type { TicketsPageData } from './types';
 import { normalizeTicketsPage } from './http';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
+import { eventDateText, eventScheduleText } from '@/lib/events/presentation';
 
 export interface TicketsRepositoryError {
   kind: 'network' | 'http' | 'invalid' | 'config' | 'not-found' | 'not-configured';
@@ -107,9 +108,11 @@ export class HttpTicketsRepository implements TicketsRepository {
         title: event.title,
         subtitle: event.eyebrow,
         venue: [event.venue?.name, event.venue?.city].filter(Boolean).join(', '),
-        date: event.startAt,
+        address: event.venue?.address ?? null,
+        lineup: Array.isArray(event.lineup) ? event.lineup.map((artist: any) => artist?.name).filter((name: unknown) => typeof name === 'string') : [],
+        date: eventDateText(event.startAt),
         dateStatus: event.dateStatus?.toLowerCase(),
-        schedule: event.startAt,
+        schedule: eventScheduleText(event.startAt, event.endAt),
         scheduleStatus: event.scheduleStatus?.toLowerCase(),
         image: event.poster ?? event.hero,
       },

@@ -13,6 +13,7 @@ export interface HomeEvent {
   poster: HomeMedia | null;
   hero: HomeMedia | null;
   startAt: string | null;
+  endAt: string | null;
   dateStatus: string;
   scheduleStatus: string;
   venue: { name: string; city: string; country: string };

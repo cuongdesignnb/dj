@@ -18,6 +18,7 @@ import type {
   PastEventsHeroData,
   PastEventsPageData,
 } from './listing-types';
+import { eventDateText, eventScheduleText } from './presentation';
 import { publicApiBaseUrl, unwrapApiData } from '@/lib/api/public';
 import { PUBLIC_CACHE_TAGS } from '@/lib/cache/public-tags';
 import { fetchPublicListingContent, listingAction, listingImage, listingTitleLines } from '@/lib/cms/public-page';
@@ -391,9 +392,9 @@ export class HttpEventsRepository implements EventsRepository {
           image: row.poster ?? row.hero,
           status: row.lifecycleStatus === 'COMPLETED' || row.lifecycleStatus === 'PAST' ? 'completed' : row.featured ? 'announced' : 'coming-soon',
           featured: row.featured,
-          date: row.startAt,
+          date: eventDateText(row.startAt),
           dateStatus: String(row.dateStatus ?? '').toLowerCase(),
-          schedule: row.startAt,
+          schedule: eventScheduleText(row.startAt, row.endAt),
           scheduleStatus: String(row.scheduleStatus ?? '').toLowerCase(),
           genres: Array.isArray(row.genres) ? row.genres : [],
           description: row.shortDescription,

@@ -91,6 +91,8 @@ export default async function TicketsPage({ searchParams }: { searchParams: Prom
           event={data.event}
           content={data.hero}
           visual={data.hero.image?.src ? data.hero.image : data.event.image}
+          tiers={data.tiers}
+          provider={data.provider}
         />
         <TicketsSelector
           event={data.event}

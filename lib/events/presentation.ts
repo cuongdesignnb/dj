@@ -9,7 +9,14 @@ export type ResolvedAction = {
   note?: string;
 };
 
-const DEFAULT_EVENT_TZ = process.env.EVENT_TIME_ZONE?.trim() || 'UTC';
+/**
+ * Admin stores the date and time exactly as typed, with a `Z` suffix (see
+ * `dateTime()` in app/admin/actions.ts): "21:00" on the venue's night is saved
+ * as 21:00Z. Reading the clock back in UTC therefore shows what Admin entered,
+ * identically on the server and in the browser.
+ */
+export const EVENT_WALL_CLOCK_TZ = 'UTC';
+const DEFAULT_EVENT_TZ = EVENT_WALL_CLOCK_TZ;
 
 function safeHref(value: string | null | undefined): ResolvedAction | null {
   if (!value) return null;
@@ -154,6 +161,17 @@ export function formatTimeChip(
   const end = parseIso(endsAt);
   if (!end) return startStr;
   return `${startStr} – ${timeFmt.format(end)}`;
+}
+
+/** "Saturday 07 November 2026", or null when there is no usable date. */
+export function eventDateText(startsAt: unknown): string | null {
+  return typeof startsAt === 'string' && parseIso(startsAt) ? formatDateChip(startsAt, EVENT_WALL_CLOCK_TZ) : null;
+}
+
+/** "09:00 pm – 04:00 am", or null when there is no usable start time. */
+export function eventScheduleText(startsAt: unknown, endsAt: unknown): string | null {
+  if (typeof startsAt !== 'string' || !parseIso(startsAt)) return null;
+  return formatTimeChip(startsAt, typeof endsAt === 'string' ? endsAt : null, EVENT_WALL_CLOCK_TZ);
 }
 
 export function repositoryErrorMessage(err: RepositoryError): string {

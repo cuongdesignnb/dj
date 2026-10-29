@@ -55,6 +55,10 @@ export interface TicketEventInfo {
   title: string;
   subtitle?: string;
   venue: string;
+  /** Street address, shown under the venue name. */
+  address?: string | null;
+  /** Artist names in billing order. */
+  lineup?: string[];
 
   date?: string | null;
   dateStatus: 'confirmed' | 'tba';

@@ -110,6 +110,8 @@ function eventInfo(value: unknown): TicketEventInfo | null {
     title,
     subtitle: typeof value.subtitle === 'string' ? value.subtitle : undefined,
     venue: str(value.venue),
+    address: nullableStr(value.address),
+    lineup: Array.isArray(value.lineup) ? value.lineup.filter((name): name is string => typeof name === 'string' && name.trim().length > 0) : [],
     date: nullableStr(value.date),
     dateStatus: value.dateStatus === 'confirmed' ? 'confirmed' : 'tba',
     schedule: nullableStr(value.schedule),

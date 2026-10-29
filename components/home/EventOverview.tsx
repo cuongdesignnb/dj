@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Calendar, Clock, AlertTriangle, Headphones, Users, Globe, Ticket } from 'lucide-react';
+import { homeEventDate, homeEventSchedule } from './event-labels';
 import Container from '../ui/Container';
 import NeonButton from './NeonButton';
 import type { HomeEvent } from './types';
@@ -110,14 +111,14 @@ export default function EventOverview({ event }: { event: HomeEvent }) {
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-rave-red" />
                 <span className="font-heading tracking-widest text-sm sm:text-base text-white uppercase font-bold">
-                  {event.dateStatus.toUpperCase() === 'CONFIRMED' && event.startAt ? event.startAt.slice(0, 10) : 'DATE TO BE ANNOUNCED'}
+                  {homeEventDate(event) ?? 'DATE TO BE ANNOUNCED'}
                 </span>
               </div>
               
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-rave-red" />
                 <span className="font-heading tracking-widest text-sm sm:text-base text-white uppercase font-bold">
-                  {event.scheduleStatus.toUpperCase() === 'CONFIRMED' && event.startAt ? event.startAt.slice(11, 16) : 'SCHEDULE TO BE CONFIRMED'}
+                  {homeEventSchedule(event) ?? 'SCHEDULE TO BE CONFIRMED'}
                 </span>
               </div>
 

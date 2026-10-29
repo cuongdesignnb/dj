@@ -17,6 +17,7 @@ import type {
   VipProcessStep,
   VipPageState,
 } from './types';
+import { eventDateText, eventScheduleText } from '@/lib/events/presentation';
 
 // Normalizes an API payload into VipPageData.
 //
@@ -332,8 +333,8 @@ export function normalizeVipState(eventRaw: unknown, vipRaw: unknown, tablesRaw:
   const event = eventContext({
     id: eventRaw.id, slug: eventRaw.slug, title: eventRaw.title, subtitle: eventRaw.eyebrow,
     venue: isRecord(eventRaw.venue) ? [eventRaw.venue.name, eventRaw.venue.city].filter((v) => typeof v === 'string').join(', ') : '',
-    date: eventRaw.startAt, dateStatus: str(eventRaw.dateStatus).toLowerCase(),
-    schedule: eventRaw.startAt, scheduleStatus: str(eventRaw.scheduleStatus).toLowerCase(),
+    date: eventDateText(eventRaw.startAt), dateStatus: str(eventRaw.dateStatus).toLowerCase(),
+    schedule: eventScheduleText(eventRaw.startAt, eventRaw.endAt), scheduleStatus: str(eventRaw.scheduleStatus).toLowerCase(),
     image: eventRaw.poster ?? eventRaw.hero,
   });
   if (!event || settings.id !== event.id || typeof settings.vipEnabled !== 'boolean'

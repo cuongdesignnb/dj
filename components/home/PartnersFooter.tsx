@@ -6,7 +6,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Container from '../ui/Container';
 import PublicMenuLinks from '@/components/shared/PublicMenuLinks';
-import type { HomeFooterData } from './types';
+import type { HomeEvent, HomeFooterData } from './types';
+import { homeEventDate, homeEventSchedule, homeEventVenue } from './event-labels';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 import RichText from '@/components/shared/RichText';
 import { useToast } from '@/components/shared/toast/ToastProvider';
@@ -96,7 +97,7 @@ function MarqueeStrip({ items }: { items: MarqueeItem[] }) {
   );
 }
 
-export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
+export default function PartnersFooter({ footer, event = null }: { footer: HomeFooterData; event?: HomeEvent | null }) {
   const [email, setEmail] = useState('');
   const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const toast = useToast();
@@ -275,16 +276,16 @@ export default function PartnersFooter({ footer }: { footer: HomeFooterData }) {
                 <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">Event Info</h4>
                 <ul className="flex flex-col gap-2.5 text-sm text-rave-muted">
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    Date to be announced
+                    {homeEventDate(event) ?? 'Date to be announced'}
                   </motion.li>
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    Venue details to be confirmed
+                    {homeEventVenue(event) ?? 'Venue details to be confirmed'}
                   </motion.li>
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    Event details to be confirmed
+                    {event?.title || 'Event details to be confirmed'}
                   </motion.li>
                   <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    Schedule to be confirmed
+                    {homeEventSchedule(event) ?? 'Schedule to be confirmed'}
                   </motion.li>
                 </ul>
               </motion.div>

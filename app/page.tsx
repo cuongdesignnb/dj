@@ -99,6 +99,7 @@ async function loadHomeData(): Promise<HomeData | null> {
     poster: media(event.poster),
     hero: media(event.hero),
     startAt: typeof event.startAt === 'string' ? event.startAt : null,
+    endAt: typeof event.endAt === 'string' ? event.endAt : null,
     dateStatus: text(event.dateStatus, 'TBA'),
     scheduleStatus: text(event.scheduleStatus, 'TBC'),
     venue: {
@@ -199,10 +200,10 @@ export default async function HomePage() {
       <Header />
       <HeroSection event={data.event} animation={data.heroAnimation} background={data.heroBackground} ticketProvider={data.ticketProvider} />
       <EventOverview event={data.event} />
-      <LineupPreview artists={data.artists} />
+      <LineupPreview artists={data.artists} event={data.event} />
       <TicketsSection ticketTiers={data.ticketTiers} trustItems={data.trustItems} provider={data.ticketProvider} eventTitle={data.event.title} />
       <VipTableSection boothPackage={data.boothPackage} />
-      <PartnersFooter footer={data.footer} />
+      <PartnersFooter footer={data.footer} event={data.event} />
     </main>
   );
 }

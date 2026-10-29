@@ -7,7 +7,8 @@ import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
-import type { HomeArtist } from './types';
+import type { HomeArtist, HomeEvent } from './types';
+import { homeEventDate } from './event-labels';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 
 interface ArtistCardProps {
@@ -157,7 +158,7 @@ function ArtistCard({ artist, index }: ArtistCardProps) {
   );
 }
 
-export default function LineupPreview({ artists }: { artists: HomeArtist[] }) {
+export default function LineupPreview({ artists, event = null }: { artists: HomeArtist[]; event?: HomeEvent | null }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(artists.length > 1);
@@ -236,7 +237,7 @@ export default function LineupPreview({ artists }: { artists: HomeArtist[] }) {
             >
               <Sparkles className="w-3.5 h-3.5 text-rave-red" />
               <span className="font-heading uppercase tracking-[0.15em] text-xs text-rave-red font-semibold">
-                Date to be announced
+                {homeEventDate(event) ?? 'Date to be announced'}
               </span>
             </div>
             <NeonButton href="/lineup" variant="ghost" className="!py-2.5 !px-5 !text-xs">

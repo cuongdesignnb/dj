@@ -63,6 +63,13 @@ test('Admin › Homepage › Current event drives the homepage, /tickets and /ev
   const ticketsBuy = page.getByTestId('ticket-provider-only').getByRole('link', { name: /Buy tickets on TicketsCandy/ });
   await expect(ticketsBuy).toHaveAttribute('href', PROVIDER_URL);
   await expect(page.getByText('Ticket information is being prepared.')).toHaveCount(0);
+  // Dates read as words, never as a raw "2026-11-07T21:00:00.000Z".
+  await expect(page.locator('#tickets-hero-title').locator('xpath=ancestor::section')).toContainText(/(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day \d{2} \w+ \d{4}/);
+  await expect(page.locator('main#main')).not.toContainText(/\d{4}-\d{2}-\d{2}T\d{2}:/);
+  // The hero lists the event details and buys straight from the provider; the poster is shown whole.
+  await expect(page.locator('[data-ticket-event-details]')).toContainText('Venue');
+  await expect(page.locator('[data-hero-buy]')).toHaveAttribute('href', PROVIDER_URL);
+  await expect(page.locator('[data-ticket-poster] img').last()).toHaveClass(/object-contain/);
 
   const redirect = await request.get('/event', { maxRedirects: 0 });
   expect(redirect.status()).toBe(307);

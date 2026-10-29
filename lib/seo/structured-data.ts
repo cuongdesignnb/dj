@@ -27,6 +27,25 @@ export function websiteSchema() {
   } satisfies JsonLd;
 }
 
+/**
+ * Event times are stored as the venue's wall clock with a `Z` suffix (see
+ * EVENT_WALL_CLOCK_TZ). Search engines need the real offset, so the clock is
+ * kept and EVENT_TIME_ZONE's offset is attached: 21:00Z → 21:00+08:00 in Perth.
+ */
+function eventDateTime(value: string): string | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const zone = process.env.EVENT_TIME_ZONE?.trim();
+  if (!zone || zone === 'UTC') return date.toISOString();
+  try {
+    const name = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'longOffset' }).formatToParts(date).find((part) => part.type === 'timeZoneName')?.value ?? '';
+    const offset = name.replace(/^GMT/, '');
+    return `${date.toISOString().slice(0, 19)}${/^[+-]\d{2}:\d{2}$/.test(offset) ? offset : 'Z'}`;
+  } catch {
+    return date.toISOString();
+  }
+}
+
 export function eventSchema(input: {
   name: string;
   path: string;
@@ -36,9 +55,8 @@ export function eventSchema(input: {
   endDate?: string | null;
   venue?: { name: string; address?: string | null; city?: string | null; country?: string | null } | null;
 }) {
-  if (!input.startDate) return null;
-  const start = new Date(input.startDate);
-  if (Number.isNaN(start.getTime())) return null;
+  const start = input.startDate ? eventDateTime(input.startDate) : null;
+  if (!start) return null;
   const value: JsonLd = {
     '@context': 'https://schema.org',
     '@type': 'MusicEvent',
@@ -47,8 +65,9 @@ export function eventSchema(input: {
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   };
-  value.startDate = start.toISOString();
-  if (input.endDate && !Number.isNaN(new Date(input.endDate).getTime())) value.endDate = new Date(input.endDate).toISOString();
+  value.startDate = start;
+  const end = input.endDate ? eventDateTime(input.endDate) : null;
+  if (end) value.endDate = end;
   if (input.description) value.description = richTextToPlain(input.description);
   if (input.image) value.image = [input.image.startsWith('http') ? input.image : canonicalUrl(input.image)];
   if (input.venue) value.location = { '@type': 'Place', name: input.venue.name, address: { '@type': 'PostalAddress', streetAddress: input.venue.address ?? undefined, addressLocality: input.venue.city ?? undefined, addressCountry: input.venue.country ?? undefined } };
