@@ -28,12 +28,57 @@ function media(value: unknown, fallbackSrc = '') {
   return { src: value.src, alt: typeof value.alt === 'string' ? value.alt : '', width: typeof value.width === 'number' && value.width > 0 ? value.width : 1200, height: typeof value.height === 'number' && value.height > 0 ? value.height : 800 };
 }
 
-export function toPageData(raw: unknown): EventPageData | null {
+/** The optional extras that live outside the event record. */
+export interface EventPageExtras {
+  /** Published `event:<id>` page content. */
+  content?: unknown;
+  /** Public reviews payload: { summary, reviews }. */
+  reviews?: unknown;
+  /** Site settings from /site/bootstrap. */
+  settings?: unknown;
+}
+
+function text(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function httpUrl(value: unknown): string | null {
+  const raw = text(value);
+  return /^https:\/\//i.test(raw) || /^http:\/\//i.test(raw) ? raw : null;
+}
+
+function cards(value: unknown, prefix: string) {
+  return (Array.isArray(value) ? value : [])
+    .filter((item): item is Record<string, any> => isRecord(item) && item.enabled !== false && text(item.title).length > 0)
+    .map((item, index) => ({ id: text(item.id) || `${prefix}-${index}`, icon: text(item.icon) || 'sparkles', title: text(item.title), description: text(item.description) }));
+}
+
+function reviewsOf(value: unknown) {
+  const payload = isRecord(value) ? value : {};
+  const summary = isRecord(payload.summary) ? payload.summary : {};
+  const items = (Array.isArray(payload.reviews) ? payload.reviews : [])
+    .filter((row): row is Record<string, any> => isRecord(row) && typeof row.id === 'string' && typeof row.comment === 'string' && typeof row.rating === 'number')
+    .map((row) => ({ id: row.id, authorName: text(row.authorName) || 'Guest', rating: Math.min(5, Math.max(1, Math.round(row.rating))), comment: row.comment, createdAt: text(row.createdAt), event: isRecord(row.event) && typeof row.event.slug === 'string' ? { slug: row.event.slug, title: text(row.event.title) || row.event.slug } : null }));
+  return { summary: { count: typeof summary.count === 'number' ? summary.count : items.length, average: typeof summary.average === 'number' ? summary.average : null }, items };
+}
+
+const SOCIALS = ['facebook', 'instagram', 'youtube', 'tiktok'] as const;
+
+export function toPageData(raw: unknown, extras: EventPageExtras = {}): EventPageData | null {
   const event = unwrapApiData<Record<string, any>>(raw);
   if (!isRecord(event) || typeof event.id !== 'string' || typeof event.slug !== 'string') return null;
   const poster = media(event.poster);
   const hero = media(event.hero) ?? poster;
   const lineup = Array.isArray(event.lineup) ? event.lineup : [];
+  const content = isRecord(extras.content) ? extras.content : {};
+  const experience = isRecord(content.experience) ? content.experience : {};
+  const venueContent = isRecord(content.venue) ? content.venue : {};
+  const organiserContent = isRecord(content.organiser) ? content.organiser : {};
+  const finalCtaContent = isRecord(content.finalCta) ? content.finalCta : {};
+  const settings = isRecord(extras.settings) ? extras.settings : {};
+  const organiser = text(organiserContent.name)
+    ? { name: text(organiserContent.name), description: text(organiserContent.description), website: httpUrl(organiserContent.website), instagram: httpUrl(organiserContent.instagram), facebook: httpUrl(organiserContent.facebook) }
+    : null;
   const data: EventPageData = {
     schemaVersion: 1,
     event: {
@@ -51,11 +96,16 @@ export function toPageData(raw: unknown): EventPageData | null {
       timeZone: EVENT_WALL_CLOCK_TZ,
       poster,
       heroBackground: hero,
-      experienceImage: hero,
-      highlights: [],
-      expectations: [],
+      experienceImage: media(experience.image) ?? hero,
+      highlights: cards(content.highlights, 'highlight'),
+      expectations: cards(content.expectations, 'expect'),
+      experienceCaptions: (Array.isArray(experience.captions) ? experience.captions : []).map(text).filter(Boolean).slice(0, 6),
+      goodToKnow: cards(content.goodToKnow, 'good-to-know'),
+      organiser,
+      finalCta: text(finalCtaContent.title) ? { title: text(finalCtaContent.title), subtitle: text(finalCtaContent.subtitle) } : null,
+      reviews: reviewsOf(extras.reviews),
       artists: lineup.map((artist: any) => ({ id: String(artist.id), slug: String(artist.slug), name: String(artist.name), country: String(artist.country ?? ''), portrait: media(artist.portrait), profileHref: `/lineup/${encodeURIComponent(String(artist.slug))}` })),
-      venue: { name: String(event.venue?.name ?? ''), city: String(event.venue?.city ?? ''), address: typeof event.venue?.address === 'string' ? event.venue.address : null, description: String(event.description ?? ''), image: null, mapUrl: typeof event.venue?.mapUrl === 'string' ? event.venue.mapUrl : null },
+      venue: { name: String(event.venue?.name ?? ''), city: String(event.venue?.city ?? ''), address: typeof event.venue?.address === 'string' ? event.venue.address : null, description: text(venueContent.description), image: media(venueContent.image), mapUrl: typeof event.venue?.mapUrl === 'string' ? event.venue.mapUrl : null, directions: text(venueContent.directions) },
       // No direct URL: the page's event-scoped routes decide where VIP links go.
       actions: { ticketUrl: null, vipRequestUrl: null },
       tickets: Array.isArray(event.tickets) ? event.tickets : [],
@@ -72,7 +122,11 @@ export function toPageData(raw: unknown): EventPageData | null {
       },
       contentStatus: 'published',
     },
-    site: { brandName: 'CONNECTION', tagline: 'Sound Meets Soul', logo: media(null, '/assets/logo-connection.svg')!, partners: [], contact: { email: null, phone: null, socials: [] } },
+    site: { brandName: 'CONNECTION', tagline: 'Sound Meets Soul', logo: media(null, '/assets/logo-connection.svg')!, partners: [], contact: {
+      email: text(settings['contact.email']) || null,
+      phone: text(settings['contact.phone']) || null,
+      socials: SOCIALS.flatMap((platform) => { const url = httpUrl(settings[`social.${platform}`]); return url ? [{ id: platform, platform, url }] : []; }),
+    } },
   };
   const validated = validateEventPageData(data);
   return validated.ok ? validated.data : null;
@@ -86,7 +140,19 @@ async function getPageHttp(slug: string, baseUrl: string, signal?: AbortSignal):
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}/api/v1/events/${encodeURIComponent(slug)}`, { headers: { accept: 'application/json' }, signal: combinedSignal, cache: 'no-store' });
     if (response.status === 404) return { ok: false, error: { kind: 'not-found', status: 404, message: 'Event not found' } };
     if (!response.ok) return { ok: false, error: { kind: 'http-error', status: response.status, message: `Upstream returned ${response.status}` } };
-    const page = toPageData(await response.json());
+    const raw = await response.json();
+    const eventId = unwrapApiData<Record<string, any>>(raw)?.id;
+    const base = baseUrl.replace(/\/$/, '');
+    // Extras are optional: a missing or failing one never takes the event page down.
+    const optional = (path: string) => fetch(`${base}${path}`, { headers: { accept: 'application/json' }, signal: combinedSignal, cache: 'no-store' })
+      .then(async (res) => (res.ok ? unwrapApiData<unknown>(await res.json()) : null))
+      .catch(() => null);
+    const [content, reviews, bootstrap] = await Promise.all([
+      typeof eventId === 'string' ? optional(`/api/v1/page-content/event:${encodeURIComponent(eventId)}`) : Promise.resolve(null),
+      optional('/api/v1/reviews?limit=12'),
+      optional('/api/v1/site/bootstrap'),
+    ]);
+    const page = toPageData(raw, { content: isRecord(content) ? content.data : null, reviews, settings: isRecord(bootstrap) ? bootstrap.settings : null });
     return page ? { ok: true, data: page } : { ok: false, error: { kind: 'invalid-payload', message: 'Event response failed validation' } };
   } catch (error) {
     return { ok: false, error: { kind: 'network-error', message: error instanceof Error ? error.message : 'Could not reach event service' } };

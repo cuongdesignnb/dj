@@ -6,14 +6,14 @@ import { eventScopedHref } from '@/lib/events/event-scope';
  * admin editor opens this neutral draft so an editor can review it and save it
  * into the database. Nothing here is rendered publicly until it is published.
  */
-export type EventContentKind = 'tickets' | 'tables' | 'booking';
+export type EventContentKind = 'tickets' | 'tables' | 'booking' | 'event';
 
 export interface EventContentTemplateEvent {
   title: string;
   slug: string;
 }
 
-const EVENT_CONTENT_KEY = /^(tickets|tables|booking):(.+)$/;
+const EVENT_CONTENT_KEY = /^(tickets|tables|booking|event):(.+)$/;
 
 export function parseEventContentKey(key: string): { kind: EventContentKind; eventId: string } | null {
   const match = EVENT_CONTENT_KEY.exec(key);
@@ -26,6 +26,18 @@ const seo = (title: string, description: string) => ({ title, description, ogIma
 export function eventContentTemplate(kind: EventContentKind, event: EventContentTemplateEvent): Record<string, unknown> {
   const title = event.title.trim() || event.slug;
   const eventHref = `/events/${encodeURIComponent(event.slug)}`;
+
+  if (kind === 'event') {
+    return {
+      highlights: [],
+      expectations: [],
+      experience: { image: null, captions: ['Good music', 'Good people', 'Brighter tomorrow'] },
+      goodToKnow: [],
+      venue: { image: null, description: '', directions: '' },
+      organiser: { name: '', description: '', website: '', instagram: '', facebook: '' },
+      finalCta: { title: `Ready for ${title}?`, subtitle: 'Secure your tickets and get ready for the night.' },
+    };
+  }
 
   if (kind === 'tickets') {
     return {

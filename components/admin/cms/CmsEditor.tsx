@@ -39,6 +39,8 @@ function fieldsFor(key: string): Field[] {
       ? 'tables'
       : key.startsWith('booking:')
         ? 'booking'
+        : key.startsWith('event:')
+          ? 'event'
         : key === 'global-content'
           ? 'global'
           : 'listing';
@@ -77,6 +79,27 @@ function fieldsFor(key: string): Field[] {
       textField('provider.unavailableNote', 'Provider unavailable note', 'textarea'),
       ...cta(),
       ...seo(),
+    ];
+  }
+
+  if (kind === 'event') {
+    const icons = 'Icon key: Music, Headphones, Users, Globe, Sparkles, Zap, MapPin, Clock, Ticket, ShieldCheck, IdCard, Shirt, Camera, Wine, Info.';
+    return [
+      textField('highlights', 'About › Highlights', 'info-list', { wide: true, help: `Short cards beside "About the Event". ${icons}` }),
+      textField('expectations', 'What to Expect › Cards', 'info-list', { wide: true, help: icons }),
+      textField('experience.image', 'What to Expect › Image', 'media', { wide: true, help: 'Leave empty to use the event hero image.' }),
+      textField('experience.captions', 'What to Expect › Image captions', 'string-list', { wide: true }),
+      textField('goodToKnow', 'Good to Know (age, ID, entry, dress code)', 'info-list', { wide: true, help: icons }),
+      textField('venue.image', 'Venue › Photo', 'media', { wide: true, help: 'Optional. The map is always shown from the venue address.' }),
+      textField('venue.description', 'Venue › Description', 'textarea'),
+      textField('venue.directions', 'Venue › Getting there (parking, transport)', 'textarea'),
+      textField('organiser.name', 'Organiser › Name'),
+      textField('organiser.description', 'Organiser › About', 'textarea'),
+      textField('organiser.website', 'Organiser › Website URL'),
+      textField('organiser.instagram', 'Organiser › Instagram URL'),
+      textField('organiser.facebook', 'Organiser › Facebook URL'),
+      textField('finalCta.title', 'Final call-to-action title'),
+      textField('finalCta.subtitle', 'Final call-to-action subtitle', 'textarea'),
     ];
   }
 
@@ -258,12 +281,14 @@ function MediaEditor({ value, onChange, media }: { value: unknown; onChange: (va
   );
 }
 
+// List rows are keyed by position: a key built from the row's own text would remount the row
+// on every keystroke and drop focus after one letter. Rich text fields resync from their value.
 function StringListEditor({ value, onChange }: { value: unknown; onChange: (value: string[]) => void }) {
   const items = asStrings(value);
   return (
     <div className="space-y-2">
       {items.map((item, index) => (
-        <div key={`${index}-${item}`} className="flex gap-2">
+        <div key={index} className="flex gap-2">
           <input value={item} onChange={(event) => onChange(items.map((current, itemIndex) => itemIndex === index ? event.target.value : current))} className={inputClass} />
           <button type="button" aria-label="Remove item" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="rounded-[8px] border border-admin-border px-3 text-admin-muted hover:border-rose-400/60 hover:text-rose-200"><Trash2 className="h-4 w-4" /></button>
         </div>
@@ -282,7 +307,7 @@ function InfoListEditor({ value, onChange }: { value: unknown; onChange: (value:
   const items = asRecords(value);
   const update = (index: number, next: JsonRecord) => onChange(items.map((item, itemIndex) => itemIndex === index ? next : item));
   return <div className="space-y-3">
-    {items.map((item, index) => <div key={`${index}-${stringValue(item.title)}`} className={cardClass}>
+    {items.map((item, index) => <div key={index} className={cardClass}>
       <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Card {index + 1}</span><button type="button" aria-label="Remove card" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
       <div className="grid gap-3 md:grid-cols-2">
         <label><SmallLabel>Title</SmallLabel><TextInput value={item.title} onChange={(next) => update(index, updateRecord(item, 'title', next))} /></label>
@@ -301,7 +326,7 @@ function FaqListEditor({ value, onChange }: { value: unknown; onChange: (value: 
   const items = asRecords(value);
   const update = (index: number, next: JsonRecord) => onChange(items.map((item, itemIndex) => itemIndex === index ? next : item));
   return <div className="space-y-3">
-    {items.map((item, index) => <div key={`${index}-${stringValue(item.question)}`} className={cardClass}>
+    {items.map((item, index) => <div key={index} className={cardClass}>
       <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Question {index + 1}</span><button type="button" aria-label="Remove question" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
       <label className="block"><SmallLabel>Question</SmallLabel><TextInput value={item.question} onChange={(next) => update(index, updateRecord(item, 'question', next))} /></label>
       <div className="mt-3 block"><SmallLabel>Answer</SmallLabel><RichInput label="Answer" mode="full" value={item.answer} onChange={(next) => update(index, updateRecord(item, 'answer', next))} /></div>
@@ -315,7 +340,7 @@ function StepsListEditor({ value, onChange }: { value: unknown; onChange: (value
   const items = asRecords(value);
   const update = (index: number, next: JsonRecord) => onChange(items.map((item, itemIndex) => itemIndex === index ? next : item));
   return <div className="space-y-3">
-    {items.map((item, index) => <div key={`${index}-${stringValue(item.title)}`} className={cardClass}>
+    {items.map((item, index) => <div key={index} className={cardClass}>
       <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Step {index + 1}</span><button type="button" aria-label="Remove step" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
       <label className="block"><SmallLabel>Title</SmallLabel><TextInput value={item.title} onChange={(next) => update(index, updateRecord(item, 'title', next))} /></label>
       <div className="mt-3 block"><SmallLabel>Description</SmallLabel><RichInput label="Step description" value={item.description} onChange={(next) => update(index, updateRecord(item, 'description', next))} /></div>
@@ -330,7 +355,7 @@ function FiltersEditor({ value, onChange }: { value: unknown; onChange: (value: 
   return <div className="space-y-3">
     {items.map((item, index) => {
       const options = asStrings(item.options);
-      return <div key={`${index}-${stringValue(item.key)}`} className={cardClass}>
+      return <div key={index} className={cardClass}>
         <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Filter {index + 1}</span><button type="button" aria-label="Remove filter" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
         <div className="grid gap-3 md:grid-cols-2">
           <label><SmallLabel>Internal key</SmallLabel><TextInput value={item.key} onChange={(next) => update(index, updateRecord(item, 'key', next))} placeholder="category-filter" /></label>
@@ -347,7 +372,7 @@ function SectionsEditor({ value, onChange }: { value: unknown; onChange: (value:
   const items = asRecords(value);
   const update = (index: number, next: JsonRecord) => onChange(items.map((item, itemIndex) => itemIndex === index ? next : item));
   return <div className="space-y-3">
-    {items.map((item, index) => <div key={`${index}-${stringValue(item.key)}`} className={cardClass}>
+    {items.map((item, index) => <div key={index} className={cardClass}>
       <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Section {index + 1}</span><button type="button" aria-label="Remove section" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
       <div className="grid gap-3 md:grid-cols-2">
         <label><SmallLabel>Internal key</SmallLabel><TextInput value={item.key} onChange={(next) => update(index, updateRecord(item, 'key', next))} placeholder="all-events" /></label>

@@ -2,21 +2,12 @@
 
 import { useRef } from 'react';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
-import { Globe, Users, Sparkles } from 'lucide-react';
+import { featureIcon } from './feature-icons';
 import Container from '@/components/ui/Container';
 import EventSectionHeading from './EventSectionHeading';
 import { cardStagger, cardItem, lineReveal } from '@/lib/events/motion';
 import type { EventPageData } from '@/lib/events/types';
 import RichText from '@/components/shared/RichText';
-
-const ICON_MAP = {
-  globe: Globe,
-  users: Users,
-  music: () => null,
-  sparkles: Sparkles,
-  'map-pin': () => null,
-  headphones: () => null,
-} as const;
 
 interface Props {
   event: EventPageData;
@@ -42,7 +33,7 @@ export default function EventAbout({ event }: Props) {
             variants={cardStagger}
             initial="hidden"
             animate={inView ? 'visible' : 'hidden'}
-            className="lg:col-span-7"
+            className={e.highlights.length ? 'lg:col-span-7' : 'lg:col-span-10'}
           >
             <EventSectionHeading
               eyebrow="About"
@@ -64,18 +55,15 @@ export default function EventAbout({ event }: Props) {
             </div>
           </motion.div>
 
-          {/* Right: feature cards */}
-          <motion.div
+          {/* Right: feature cards (only when Admin has some) */}
+          {e.highlights.length > 0 && <motion.div
             variants={cardStagger}
             initial="hidden"
             animate={inView ? 'visible' : 'hidden'}
             className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4"
           >
-            {e.highlights.length === 0 && (
-              <p className="text-rave-muted">Highlights coming soon.</p>
-            )}
             {e.highlights.map((h) => {
-              const Icon = ICON_MAP[h.icon];
+              const Icon = featureIcon(h.icon);
               return (
                 <motion.article
                   key={h.id}
@@ -91,7 +79,7 @@ export default function EventAbout({ event }: Props) {
                       whileHover={reduced ? undefined : { y: -2, rotate: -3 }}
                       transition={{ type: 'spring', stiffness: 280, damping: 18 }}
                     >
-                      {Icon ? <Icon className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                      <Icon className="w-5 h-5" />
                     </motion.span>
                     <div className="flex flex-col gap-1.5">
                       <h3 className="font-heading uppercase tracking-[0.16em] text-sm font-bold text-white">
@@ -110,7 +98,7 @@ export default function EventAbout({ event }: Props) {
                 </motion.article>
               );
             })}
-          </motion.div>
+          </motion.div>}
         </div>
       </Container>
     </section>

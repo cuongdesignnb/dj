@@ -125,9 +125,7 @@ export default function EventFooter({ event, routes }: Props) {
                   );
                 })}
               </div>
-            ) : (
-              <p className="text-xs text-rave-muted/70">Social channels coming soon.</p>
-            )}
+            ) : null}
           </motion.div>
 
           {/* Partners */}
@@ -216,7 +214,9 @@ export default function EventFooter({ event, routes }: Props) {
                 )}
               </ul>
             ) : (
-              <p className="text-sm text-rave-muted/70">Contact details to be confirmed.</p>
+              <Link href="/contact" className="text-sm text-rave-muted hover:text-white transition-colors">
+                Send us a message
+              </Link>
             )}
           </motion.div>
         </motion.div>
@@ -236,17 +236,13 @@ export default function EventFooter({ event, routes }: Props) {
               <Link href={termsHref} className="hover:text-white transition-colors">
                 Terms & Conditions
               </Link>
-            ) : (
-              <span className="cursor-default">Terms — coming soon</span>
-            )}
-            <span className="text-rave-muted/30">|</span>
+            ) : null}
+            {termsHref && privacyHref && <span className="text-rave-muted/30">|</span>}
             {privacyHref ? (
               <Link href={privacyHref} className="hover:text-white transition-colors">
                 Privacy Policy
               </Link>
-            ) : (
-              <span className="cursor-default">Privacy — coming soon</span>
-            )}
+            ) : null}
           </div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-rave-muted/50">
             Music Connects Us All

@@ -48,9 +48,11 @@ try {
     for (const e of EVENTS) {
       const event = await db.event.findUnique({ where: { slug: e.slug } });
       if (!event) continue;
-      await db.pageContent.deleteMany({ where: { key: { in: ['tickets', 'tables', 'booking'].map((kind) => `${kind}:${event.id}`) } } });
+      await db.pageContent.deleteMany({ where: { key: { in: ['tickets', 'tables', 'booking', 'event'].map((kind) => `${kind}:${event.id}`) } } });
       await db.event.update({ where: { id: event.id }, data: { status: 'ARCHIVED', deletedAt: new Date() } });
     }
+    // Reviews sent by the QA specs (only example.test addresses).
+    await db.eventReview.deleteMany({ where: { email: { endsWith: '@example.test' } } });
     console.log(JSON.stringify({ cleaned: true }));
   } else throw new Error('Specify a QA fixture action');
 } finally { await db.$disconnect(); }

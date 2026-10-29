@@ -15,7 +15,7 @@ export const PAGE_CONTENT_KEYS = [
   'shop-list',
 ] as const;
 
-export type PageContentKey = (typeof PAGE_CONTENT_KEYS)[number] | `tickets:${string}` | `tables:${string}` | `booking:${string}`;
+export type PageContentKey = (typeof PAGE_CONTENT_KEYS)[number] | `tickets:${string}` | `tables:${string}` | `booking:${string}` | `event:${string}`;
 
 const text = z.string().max(20_000);
 const url = z.string().max(2_000).refine((value) => value === '' || value.startsWith('/') || /^https?:\/\//i.test(value) || /^(mailto|tel):/i.test(value), 'Use a relative, http(s), mailto or tel URL.');
@@ -75,6 +75,17 @@ const bookingSchema = z.object({
   seo,
 }).strict();
 
+/** Extra sections of /events/<slug>: everything the event record itself does not hold. */
+const eventPageSchema = z.object({
+  highlights: z.array(info).max(12),
+  expectations: z.array(info).max(12),
+  experience: z.object({ image: media.optional(), captions: z.array(text).max(6) }).strict(),
+  goodToKnow: z.array(info).max(20),
+  venue: z.object({ image: media.optional(), description: text, directions: text }).strict(),
+  organiser: z.object({ name: text, description: text, website: url, instagram: url, facebook: url }).strict(),
+  finalCta: z.object({ title: text, subtitle: text }).strict(),
+}).strict();
+
 const listingHero = hero.extend({ primary: action.optional(), secondary: action.optional() });
 const listingSchema = z.object({
   hero: listingHero,
@@ -101,15 +112,19 @@ export const pageContentSchemas = {
   booking: bookingSchema,
   listing: listingSchema,
   global: globalSchema,
+  event: eventPageSchema,
 } as const;
 
-export type PageContentData = z.infer<typeof ticketSchema> | z.infer<typeof tablesSchema> | z.infer<typeof bookingSchema> | z.infer<typeof listingSchema> | z.infer<typeof globalSchema>;
+export type EventPageContent = z.infer<typeof eventPageSchema>;
+
+export type PageContentData = z.infer<typeof ticketSchema> | z.infer<typeof tablesSchema> | z.infer<typeof bookingSchema> | z.infer<typeof listingSchema> | z.infer<typeof globalSchema> | EventPageContent;
 
 export function pageContentKind(key: string): keyof typeof pageContentSchemas | null {
   if (key === 'global-content') return 'global';
   if (key.startsWith('tickets:')) return 'tickets';
   if (key.startsWith('tables:')) return 'tables';
   if (key.startsWith('booking:')) return 'booking';
+  if (key.startsWith('event:')) return 'event';
   if (PAGE_CONTENT_KEYS.includes(key as (typeof PAGE_CONTENT_KEYS)[number])) return 'listing';
   return null;
 }

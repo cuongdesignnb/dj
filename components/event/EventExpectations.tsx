@@ -3,20 +3,11 @@
 import Image from 'next/image';
 import { useRef } from 'react';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
-import { Music, Sparkles, Users, MapPin } from 'lucide-react';
+import { featureIcon } from './feature-icons';
 import Container from '@/components/ui/Container';
 import EventSectionHeading from './EventSectionHeading';
 import { cardStagger, cardItem, lineReveal } from '@/lib/events/motion';
 import type { EventPageData } from '@/lib/events/types';
-
-const ICON_MAP = {
-  globe: MapPin,
-  users: Users,
-  music: Music,
-  sparkles: Sparkles,
-  'map-pin': MapPin,
-  headphones: MapPin,
-} as const;
 
 interface Props {
   event: EventPageData;
@@ -28,6 +19,9 @@ export default function EventExpectations({ event }: Props) {
   const reduced = useReducedMotion();
   const e = event.event;
   const img = e.experienceImage ?? e.heroBackground;
+  const captions = e.experienceCaptions?.length ? e.experienceCaptions : ['Good music', 'Good people', 'Brighter tomorrow'];
+  // Nothing to say yet: leave the section out rather than show a placeholder.
+  if (e.expectations.length === 0) return null;
 
   return (
     <section
@@ -45,7 +39,7 @@ export default function EventExpectations({ event }: Props) {
             className="lg:col-span-6"
           >
             <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-white/[0.08]">
-              {img ? (
+              {img && (
                 <Image
                   src={img.src}
                   alt={img.alt}
@@ -54,17 +48,11 @@ export default function EventExpectations({ event }: Props) {
                   className="object-cover"
                   style={{ objectPosition: img.objectPosition ?? 'center' }}
                 />
-              ) : (
-                <div className="absolute inset-0 grid place-items-center bg-rave-panel text-rave-muted text-sm">
-                  Event image coming soon
-                </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-tr from-rave-black/55 via-transparent to-transparent" />
               {/* Bottom caption */}
               <div className="absolute left-4 bottom-4 right-4 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/70 font-heading">
-                <span>Good music</span>
-                <span>Good people</span>
-                <span>Brighter tomorrow</span>
+                {captions.map((caption) => <span key={caption}>{caption}</span>)}
               </div>
             </div>
           </motion.div>
@@ -84,11 +72,8 @@ export default function EventExpectations({ event }: Props) {
               animate={inView ? 'visible' : 'hidden'}
               className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6"
             >
-              {e.expectations.length === 0 && (
-                <p className="text-rave-muted">Expectations coming soon.</p>
-              )}
               {e.expectations.map((card) => {
-                const Icon = ICON_MAP[card.icon];
+                const Icon = featureIcon(card.icon);
                 return (
                   <motion.article
                     key={card.id}

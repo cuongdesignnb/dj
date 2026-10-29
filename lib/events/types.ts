@@ -22,7 +22,8 @@ export type FeatureIcon =
 
 export interface FeatureCard {
   id: string;
-  icon: FeatureIcon;
+  /** A FeatureIcon or any icon key typed in Admin (e.g. "Music", "IdCard"); unknown keys fall back to a sparkle. */
+  icon: FeatureIcon | string;
   title: string;
   description: string;
 }
@@ -43,6 +44,30 @@ export interface EventVenue {
   description: string;
   image: MediaAsset | null;
   mapUrl: string | null;
+  /** Parking and transport notes from Admin › Event Page Content. */
+  directions?: string;
+}
+
+export interface EventOrganiser {
+  name: string;
+  description: string;
+  website: string | null;
+  instagram: string | null;
+  facebook: string | null;
+}
+
+export interface EventReview {
+  id: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  event: { slug: string; title: string } | null;
+}
+
+export interface EventReviews {
+  summary: { count: number; average: number | null };
+  items: EventReview[];
 }
 
 export interface EventSocialLink {
@@ -113,6 +138,13 @@ export interface EventRecord {
   experienceImage: MediaAsset | null;
   highlights: FeatureCard[];
   expectations: FeatureCard[];
+  /** Captions over the "What to Expect" image. */
+  experienceCaptions?: string[];
+  /** Age, ID, entry and dress-code notes. */
+  goodToKnow?: FeatureCard[];
+  organiser?: EventOrganiser | null;
+  finalCta?: { title: string; subtitle: string } | null;
+  reviews?: EventReviews;
   artists: ArtistSummary[];
   venue: EventVenue;
   actions: {

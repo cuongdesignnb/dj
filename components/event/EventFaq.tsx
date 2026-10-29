@@ -1,20 +1,26 @@
+import Container from '@/components/ui/Container';
+import EventSectionHeading from './EventSectionHeading';
+import RichText from '@/components/shared/RichText';
 import type { EventPageData } from '@/lib/events/types';
 
+/** Questions saved on the event (Admin › Events › FAQ tab). */
 export default function EventFaq({ event }: { event: EventPageData }) {
   if (!event.event.faqs.length) return null;
   return (
-    <section aria-labelledby="event-faq-title" className="mx-auto w-full max-w-[1120px] px-4 py-16 sm:px-6 lg:px-8">
-      <h2 id="event-faq-title" className="font-heading text-3xl font-bold uppercase tracking-[0.04em] text-white sm:text-4xl">
-        Event FAQ
-      </h2>
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
-        {event.event.faqs.map((faq) => (
-          <details key={faq.id || faq.question} className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-            <summary className="cursor-pointer font-semibold text-white">{faq.question}</summary>
-            <p className="mt-3 text-sm leading-7 text-white/70">{faq.answer}</p>
-          </details>
-        ))}
-      </div>
+    <section id="faq" aria-labelledby="event-faq-title" className="py-16 md:py-24 bg-rave-deep">
+      <Container>
+        <EventSectionHeading eyebrow="FAQ" title="Event FAQ" id="event-faq-title" align="left" />
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          {event.event.faqs.map((faq) => (
+            <details key={faq.id || faq.question} className="group rounded-2xl border border-white/[0.08] bg-rave-panel/60 p-5 open:border-rave-red/40">
+              <summary className="cursor-pointer list-none font-heading text-base font-semibold uppercase tracking-wide text-white marker:hidden">
+                <span className="flex items-start justify-between gap-4">{faq.question}<span aria-hidden className="text-rave-red transition-transform group-open:rotate-45">+</span></span>
+              </summary>
+              <div className="mt-3 text-sm leading-7 text-white/70"><RichText text={faq.answer} /></div>
+            </details>
+          ))}
+        </div>
+      </Container>
     </section>
   );
 }

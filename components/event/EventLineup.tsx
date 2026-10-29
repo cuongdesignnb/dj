@@ -85,8 +85,8 @@ export default function EventLineup({ event, routes }: Props) {
                       style={{ objectPosition: artist.portrait.objectPosition ?? '50% 30%' }}
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-rave-purple/20 to-rave-red/20 grid place-items-center text-rave-muted text-sm">
-                      Portrait coming soon
+                    <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-rave-purple/25 to-rave-red/25 grid place-items-center font-heading text-5xl font-black uppercase text-white/70">
+                      {artist.name.split(/\s+/).map((word) => word[0]).join('').slice(0, 2)}
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-rave-black/80 via-rave-black/30 to-transparent" />

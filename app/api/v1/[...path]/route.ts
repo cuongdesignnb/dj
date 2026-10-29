@@ -10,6 +10,7 @@ import { createAdminSession, destroyAdminSession, getAdminSession } from '@/serv
 import { requirePermission } from '@/server/auth/rbac';
 import { enforceRateLimit } from '@/server/rate-limit';
 import { writeAuditLog } from '@/server/audit/log';
+import { deleteReview, getPublicReviews, listAdminReviews, moderateReview, reviewModerationSchema, reviewSubmissionSchema, submitReview } from '@/server/services/reviews';
 import { readCsrfCookie, requestCsrfToken } from '@/server/security/csrf';
 import { mediaResponse, storeMedia } from '@/server/media/storage';
 import { createBooking, createContact, subscribeNewsletter } from '@/server/services/leads';
@@ -1317,6 +1318,8 @@ if (second && third === 'vip') { const result = await getPublicVip(second); if (
   if (root === 'media' && second && request.method === 'GET') return mediaResponse(second, params.get('presentation'), request.headers.get('range'));
 
   if (root === 'booking-requests' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`booking:${ip(request)}`, 10, 3600); return dataResponse(await createBooking(parse(bookingSchema, await body(request))), { status: 202 }); }
+  if (root === 'reviews' && !second && request.method === 'GET') return dataResponse(await getPublicReviews(Number(params.get('limit') ?? 12) || 12));
+  if (root === 'reviews' && !second && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`review:${ip(request)}`, 3, 3600); return dataResponse(await submitReview(parse(reviewSubmissionSchema, await body(request))), { status: 202 }); }
   if (root === 'contact' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`contact:${ip(request)}`, 10, 3600); return dataResponse(await createContact(parse(contactSchema, await body(request))), { status: 202 }); }
   if (root === 'newsletter' && second === 'subscribe' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`newsletter:${ip(request)}`, 5, 3600); return dataResponse(await subscribeNewsletter(parse(newsletterSchema, await body(request))), { status: 202 }); }
   if (root === 'checkout' && second === 'session' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`checkout:${ip(request)}`, 10, 600); return dataResponse(await handleCheckout(request), { status: 201 }); }
@@ -1337,6 +1340,12 @@ if (second && third === 'vip') { const result = await getPublicVip(second); if (
   if (root === 'webhooks' && second === 'square' && request.method === 'POST') return dataResponse(await handleSquareWebhook(request));
 
   if (root === 'admin') {
+    if (second === 'reviews') {
+      if (!third && request.method === 'GET') { await requirePermission(request, 'content.view'); return dataResponse(await listAdminReviews(params.get('status'))); }
+      if (third && !isUuid(third)) throw notFound('Review not found.');
+      if (third && (request.method === 'PATCH' || request.method === 'PUT')) { assertSameOrigin(request); const session = await requirePermission(request, 'content.edit', true); const result = await moderateReview(third, parse(reviewModerationSchema, await body(request)).status); await writeAuditLog({ actorUserId: session.user.id, action: 'update', entityType: 'event_review', entityId: third, after: result, requestId }); return dataResponse(result); }
+      if (third && request.method === 'DELETE') { assertSameOrigin(request); const session = await requirePermission(request, 'content.edit', true); const result = await deleteReview(third); await writeAuditLog({ actorUserId: session.user.id, action: 'delete', entityType: 'event_review', entityId: third, after: result, requestId }); return dataResponse(result); }
+    }
     if (second === 'dashboard' && request.method === 'GET') {
       await requirePermission(request, 'settings.view');
       const [events, artists, products, orders, articles, albums, bookingRequests, messages] = await Promise.all([db.event.count({ where: { status: 'PUBLISHED' } }), db.artist.count({ where: { status: 'PUBLISHED' } }), db.product.count({ where: { status: 'PUBLISHED' } }), db.order.count(), db.newsArticle.count({ where: { status: 'PUBLISHED' } }), db.galleryAlbum.count({ where: { status: 'PUBLISHED' } }), db.bookingRequest.count({ where: { status: 'RECEIVED' } }), db.contactMessage.count({ where: { status: 'NEW' } })]);

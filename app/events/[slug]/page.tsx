@@ -9,6 +9,10 @@ import EventAbout from '@/components/event/EventAbout';
 import EventExpectations from '@/components/event/EventExpectations';
 import EventLineup from '@/components/event/EventLineup';
 import EventVenue from '@/components/event/EventVenue';
+import EventGoodToKnow from '@/components/event/EventGoodToKnow';
+import EventOrganiser from '@/components/event/EventOrganiser';
+import EventReviews from '@/components/event/EventReviews';
+import EventFaq from '@/components/event/EventFaq';
 import EventFinalCta from '@/components/event/EventFinalCta';
 import EventFooter from '@/components/event/EventFooter';
 
@@ -79,8 +83,12 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         <EventHero event={data} routes={routes} />
         <EventAbout event={data} />
         <EventExpectations event={data} />
+        <EventGoodToKnow event={data} />
         <EventLineup event={data} routes={routes} />
         <EventVenue event={data} />
+        <EventOrganiser event={data} />
+        <EventReviews event={data} />
+        <EventFaq event={data} />
         <EventFinalCta event={data} routes={routes} />
         <EventFooter event={data} routes={routes} />
         {[breadcrumbs, eventJsonLd].filter(Boolean).map((schema, index) => (

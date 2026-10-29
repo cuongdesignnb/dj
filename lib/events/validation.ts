@@ -91,8 +91,9 @@ function validateFeature(
   if (!isPlainObject(v)) return fail(errors, path, 'must be an object');
   const f = v as Partial<FeatureCard>;
   if (typeof f.id !== 'string' || !f.id) return fail(errors, `${path}.id`, 'must be a non-empty string');
-  if (typeof f.icon !== 'string' || !FEATURE_ICONS.has(f.icon as FeatureIcon)) {
-    return fail(errors, `${path}.icon`, `must be one of ${Array.from(FEATURE_ICONS).join(', ')}`);
+  // Admin-typed icon keys are allowed; the page falls back to a default icon.
+  if (typeof f.icon !== 'string' || (!f.icon.trim() && !FEATURE_ICONS.has(f.icon as FeatureIcon))) {
+    return fail(errors, `${path}.icon`, 'must be a string');
   }
   if (typeof f.title !== 'string' || !f.title) return fail(errors, `${path}.title`, 'must be a non-empty string');
   if (typeof f.description !== 'string') return fail(errors, `${path}.description`, 'must be a string');

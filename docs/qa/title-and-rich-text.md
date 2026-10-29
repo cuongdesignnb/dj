@@ -325,3 +325,14 @@ now expects the next published event when DESTINY is unpublished. Full suite gre
 - Highland palette resampled from the Hi-Land poster: steel electric blue
   #2AA0DF on near-black navy #04090E (dark text on solid buttons, 6.2:1).
 - Admin row-menu tests switch off smooth scrolling before measuring.
+
+## 17. Event page: Admin page content, map, reviews, no placeholders
+
+- **Admin › Events › (event) › Event page content** (`/admin/events/<id>/page-content`, key `event:<id>`): Highlights, What to Expect cards + image + captions, Good to Know, venue photo / description / getting there, organiser (name, about, website, Instagram, Facebook) and the closing CTA. Empty parts are left out of the page; nothing says "coming soon".
+- Venue: Google Maps embed from venue name + address + city, "Get directions" and "Open in Google Maps".
+- Reviews: visitors post on the event page (`POST /api/v1/reviews`, 3 per hour per IP, honeypot); stored **pending** in `event_reviews` (migration `20261029120000_event_reviews`, additive) and shown only after **Admin › Content › Reviews › Approve**. Hide / Delete are there too.
+- Event FAQ (Admin event FAQ tab) is now rendered; final CTA title no longer hardcodes "Destiny"; share buttons (Facebook, X, WhatsApp, email, copy link).
+- Footer: contact and socials come from Settings › Social / Contact; empty ones are left out.
+- Admin list editors (cards, FAQ, steps, string lists) keyed rows by their text, so typing lost focus after one letter. Rows are now keyed by position.
+- QA: `tests/e2e/event-page-extras.spec.ts` (3), unit `tests/unit/event-page-extras.test.ts`. Between runs also delete the QA review rate key `rate:review:*` in the isolated QA Redis (one submission per run).
+

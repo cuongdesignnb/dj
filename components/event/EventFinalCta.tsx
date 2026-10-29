@@ -5,6 +5,7 @@ import { useRef, useEffect, useState } from 'react';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import Container from '@/components/ui/Container';
 import EventActionButton from './EventActionButton';
+import EventShare from './EventShare';
 import { cardStagger, lineReveal } from '@/lib/events/motion';
 import {
   resolveTicketsAction,
@@ -101,8 +102,14 @@ export default function EventFinalCta({ event, routes }: Props) {
             variants={lineReveal}
             className="font-heading text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.95] text-white"
           >
-            Ready for Destiny?
+            {event.event.finalCta?.title || `Ready for ${event.event.title}?`}
           </motion.h2>
+
+          {event.event.finalCta?.subtitle && (
+            <motion.p variants={lineReveal} className="max-w-xl text-base text-rave-muted md:text-lg">
+              {event.event.finalCta.subtitle}
+            </motion.p>
+          )}
 
           <motion.div
             variants={lineReveal}
@@ -117,6 +124,10 @@ export default function EventFinalCta({ event, routes }: Props) {
               {tickets.note ?? vip.note}
             </motion.p>
           )}
+
+          <motion.div variants={lineReveal} className="mt-4">
+            <EventShare title={event.event.title} path={`/events/${event.event.slug}`} />
+          </motion.div>
         </motion.div>
       </Container>
     </section>

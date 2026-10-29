@@ -59,9 +59,16 @@ export default async function ResourceEditPage({ params }: Props) {
         ]}
         actions={
           definition.hasDetail ? (
-            <Link href={`${definition.basePath}/${record.id}`} className={buttonClass.secondary}>
-              <Eye aria-hidden className="h-4 w-4" /> View details
-            </Link>
+            <>
+              {definition.key === 'events' && (
+                <Link href={`/admin/events/${record.id}/page-content`} className={buttonClass.secondary}>
+                  Event page content
+                </Link>
+              )}
+              <Link href={`${definition.basePath}/${record.id}`} className={buttonClass.secondary}>
+                <Eye aria-hidden className="h-4 w-4" /> View details
+              </Link>
+            </>
           ) : undefined
         }
       />

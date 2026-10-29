@@ -255,8 +255,8 @@ export default function EventHero({ event, routes }: EventHeroProps) {
             </div>
           ) : (
             <div className="lg:col-span-5 order-1 aspect-[3/4] rounded-2xl border border-white/10 bg-rave-panel grid place-items-center text-center p-8">
-              <span className="font-heading uppercase tracking-[0.2em] text-rave-muted text-sm">
-                Poster coming soon
+              <span className="font-heading uppercase tracking-[0.12em] text-white text-3xl font-black">
+                {e.title}
               </span>
             </div>
           )}
