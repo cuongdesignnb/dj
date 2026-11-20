@@ -14,6 +14,15 @@ import { deleteReview, getPublicReviews, listAdminReviews, moderateReview, revie
 import { readCsrfCookie, requestCsrfToken } from '@/server/security/csrf';
 import { mediaResponse, storeMedia } from '@/server/media/storage';
 import { createBooking, createContact, subscribeNewsletter } from '@/server/services/leads';
+import { after } from 'next/server';
+import { notifyBookingRequest, notifyContactMessage, notifyNewsletterSignup, notifyReview } from '@/server/services/mail/notifications';
+import { EMAIL_SETTING_KEY, readEmailSettingsForAdmin, saveEmailSettings } from '@/server/services/mail/settings';
+import { sendTestEmail } from '@/server/services/mail/mailer';
+import { isEmail } from '@/lib/email/smtp-config';
+
+function logMailError(error: unknown) {
+  console.error('[mail] notification failed', error instanceof Error ? error.message : error);
+}
 import { galleryAlbumInclude, saveGalleryAlbum } from '@/server/services/gallery';
 import {
   createMerchandiseCheckoutIntent,
@@ -71,7 +80,7 @@ import {
 } from '@/server/validators/api';
 import type { SingletonKey } from '@/lib/admin/common/resource';
 import { aboutContentDefinition, contactContentDefinition, homeContentDefinition } from '@/lib/admin/content/definitions';
-import { integrationsDefinition, languageSettingsDefinition, shippingDefinition, siteSettingsDefinition, socialSettingsDefinition } from '@/lib/admin/settings/definitions';
+import { emailSettingsDefinition, integrationsDefinition, languageSettingsDefinition, shippingDefinition, siteSettingsDefinition, socialSettingsDefinition } from '@/lib/admin/settings/definitions';
 import { revalidatePublicResource } from '@/server/cache/public-revalidation';
 import {
   assignMenuLocation,
@@ -226,6 +235,7 @@ const singletonRoutes: Record<string, { key: SingletonKey; permission: 'content'
   'settings/social': { key: 'settings-social', permission: 'settings' },
   'settings/languages': { key: 'settings-languages', permission: 'settings' },
   'settings/integrations': { key: 'settings-integrations', permission: 'settings' },
+  'settings/email': { key: 'settings-email', permission: 'settings' },
   shipping: { key: 'shipping', permission: 'products' },
 };
 
@@ -242,6 +252,7 @@ function singletonDefaults(key: SingletonKey): JsonRecord {
   if (key === 'settings-social') return socialSettingsDefinition.seed() as JsonRecord;
   if (key === 'settings-languages') return languageSettingsDefinition.seed() as JsonRecord;
   if (key === 'settings-integrations') return integrationsDefinition.seed() as JsonRecord;
+  if (key === 'settings-email') return emailSettingsDefinition.seed() as JsonRecord;
   return shippingDefinition.seed() as JsonRecord;
 }
 
@@ -364,6 +375,7 @@ async function readAdminSingleton(route: { key: SingletonKey; pageSlug?: string 
   if (route.key === 'settings-social') return readSocialSingleton();
   if (route.key === 'settings-languages') return readLanguageSingleton();
   if (route.key === 'settings-integrations') return readIntegrationsSingleton();
+  if (route.key === 'settings-email') return readEmailSettingsForAdmin();
   return readShippingSingleton();
 }
 
@@ -437,6 +449,13 @@ async function writeAdminSingleton(route: { key: SingletonKey; pageSlug?: string
     return readLanguageSingleton();
   }
   if (route.key === 'settings-integrations') return writeIntegrationsSingleton(values);
+  if (route.key === 'settings-email') {
+    const saved = await saveEmailSettings(values);
+    // The password itself is never written to the audit log.
+    const row = await db.siteSetting.findUnique({ where: { key: EMAIL_SETTING_KEY }, select: { id: true } });
+    if (row) await writeAuditLog({ actorUserId, action: 'settings.email.update', entityType: 'site_setting', entityId: row.id, after: { ...saved, password: undefined }, requestId });
+    return saved;
+  }
   await writeSettings({ 'shipping.config': values }, { 'shipping.config': 'shipping.config' }, false);
   return readShippingSingleton();
 }
@@ -1317,11 +1336,12 @@ if (second && third === 'vip') { const result = await getPublicVip(second); if (
   if (root === 'site' && second === 'bootstrap' && request.method === 'GET') return dataResponse(await getPublicBootstrap(locale));
   if (root === 'media' && second && request.method === 'GET') return mediaResponse(second, params.get('presentation'), request.headers.get('range'));
 
-  if (root === 'booking-requests' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`booking:${ip(request)}`, 10, 3600); return dataResponse(await createBooking(parse(bookingSchema, await body(request))), { status: 202 }); }
+  // Form emails run after the response, so the mail server never slows a visitor down.
+  if (root === 'booking-requests' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`booking:${ip(request)}`, 10, 3600); const created = await createBooking(parse(bookingSchema, await body(request))); after(() => notifyBookingRequest(created.id).catch(logMailError)); return dataResponse(created, { status: 202 }); }
   if (root === 'reviews' && !second && request.method === 'GET') return dataResponse(await getPublicReviews(Number(params.get('limit') ?? 12) || 12));
-  if (root === 'reviews' && !second && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`review:${ip(request)}`, 3, 3600); return dataResponse(await submitReview(parse(reviewSubmissionSchema, await body(request))), { status: 202 }); }
-  if (root === 'contact' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`contact:${ip(request)}`, 10, 3600); return dataResponse(await createContact(parse(contactSchema, await body(request))), { status: 202 }); }
-  if (root === 'newsletter' && second === 'subscribe' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`newsletter:${ip(request)}`, 5, 3600); return dataResponse(await subscribeNewsletter(parse(newsletterSchema, await body(request))), { status: 202 }); }
+  if (root === 'reviews' && !second && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`review:${ip(request)}`, 3, 3600); const input = parse(reviewSubmissionSchema, await body(request)); const result = await submitReview(input); if (!input.website) after(() => notifyReview(input).catch(logMailError)); return dataResponse(result, { status: 202 }); }
+  if (root === 'contact' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`contact:${ip(request)}`, 10, 3600); const created = await createContact(parse(contactSchema, await body(request))); after(() => notifyContactMessage(created.id).catch(logMailError)); return dataResponse(created, { status: 202 }); }
+  if (root === 'newsletter' && second === 'subscribe' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`newsletter:${ip(request)}`, 5, 3600); const input = parse(newsletterSchema, await body(request)); const row = await subscribeNewsletter(input); after(() => notifyNewsletterSignup(row.email, input.source).catch(logMailError)); return dataResponse(row, { status: 202 }); }
   if (root === 'checkout' && second === 'session' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`checkout:${ip(request)}`, 10, 600); return dataResponse(await handleCheckout(request), { status: 201 }); }
   if (root === 'checkout' && second === 'ticket-intent' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`ticket-checkout:${ip(request)}`, 10, 600); return dataResponse(await createTicketCheckoutIntent(parse(ticketCheckoutSchema, await body(request))), { status: 201 }); }
   if (root === 'checkout' && second === 'vip-intent' && request.method === 'POST') { assertSameOrigin(request); await enforceRateLimit(`vip-checkout:${ip(request)}`, 10, 600); return dataResponse(await createVipCheckoutIntent(parse(vipCheckoutSchema, await body(request))), { status: 201 }); }
@@ -1511,6 +1531,19 @@ if (second && third === 'vip') { const result = await getPublicVip(second); if (
           return dataResponse(result);
         }
       }
+    }
+    if (second === 'settings' && third === 'email' && path[3] === 'test' && request.method === 'POST') {
+      assertSameOrigin(request);
+      const session = await requirePermission(request, 'settings.edit', true);
+      await enforceRateLimit(`mailtest:${session.user.id}`, 10, 3600);
+      const input = await body(request);
+      const to = isRecord(input) && typeof input.to === 'string' ? input.to.trim().toLowerCase() : '';
+      if (!isEmail(to)) throw validationError({ to: 'Enter the address to send the test to.' });
+      const nameRow = await db.siteSetting.findUnique({ where: { key: 'site.name' } });
+      const result = await sendTestEmail(to, typeof nameRow?.valueJson === 'string' && nameRow.valueJson.trim() ? nameRow.valueJson.trim() : 'Connection Rave');
+      const row = await db.siteSetting.findUnique({ where: { key: EMAIL_SETTING_KEY }, select: { id: true } });
+      if (row) await writeAuditLog({ actorUserId: session.user.id, action: 'settings.email.test', entityType: 'site_setting', entityId: row.id, after: { to, ok: result.ok }, requestId });
+      return dataResponse(result);
     }
     const singleton = singletonRoute(second, third);
     if (singleton && request.method === 'GET') {

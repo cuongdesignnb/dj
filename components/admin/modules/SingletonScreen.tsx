@@ -9,6 +9,8 @@ import { gate, loadMediaChoices, loadOptionSets, optionSourcesOf } from '@/lib/a
 import { SINGLETONS, getSingletonRepository } from '@/lib/admin/registry';
 import IntegrationsPanel from './IntegrationsPanel';
 import LanguageSettings from './LanguageSettings';
+import EmailTestPanel from './EmailTestPanel';
+import { parseRecipients } from '@/lib/email/smtp-config';
 
 /** Server screen for one-record settings and page content. */
 export default async function SingletonScreen({ settingKey }: { settingKey: SingletonKey }) {
@@ -56,6 +58,14 @@ export default async function SingletonScreen({ settingKey }: { settingKey: Sing
         previewHref={settingKey === 'content-home' ? '/' : settingKey === 'content-about' ? '/about' : null}
       />
     );
+    if (settingKey === 'settings-email') {
+      body = (
+        <>
+          {body}
+          <EmailTestPanel canEdit={canEdit} defaultTo={parseRecipients(result.data.notifyTo).valid[0] ?? session?.user.email ?? ''} />
+        </>
+      );
+    }
   }
 
   return (

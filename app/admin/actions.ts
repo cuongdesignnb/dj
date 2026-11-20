@@ -686,6 +686,22 @@ export async function paymentAction(id: string, action: 'reconcile' | 'refund', 
   return { ok: true, data: result.data, message: action === 'refund' ? 'Refund request sent to Square.' : 'Payment reconciled from Square.' };
 }
 
+/** Sends one test email with the saved SMTP settings. */
+export async function sendTestEmailAction(to: string): Promise<ActionResult<{ ok: boolean; error?: string }>> {
+  const auth = await authorize('settings.edit');
+  if (!auth.ok) return auth.result;
+  const cookie = (await cookies()).toString();
+  const result = await apiRequest<{ ok: boolean; error?: string }>(getApiBaseUrl(), '/api/v1/admin/settings/email/test', {
+    method: 'POST',
+    body: { to: to.trim().slice(0, 254) },
+    cookie,
+    csrfToken: csrfFromCookie(cookie),
+  });
+  if (!result.ok) return result;
+  if (!result.data.ok) return { ok: false, error: { message: result.data.error ?? 'The test email could not be sent.' } };
+  return { ok: true, data: result.data, message: `Test email sent to ${to.trim()}. Check the inbox (and spam folder).` };
+}
+
 export async function staffAction(id: string, action: 'invite' | 'resend' | 'disable' | 'enable'): Promise<ActionResult> {
   const auth = await authorize('staff.edit');
   if (!auth.ok) return auth.result;

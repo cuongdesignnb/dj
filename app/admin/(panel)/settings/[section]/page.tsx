@@ -13,6 +13,7 @@ const SECTIONS: Record<string, SingletonKey> = {
   social: 'settings-social',
   languages: 'settings-languages',
   integrations: 'settings-integrations',
+  email: 'settings-email',
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

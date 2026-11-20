@@ -31,6 +31,7 @@ export type SingletonKey =
   | 'settings-social'
   | 'settings-languages'
   | 'settings-integrations'
+  | 'settings-email'
   | 'shipping';
 
 /**

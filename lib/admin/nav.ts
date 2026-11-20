@@ -19,7 +19,7 @@ export const ADMIN_NAV: NavGroup[] = [
   ] },
   { id: 'navigation', label: 'Navigation', icon: 'navigation', items: [{ label: 'Menu Builder', href: '/admin/navigation', permission: 'navigation.view' }, { label: 'Menu Locations', href: '/admin/navigation/locations', permission: 'navigation.view' }] },
   { id: 'team', label: 'Team & Access', icon: 'team', items: [{ label: 'Staff', href: '/admin/staff', permission: 'staff.view' }, { label: 'Roles & Permissions', href: '/admin/roles', permission: 'roles.view' }] },
-  { id: 'settings', label: 'Settings', icon: 'settings', items: [{ label: 'Website', href: '/admin/settings/site', permission: 'settings.view' }, { label: 'Social / Contact', href: '/admin/settings/social', permission: 'settings.view' }, { label: 'Languages EN / VI', href: '/admin/settings/languages', permission: 'settings.view' }, { label: 'Global Content', href: '/admin/settings/global-content', permission: 'settings.view' }, { label: 'Integrations', href: '/admin/settings/integrations', permission: 'settings.view' }] },
+  { id: 'settings', label: 'Settings', icon: 'settings', items: [{ label: 'Website', href: '/admin/settings/site', permission: 'settings.view' }, { label: 'Social / Contact', href: '/admin/settings/social', permission: 'settings.view' }, { label: 'Languages EN / VI', href: '/admin/settings/languages', permission: 'settings.view' }, { label: 'Global Content', href: '/admin/settings/global-content', permission: 'settings.view' }, { label: 'Email (SMTP)', href: '/admin/settings/email', permission: 'settings.view' }, { label: 'Integrations', href: '/admin/settings/integrations', permission: 'settings.view' }] },
 ];
 
 export function activeNavHref(pathname: string): string | null {

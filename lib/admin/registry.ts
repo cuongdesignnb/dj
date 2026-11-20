@@ -25,6 +25,7 @@ import { auditDefinition, faqDefinition, legalDefinition, tasksDefinition } from
 import { aboutContentDefinition, contactContentDefinition, homeContentDefinition } from './content/definitions';
 import {
   integrationsDefinition,
+  emailSettingsDefinition,
   languageSettingsDefinition,
   shippingDefinition,
   siteSettingsDefinition,
@@ -62,6 +63,7 @@ export const SINGLETONS: Record<SingletonKey, SingletonDefinition> = {
   'settings-social': socialSettingsDefinition,
   'settings-languages': languageSettingsDefinition,
   'settings-integrations': integrationsDefinition,
+  'settings-email': emailSettingsDefinition,
   shipping: shippingDefinition,
 };
 

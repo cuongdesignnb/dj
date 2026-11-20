@@ -1,5 +1,6 @@
 import { f, opts, section } from '@/lib/admin/common/fields';
 import { SITE_THEMES, SITE_THEME_LABELS } from '@/lib/site-theme';
+import { SMTP_SECURITY, SMTP_SECURITY_LABELS, emailSettingsDefaults } from '@/lib/email/smtp-config';
 import type { SingletonDefinition } from '@/lib/admin/common/resource';
 
 // Settings. Secrets are never returned to the browser: the integration record
@@ -126,6 +127,53 @@ export const languageSettingsDefinition: SingletonDefinition = {
           f.select('vi', 'Vietnamese', TRANSLATION_STATUS),
         ], { itemLabelKey: 'module', itemNoun: 'Module' }),
       ], { description: 'Set manually for now. No machine translation is used.' }),
+    ],
+  },
+};
+
+export const emailSettingsDefinition: SingletonDefinition = {
+  key: 'settings-email',
+  label: 'Email (SMTP)',
+  description: 'The mail server the website sends from, and who is told about new contact messages, VIP table requests and reviews.',
+  group: 'Settings',
+  path: '/admin/settings/email',
+  apiPath: 'settings/email',
+  permission: 'settings',
+  seed: () => ({ ...emailSettingsDefaults(), password: '', passwordStatus: 'Not set', source: 'Not configured', lastCheck: 'Not tested yet' }),
+  form: {
+    titleKey: 'host',
+    seo: false,
+    publish: null,
+    sections: [
+      section('sending', 'Sending', [
+        f.toggle('enabled', 'Send emails from the website', { width: 'full', help: 'Off: forms still save to Admin, but nobody is emailed.' }),
+        f.readonly('source', 'Mail server in use'),
+        f.readonly('lastCheck', 'Last check'),
+      ]),
+      section('server', 'SMTP server', [
+        f.text('host', 'SMTP host', { width: 'half', placeholder: 'smtp.gmail.com', help: 'Leave empty to use SMTP_HOST from the server .env.' }),
+        f.number('port', 'Port', { min: 1, max: 65535, help: '587 for STARTTLS, 465 for SSL/TLS.' }),
+        f.select('security', 'Security', opts(...SMTP_SECURITY.map((value) => [value, SMTP_SECURITY_LABELS[value]] as [string, string])), { required: true }),
+        f.text('username', 'Username', { width: 'half', placeholder: 'usually your full email address' }),
+        { key: 'password', label: 'Password', type: 'secret', width: 'half', help: 'Stored encrypted and never shown again. Leave empty to keep the stored one. Gmail and Outlook need an app password.' },
+        f.readonly('passwordStatus', 'Stored password'),
+      ], { description: 'Use the SMTP details from your email provider (Gmail / Google Workspace, Outlook, Zoho, your web host…).' }),
+      section('sender', 'Sender', [
+        f.text('fromName', 'From name', { width: 'half', placeholder: 'Connection Rave' }),
+        f.email('fromEmail', 'From email', { help: 'Most providers only allow the address you log in with.' }),
+        f.email('replyTo', 'Reply-to email', { help: 'Optional. Notifications reply to the visitor instead.' }),
+      ]),
+      section('notifications', 'Notifications to the team', [
+        f.textarea('notifyTo', 'Send notifications to', { placeholder: 'bookings@example.com, owner@example.com', help: 'One or more addresses, separated by commas or new lines (up to 10).' }),
+        f.toggle('notifyContact', 'New contact message'),
+        f.toggle('notifyBooking', 'New VIP table request'),
+        f.toggle('notifyReview', 'New review waiting for approval'),
+        f.toggle('notifyNewsletter', 'New newsletter signup'),
+      ]),
+      section('autoreply', 'Automatic replies to visitors', [
+        f.toggle('autoReplyContact', 'Confirm contact messages', { help: 'Sends the visitor a copy of their message.' }),
+        f.toggle('autoReplyBooking', 'Confirm VIP table requests', { help: 'Says the request was received and is not a reservation yet.' }),
+      ]),
     ],
   },
 };
