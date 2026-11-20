@@ -182,7 +182,7 @@ export default function LineupPreview({ artists, event = null, copy = null }: { 
   };
 
   return (
-    <section className="relative py-20 md:py-28 overflow-hidden bg-rave-black">
+    <section id="featured-artists" data-home-section="lineup" className="relative scroll-mt-24 py-20 md:py-28 overflow-hidden bg-rave-black">
       {/* Background Grid */}
       <div className="absolute inset-0 bg-rave-grid opacity-15 pointer-events-none" />
 

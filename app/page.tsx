@@ -72,15 +72,30 @@ function safeLink(value: unknown, fallback: string) {
   return raw && (raw.startsWith('/') || raw.startsWith('#') || /^https:\/\//.test(raw)) ? raw : fallback;
 }
 
+/**
+ * Copy saved by the previous homepage (event-focused) still sits in Admin. Those exact
+ * old defaults read as the new section names instead, so "Featured Artists" says so.
+ */
+const LEGACY_COPY: Partial<Record<SectionKey, { eyebrow?: string[]; title?: string[]; ctaLabel?: string[] }>> = {
+  lineup: { eyebrow: ['Lineup / Music'], ctaLabel: ['View Lineup'] },
+  partners: { title: ['Partners'] },
+};
+
 function sectionCopy(content: ApiRecord, key: SectionKey): HomeSectionCopy {
   const saved = record(content[key]);
   const defaults = HOME_SECTION_DEFAULTS[key];
+  const legacy = LEGACY_COPY[key] ?? {};
+  const pick = (field: 'eyebrow' | 'title', fallback: string) => {
+    const value = copyText(saved[field], fallback);
+    return legacy[field]?.includes(value) ? fallback : value;
+  };
+  const ctaLabel = text(saved.ctaLabel).trim();
   return {
     enabled: saved.enabled !== false,
-    eyebrow: copyText(saved.eyebrow, defaults.eyebrow.en),
-    title: copyText(saved.title, defaults.title.en),
+    eyebrow: pick('eyebrow', defaults.eyebrow.en),
+    title: pick('title', defaults.title.en),
     description: copyText(saved.description, defaults.description.en),
-    ctaLabel: text(saved.ctaLabel).trim() || defaults.ctaLabel,
+    ctaLabel: ctaLabel && !legacy.ctaLabel?.includes(ctaLabel) ? ctaLabel : defaults.ctaLabel,
     ctaHref: safeLink(saved.ctaHref, defaults.ctaHref),
   };
 }
@@ -195,7 +210,7 @@ async function loadHomeData() {
       partners: sectionCopy(content, 'partners'),
       contact: sectionCopy(content, 'contact'),
     },
-    aboutImage: media(record(content.about).media),
+    aboutImage: media(record(content.about).media) ?? albums.find((album) => album.cover)?.cover ?? media(heroSaved.media),
     stats: [
       { value: past.length, label: 'Events hosted' },
       { value: allArtists.length, label: 'Artists' },
