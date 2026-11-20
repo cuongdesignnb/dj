@@ -9,7 +9,7 @@ let editor: APIRequestContext;
 let editorState: Awaited<ReturnType<APIRequestContext['storageState']>>;
 let original: Record<string, unknown>;
 
-const ICE = 'rgb(42, 160, 223)';
+const ICE = 'rgb(4, 184, 252)';
 const RED = 'rgb(255, 23, 61)';
 
 async function accentOf(page: Page) {
@@ -57,7 +57,7 @@ test('choosing Highland in Settings › Site recolours every public page, but no
     await page.goto(path);
     await expect(page.locator('html'), path).toHaveAttribute('data-theme', 'highland');
     expect(await accentOf(page), path).toBe(ICE);
-    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), path).toBe('rgb(4, 9, 14)');
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), path).toBe('rgb(0, 9, 14)');
   }
   // Solid ice-cyan buttons use dark text so labels stay readable.
   await page.goto('/');

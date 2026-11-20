@@ -9,7 +9,7 @@ export const DEFAULT_SITE_THEME: SiteTheme = 'connection';
 
 export const SITE_THEME_LABELS: Record<SiteTheme, string> = {
   connection: 'Connection — neon red (current)',
-  highland: 'Highland — poster blue (Hi-Land Tour)',
+  highland: 'Electric Blue × Liquid Chrome',
 };
 
 type Rgb = readonly [number, number, number];
@@ -37,13 +37,13 @@ export const SITE_PALETTES: Record<SiteTheme, SitePalette> = {
     tints: [[255, 240, 245], [255, 200, 225], [255, 170, 210], [230, 180, 255], [255, 220, 235]],
   },
   highland: {
-    accent: [42, 160, 223],
-    accent2: [117, 201, 240],
-    magenta: [21, 133, 213],
-    purple: [28, 88, 156],
-    blue: [157, 219, 241],
-    strong: [24, 101, 149],
-    tints: [[235, 247, 253], [190, 228, 248], [150, 208, 240], [175, 200, 240], [215, 238, 250]],
+    accent: [4, 184, 252],
+    accent2: [112, 217, 255],
+    magenta: [0, 108, 168],
+    purple: [0, 108, 168],
+    blue: [196, 208, 220],
+    strong: [0, 108, 168],
+    tints: [[245, 250, 255], [229, 246, 255], [196, 208, 220], [112, 217, 255], [137, 155, 170]],
   },
 };
 

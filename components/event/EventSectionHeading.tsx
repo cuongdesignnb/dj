@@ -33,7 +33,7 @@ export default function EventSectionHeading({ eyebrow, title, id, align = 'left'
           variants={lineReveal}
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
-          className="font-heading text-3xl sm:text-4xl md:text-5xl font-black uppercase leading-[1.05] text-white"
+          className="font-heading text-3xl sm:text-4xl md:text-5xl font-black uppercase leading-[1.05] text-white rave-chrome-title"
         >
           {title}
         </motion.h2>

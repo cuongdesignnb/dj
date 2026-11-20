@@ -36,7 +36,7 @@ export default function SectionTitle({ eyebrow, title, subtitle, align = 'center
       <div className="relative">
         <motion.h2
           variants={fadeUp}
-          className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold uppercase leading-[1.1] text-white relative z-10"
+          className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold uppercase leading-[1.1] text-white relative z-10 rave-chrome-title"
         >
           {title}
         </motion.h2>

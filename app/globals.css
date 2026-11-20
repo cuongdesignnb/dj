@@ -70,37 +70,93 @@
 }
 
 /* Highland (Hi-Land Tour poster): steel electric blue on near-black navy, sampled from the poster. */
+/*
+ * Highland: "Electric Blue × Liquid Chrome". Roughly 70% dark backgrounds,
+ * 20% silver/white, 10% electric blue.
+ *   backgrounds #00090E / #071923, brand blue #04B8FC, ice blue #70D9FF,
+ *   deep blue #006CA8, silver #C4D0DC, text #F5FAFF / #94A6B5.
+ */
 [data-theme="highland"] {
-  --rave-accent-rgb: 42 160 223;
-  --rave-accent2-rgb: 117 201 240;
-  --rave-magenta-rgb: 21 133 213;
-  --rave-purple-rgb: 28 88 156;
-  --rave-blue-rgb: 157 219 241;
-  --rave-black-rgb: 4 9 14;
-  --rave-deep-rgb: 7 14 22;
-  --rave-strong-rgb: 24 101 149;
-  --rave-strong-from: #1B74A7;
-  --rave-strong-to: #0E3E62;
-  --rave-on-accent: #061723;
-  --color-rave-black: #04090E;
-  --color-rave-deep: #070E16;
-  --color-rave-panel: #0A141F;
-  --color-rave-panel2: #0E1B28;
-  --color-rave-red: #2AA0DF;
-  --color-rave-red2: #75C9F0;
-  --color-rave-magenta: #1585D5;
-  --color-rave-purple: #1C589C;
-  --color-rave-blue: #9DDBF1;
-  --color-rave-muted: #A0B0BA;
+  --rave-accent-rgb: 4 184 252;
+  --rave-accent2-rgb: 112 217 255;
+  --rave-magenta-rgb: 0 108 168;
+  --rave-purple-rgb: 0 108 168;
+  --rave-blue-rgb: 196 208 220;
+  --rave-black-rgb: 0 9 14;
+  --rave-deep-rgb: 7 25 35;
+  --rave-strong-rgb: 0 108 168;
+  --rave-strong-from: #04B8FC;
+  --rave-strong-to: #006CA8;
+  --rave-on-accent: #00131D;
+  --rave-ice: #70D9FF;
+  --rave-electric-gradient: linear-gradient(100deg, #006CA8 0%, #04B8FC 50%, #70D9FF 100%);
+  --rave-chrome-gradient: linear-gradient(100deg, #526575 0%, #F5FAFF 22%, #899BAA 48%, #E5F6FF 74%, #526575 100%);
+  --color-rave-black: #00090E;
+  --color-rave-deep: #071923;
+  --color-rave-panel: #0A1E2A;
+  --color-rave-panel2: #0F2733;
+  --color-rave-red: #04B8FC;
+  --color-rave-red2: #70D9FF;
+  --color-rave-magenta: #006CA8;
+  --color-rave-purple: #006CA8;
+  --color-rave-blue: #C4D0DC;
+  --color-rave-white: #F5FAFF;
+  --color-white: #F5FAFF;
+  --color-rave-muted: #94A6B5;
 }
 
-/* The poster blue is light enough that solid accent buttons and badges get dark text in Highland. */
+/* Electric blue is light: solid accent buttons and badges get dark navy text. */
 [data-theme="highland"] :is(.bg-rave-red, .bg-rave-red2, .from-rave-red),
 [data-theme="highland"] :is(.bg-rave-red, .bg-rave-red2, .from-rave-red) :is(.text-white, .text-rave-white) {
   color: var(--rave-on-accent);
 }
 [data-theme="highland"] ::selection {
   color: var(--rave-on-accent);
+}
+[data-theme="highland"] body {
+  color: #F5FAFF;
+}
+
+/* Section headings in liquid chrome. */
+[data-theme="highland"] .rave-chrome-title {
+  background-image: var(--rave-chrome-gradient);
+  background-size: 160% 100%;
+  background-position: 30% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/*
+ * Buttons: sharp, modern corners. Text buttons (they have horizontal padding)
+ * lose the pill shape; round icon buttons keep theirs.
+ */
+@layer utilities {
+  /* Inside the utilities layer so it also beats the !rounded-full some hero buttons carry. */
+  [data-theme="highland"] :is(a, button, input)[class*="rounded-"][class*="px-"] {
+    border-radius: 6px !important;
+  }
+}
+/* Primary: electric blue with dark text; hover turns ice blue with a soft glow. */
+[data-theme="highland"] :is(a, button):is(.bg-rave-red, .from-rave-red) {
+  background-image: linear-gradient(100deg, #04B8FC 0%, #33C6FD 100%);
+  transition: background-color .25s ease, background-image .25s ease, box-shadow .25s ease, color .25s ease;
+}
+[data-theme="highland"] :is(a, button):is(.bg-rave-red, .from-rave-red):hover {
+  background-image: none;
+  background-color: var(--rave-ice);
+  box-shadow: 0 0 22px rgb(112 217 255 / .5);
+  filter: none;
+}
+/* Secondary: dark fill with an electric blue outline. */
+[data-theme="highland"] :is(a, button)[class*="px-"]:is([class*="border-white/"], [class*="border-rave-red/"]):not(.bg-rave-red, .from-rave-red) {
+  background-color: rgb(7 25 35 / .85);
+  border-color: rgb(4 184 252 / .55);
+}
+[data-theme="highland"] :is(a, button)[class*="px-"]:is([class*="border-white/"], [class*="border-rave-red/"]):not(.bg-rave-red, .from-rave-red):hover {
+  border-color: var(--rave-ice);
+  color: var(--rave-ice);
+  box-shadow: 0 0 18px rgb(112 217 255 / .3);
 }
 
 html {
