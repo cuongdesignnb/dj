@@ -33,31 +33,6 @@ export interface HomeTicketProvider {
   url: string;
 }
 
-export interface HomeTicketTier {
-  id: string;
-  name: string;
-  price: string;
-  badge: string | null;
-  features: string[];
-  purchasableOnline: boolean;
-  purchasableAtDoor: boolean;
-  availabilityStatus: string;
-}
-
-export interface HomeTrustItem {
-  icon: 'ShieldCheck' | 'BadgeCheck' | 'Users';
-  title: string;
-  description: string;
-}
-
-export interface HomeBoothPackage {
-  name: string;
-  price: string;
-  people: string;
-  bottles: string;
-  choices: string[];
-}
-
 export interface HomePartner {
   id: string;
   label: string;
@@ -75,4 +50,58 @@ export interface HomeFooterData {
   email: string | null;
   phone: string | null;
   address: string | null;
+}
+
+/** A homepage section's editable copy (Admin › Content › Homepage). */
+export interface HomeSectionCopy {
+  enabled: boolean;
+  eyebrow: string;
+  title: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+export interface HomeLink {
+  label: string;
+  href: string;
+}
+
+/** Brand hero: about Connection, not one event. */
+export interface HomeHeroContent {
+  eyebrow: string;
+  title: string;
+  description: string;
+  primary: HomeLink;
+  secondary: HomeLink | null;
+}
+
+export interface HomeEventCard {
+  slug: string;
+  title: string;
+  eyebrow: string | null;
+  poster: HomeMedia | null;
+  date: string | null;
+  time: string | null;
+  venue: string | null;
+  genres: string[];
+  /** Third-party seller when tickets are sold elsewhere. */
+  provider: HomeTicketProvider | null;
+}
+
+export interface HomeAlbum {
+  slug: string;
+  title: string;
+  cover: HomeMedia | null;
+  count: number;
+}
+
+export interface HomeAftermovie {
+  id: string;
+  title: string;
+  /** YouTube video id, when the film is on YouTube. */
+  youtubeId: string | null;
+  /** Uploaded video file, when it is not. */
+  video: string | null;
+  poster: string | null;
 }

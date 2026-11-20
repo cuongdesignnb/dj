@@ -32,7 +32,7 @@ export default function EventVenue({ event }: Props) {
   return (
     <section
       id="venue"
-      className="relative isolate overflow-hidden py-16 md:py-24 bg-rave-deep"
+      className="scroll-mt-32 relative isolate overflow-hidden py-16 md:py-24 bg-rave-deep"
       aria-labelledby="venue-title"
     >
       <Container>

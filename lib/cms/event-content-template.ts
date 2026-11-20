@@ -36,6 +36,7 @@ export function eventContentTemplate(kind: EventContentKind, event: EventContent
       venue: { image: null, description: '', directions: '' },
       organiser: { name: '', description: '', website: '', instagram: '', facebook: '' },
       finalCta: { title: `Ready for ${title}?`, subtitle: 'Secure your tickets and get ready for the night.' },
+      barList: [],
     };
   }
 

@@ -84,6 +84,8 @@ const eventPageSchema = z.object({
   venue: z.object({ image: media.optional(), description: text, directions: text }).strict(),
   organiser: z.object({ name: text, description: text, website: url, instagram: url, facebook: url }).strict(),
   finalCta: z.object({ title: text, subtitle: text }).strict(),
+  /** Drinks menu: optional so content saved before it existed still validates. */
+  barList: z.array(z.object({ id: text.optional(), category: text, name: text, price: text, description: text, enabled: z.boolean().optional() }).strict()).max(150).optional(),
 }).strict();
 
 const listingHero = hero.extend({ primary: action.optional(), secondary: action.optional() });

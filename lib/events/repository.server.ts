@@ -64,6 +64,26 @@ function reviewsOf(value: unknown) {
 
 const SOCIALS = ['facebook', 'instagram', 'youtube', 'tiktok'] as const;
 
+/** The written drinks menu, else the bottles offered with the VIP packages (no prices). */
+function barListOf(written: unknown, packages: unknown) {
+  const items = (Array.isArray(written) ? written : [])
+    .filter((item): item is Record<string, any> => isRecord(item) && item.enabled !== false && text(item.name).length > 0)
+    .map((item, index) => ({ id: text(item.id) || `bar-${index}`, category: text(item.category), name: text(item.name), price: text(item.price), description: text(item.description), image: null }));
+  if (items.length) return items;
+  const seen = new Set<string>();
+  return (Array.isArray(packages) ? packages : []).flatMap((pkg) => (isRecord(pkg) && Array.isArray(pkg.bottles) ? pkg.bottles : []))
+    .filter((bottle): bottle is Record<string, any> => isRecord(bottle) && text(bottle.name).length > 0)
+    .filter((bottle) => !seen.has(text(bottle.name).toLowerCase()) && Boolean(seen.add(text(bottle.name).toLowerCase())))
+    .map((bottle, index) => ({ id: text(bottle.id) || `bottle-${index}`, category: text(bottle.category) || 'Bottles', name: text(bottle.name), price: '', description: text(bottle.description), image: media(bottle.image) }));
+}
+
+/** Past when Admin marks it so, or once it has finished (end, else start). */
+function pastEvent(event: Record<string, any>, now = Date.now()) {
+  if (['PAST', 'COMPLETED'].includes(String(event.lifecycleStatus ?? '').toUpperCase())) return true;
+  const over = Date.parse(typeof event.endAt === 'string' ? event.endAt : typeof event.startAt === 'string' ? event.startAt : '');
+  return Number.isFinite(over) && over < now;
+}
+
 export function toPageData(raw: unknown, extras: EventPageExtras = {}): EventPageData | null {
   const event = unwrapApiData<Record<string, any>>(raw);
   if (!isRecord(event) || typeof event.id !== 'string' || typeof event.slug !== 'string') return null;
@@ -104,6 +124,11 @@ export function toPageData(raw: unknown, extras: EventPageExtras = {}): EventPag
       organiser,
       finalCta: text(finalCtaContent.title) ? { title: text(finalCtaContent.title), subtitle: text(finalCtaContent.subtitle) } : null,
       reviews: reviewsOf(extras.reviews),
+      isPast: pastEvent(event),
+      ticketSettings: { enabled: event.ticketSettings?.enabled !== false, saleStatus: text(event.ticketSettings?.saleStatus) || 'COMING_SOON', providerName: event.ticketSettings?.externalProviderEnabled ? text(event.ticketSettings?.providerName) || null : null, providerUrl: event.ticketSettings?.externalProviderEnabled ? httpUrl(event.ticketSettings?.providerUrl) : null },
+      vipEnabled: event.vip?.enabled === true,
+      vipBookingEnabled: event.vip?.bookingEnabled !== false,
+      barList: barListOf(content.barList, event.vip?.packages),
       artists: lineup.map((artist: any) => ({ id: String(artist.id), slug: String(artist.slug), name: String(artist.name), country: String(artist.country ?? ''), portrait: media(artist.portrait), profileHref: `/lineup/${encodeURIComponent(String(artist.slug))}` })),
       venue: { name: String(event.venue?.name ?? ''), city: String(event.venue?.city ?? ''), address: typeof event.venue?.address === 'string' ? event.venue.address : null, description: text(venueContent.description), image: media(venueContent.image), mapUrl: typeof event.venue?.mapUrl === 'string' ? event.venue.mapUrl : null, directions: text(venueContent.directions) },
       // No direct URL: the page's event-scoped routes decide where VIP links go.

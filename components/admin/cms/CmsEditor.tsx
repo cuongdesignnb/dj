@@ -22,6 +22,7 @@ type FieldType =
   | 'info-list'
   | 'faq-list'
   | 'steps-list'
+  | 'menu-list'
   | 'filters'
   | 'sections'
   | 'action'
@@ -98,6 +99,7 @@ function fieldsFor(key: string): Field[] {
       textField('organiser.website', 'Organiser › Website URL'),
       textField('organiser.instagram', 'Organiser › Instagram URL'),
       textField('organiser.facebook', 'Organiser › Facebook URL'),
+      textField('barList', 'Bar list (drinks menu)', 'menu-list', { wide: true, help: 'Shown as "Bar List" on the event page, grouped by category. Empty: the bottles offered with the VIP packages are listed instead.' }),
       textField('finalCta.title', 'Final call-to-action title'),
       textField('finalCta.subtitle', 'Final call-to-action subtitle', 'textarea'),
     ];
@@ -336,6 +338,24 @@ function FaqListEditor({ value, onChange }: { value: unknown; onChange: (value: 
   </div>;
 }
 
+function MenuListEditor({ value, onChange }: { value: unknown; onChange: (value: JsonRecord[]) => void }) {
+  const items = asRecords(value);
+  const update = (index: number, next: JsonRecord) => onChange(items.map((item, itemIndex) => itemIndex === index ? next : item));
+  return <div className="space-y-3">
+    {items.map((item, index) => <div key={index} className={cardClass}>
+      <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-rave-red">Drink {index + 1}</span><button type="button" aria-label="Remove drink" onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="text-admin-muted hover:text-rose-200"><Trash2 className="h-4 w-4" /></button></div>
+      <div className="grid gap-3 md:grid-cols-3">
+        <label><SmallLabel>Category</SmallLabel><TextInput value={item.category} onChange={(next) => update(index, updateRecord(item, 'category', next))} placeholder="Vodka" /></label>
+        <label><SmallLabel>Name</SmallLabel><TextInput value={item.name} onChange={(next) => update(index, updateRecord(item, 'name', next))} placeholder="Grey Goose 700ml" /></label>
+        <label><SmallLabel>Price</SmallLabel><TextInput value={item.price} onChange={(next) => update(index, updateRecord(item, 'price', next))} placeholder="$350" /></label>
+        <label className="md:col-span-3"><SmallLabel>Description (optional)</SmallLabel><TextInput value={item.description} onChange={(next) => update(index, updateRecord(item, 'description', next))} placeholder="Served with mixers" /></label>
+      </div>
+      <label className="mt-3 flex items-center gap-2 text-xs text-admin-muted"><input type="checkbox" checked={item.enabled !== false} onChange={(event) => update(index, updateRecord(item, 'enabled', event.target.checked))} className="h-4 w-4 accent-rave-red" /> Show this drink</label>
+    </div>)}
+    <button type="button" onClick={() => onChange([...items, { category: items[items.length - 1]?.category ?? '', name: '', price: '', description: '', enabled: true }])} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-rave-red hover:text-white"><Plus className="h-3.5 w-3.5" /> Add drink</button>
+  </div>;
+}
+
 function StepsListEditor({ value, onChange }: { value: unknown; onChange: (value: JsonRecord[]) => void }) {
   const items = asRecords(value);
   const update = (index: number, next: JsonRecord) => onChange(items.map((item, itemIndex) => itemIndex === index ? next : item));
@@ -411,6 +431,7 @@ function StructuredField({ type, value, onChange, media }: { type: FieldType; va
     case 'media': return <MediaEditor value={value} media={media} onChange={onChange} />;
     case 'string-list': return <StringListEditor value={value} onChange={onChange} />;
     case 'info-list': return <InfoListEditor value={value} onChange={onChange} />;
+    case 'menu-list': return <MenuListEditor value={value} onChange={onChange} />;
     case 'faq-list': return <FaqListEditor value={value} onChange={onChange} />;
     case 'steps-list': return <StepsListEditor value={value} onChange={onChange} />;
     case 'filters': return <FiltersEditor value={value} onChange={onChange} />;
@@ -507,7 +528,7 @@ export default function CmsEditor({ contentKey, title, description, media = [] }
       const update = (next: unknown) => setDraft(setPath(draft, field.path, next));
       return <div key={field.path} className={`${field.wide || !['text', 'textarea', 'number', 'boolean'].includes(type) ? 'xl:col-span-2' : ''} rounded-[12px] border border-admin-border bg-admin-panel/80 p-4`}>
         <label id={`${id}-label`} htmlFor={id} className="mb-2 block text-sm font-medium text-white">{field.label}</label>
-        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} media={media} onChange={update} /> : type === 'textarea' ? <RichInput id={id} labelledBy={`${id}-label`} value={value} onChange={update} /> : <TextInput id={id} value={value} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
+        {type === 'boolean' ? <input id={id} type="checkbox" checked={value === true} onChange={(event) => update(event.target.checked)} className="h-5 w-5 accent-rave-red" /> : ['media', 'string-list', 'info-list', 'menu-list', 'faq-list', 'steps-list', 'filters', 'sections', 'action', 'cta', 'empty-state', 'seo'].includes(type) ? <StructuredField type={type} value={value} media={media} onChange={update} /> : type === 'textarea' ? <RichInput id={id} labelledBy={`${id}-label`} value={value} onChange={update} /> : <TextInput id={id} value={value} type={type === 'number' ? 'number' : 'text'} onChange={(next) => update(type === 'number' ? Number(next) : next)} />}
         {field.help && <span className="mt-2 block text-xs text-admin-muted">{field.help}</span>}
       </div>;
     })}</div>

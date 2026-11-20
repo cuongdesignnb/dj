@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import Container from '../ui/Container';
 import SectionTitle from './SectionTitle';
 import NeonButton from './NeonButton';
-import type { HomeArtist, HomeEvent } from './types';
+import type { HomeArtist, HomeEvent, HomeSectionCopy } from './types';
 import { homeEventDate } from './event-labels';
 import { fadeUp, staggerContainer } from '@/lib/animations';
 
@@ -158,7 +158,8 @@ function ArtistCard({ artist, index }: ArtistCardProps) {
   );
 }
 
-export default function LineupPreview({ artists, event = null }: { artists: HomeArtist[]; event?: HomeEvent | null }) {
+export default function LineupPreview({ artists, event = null, copy = null }: { artists: HomeArtist[]; event?: HomeEvent | null; copy?: HomeSectionCopy | null }) {
+  const date = homeEventDate(event);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(artists.length > 1);
@@ -220,8 +221,9 @@ export default function LineupPreview({ artists, event = null }: { artists: Home
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10 md:mb-14">
           <div>
             <SectionTitle
-              eyebrow="Lineup / Music"
-              title="The Artists"
+              eyebrow={copy?.eyebrow || 'Lineup / Music'}
+              title={copy?.title || 'The Artists'}
+              subtitle={copy?.description || undefined}
               align="left"
             />
           </div>
@@ -232,16 +234,18 @@ export default function LineupPreview({ artists, event = null }: { artists: Home
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
           >
+            {date && (
             <div
               className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rave-red/10 border border-rave-red/20 animate-border-glow"
             >
               <Sparkles className="w-3.5 h-3.5 text-rave-red" />
               <span className="font-heading uppercase tracking-[0.15em] text-xs text-rave-red font-semibold">
-                {homeEventDate(event) ?? 'Date to be announced'}
+                {date}
               </span>
             </div>
-            <NeonButton href="/lineup" variant="ghost" className="!py-2.5 !px-5 !text-xs">
-              View Full Lineup
+            )}
+            <NeonButton href={copy?.ctaHref || '/lineup'} variant="ghost" className="!py-2.5 !px-5 !text-xs">
+              {copy?.ctaLabel || 'View Full Lineup'}
             </NeonButton>
           </motion.div>
         </div>

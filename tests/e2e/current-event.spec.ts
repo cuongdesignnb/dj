@@ -43,21 +43,26 @@ test.afterAll(async () => {
   await editor?.dispose();
 });
 
-test('Admin › Homepage › Current event drives the homepage, /tickets and /event', async ({ browser, page, request }) => {
+test('Admin › Homepage › Default event drives /tickets and /event; the homepage lists it under Upcoming Events', async ({ browser, page, request }) => {
   const admin = await (await browser.newContext({ storageState: editorState })).newPage();
   await admin.goto('/admin/content/home');
-  const select = admin.getByRole('combobox', { name: /Current event/ });
+  const select = admin.getByRole('combobox', { name: /Default event/ });
   await select.selectOption(ids['qa-current']);
   await admin.getByRole('button', { name: 'Save Changes', exact: true }).click();
   await expect.poll(async () => (await (await editor.get('/api/v1/admin/content/home')).json()).data.hero?.eventId).toBe(ids['qa-current']);
   await admin.context().close();
 
   await page.goto('/');
-  await expect(page.locator('h1').first()).toHaveText('QA Current Event');
-  // Sold only through TicketsCandy: the homepage tickets block links straight there.
-  const homeBuy = page.locator('[data-ticket-provider]').getByRole('link', { name: /Buy tickets on TicketsCandy/ });
+  // The homepage is about Connection; the event is picked from Upcoming Events.
+  await expect(page.locator('h1').first()).toHaveText('CONNECTION');
+  const card = page.locator('[data-upcoming-event="qa-current"]');
+  await expect(card).toContainText('QA Current Event');
+  await expect(card.getByRole('link', { name: /Event details/ })).toHaveAttribute('href', '/events/qa-current');
+  // Sold only through TicketsCandy: the card's Tickets button goes straight there.
+  const homeBuy = card.getByRole('link', { name: /Tickets/ });
   await expect(homeBuy).toHaveAttribute('href', PROVIDER_URL);
   await expect(homeBuy).toHaveAttribute('target', '_blank');
+  await expect(page.locator('[data-upcoming-event="qa-past"]')).toHaveCount(0);
 
   await page.goto('/tickets');
   const ticketsBuy = page.getByTestId('ticket-provider-only').getByRole('link', { name: /Buy tickets on TicketsCandy/ });
@@ -84,11 +89,12 @@ test('Admin › Homepage › Current event drives the homepage, /tickets and /ev
 test('two ways to buy: direct checkout on this site and the TicketsCandy link side by side', async ({ page }) => {
   fixture('add-direct-tier');
   await setCurrentEvent(ids['qa-current']);
-  await page.goto('/');
-  // Hero: the main button stays on our tickets page, the seller is a second option.
-  await expect(page.getByRole('link', { name: /View Ticket Details/ }).first()).toHaveAttribute('href', '/tickets');
-  await expect(page.locator('[data-hero-provider]')).toHaveAttribute('href', PROVIDER_URL);
-  await expect(page.locator('[data-ticket-provider]')).toContainText('Buy below on this site, or get the same tickets through TicketsCandy.');
+  // The event page lists the tier and offers both ways to buy.
+  await page.goto('/events/qa-current#tickets');
+  const tickets = page.locator('#tickets');
+  await expect(tickets).toContainText('QA Direct General');
+  await expect(tickets.getByRole('link', { name: /Choose tickets/ })).toHaveAttribute('href', '/tickets');
+  await expect(tickets.locator('[data-event-tickets-provider]')).toHaveAttribute('href', PROVIDER_URL);
 
   await page.goto('/tickets');
   const option = page.locator('[data-provider-option]').getByRole('link', { name: /Buy on TicketsCandy/ });
@@ -130,13 +136,11 @@ test('past events (marked Past, or whose date is over) move below the upcoming l
   await expect(page.getByText('QA Past Event').first()).toBeVisible();
 });
 
-test('choosing a past event as current is ignored; clearing it falls back to the next upcoming event', async ({ page }) => {
+test('choosing a past event as default is ignored; clearing it falls back to the next upcoming event', async ({ request }) => {
   await setCurrentEvent(ids['qa-past']);
-  await page.goto('/');
-  await expect(page.locator('h1').first()).not.toHaveText('QA Past Event');
+  expect((await request.get('/event', { maxRedirects: 0 })).headers().location).not.toBe('/events/qa-past');
 
   await setCurrentEvent('');
-  await page.goto('/');
   // Nothing chosen: the next dated upcoming event wins over undated DESTINY.
-  await expect(page.locator('h1').first()).toHaveText('QA Current Event');
+  expect((await request.get('/event', { maxRedirects: 0 })).headers().location).toBe('/events/qa-current');
 });

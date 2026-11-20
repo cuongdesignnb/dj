@@ -37,7 +37,7 @@ export default function EventLineup({ event, routes }: Props) {
   return (
     <section
       id="lineup"
-      className="relative isolate overflow-hidden py-16 md:py-24 bg-rave-black"
+      className="scroll-mt-32 relative isolate overflow-hidden py-16 md:py-24 bg-rave-black"
       aria-labelledby="lineup-title"
     >
       <Container>

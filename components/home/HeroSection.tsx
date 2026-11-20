@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { Ticket } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import Image from 'next/image';
 import NeonButton from './NeonButton';
 import Container from '../ui/Container';
-import { fadeUp, staggerContainer, bounceIn } from '@/lib/animations';
+import { fadeUp, staggerContainer } from '@/lib/animations';
 import AudioBars from '../ui/AudioBars';
 import DancingCrowd, { LaserLights, DiscoBall } from '../ui/DancingCrowd';
 import DESTINYShatter from '../ui/DESTINYShatter';
 import { stableUnit, stableSigned } from '@/lib/stable-visual';
-import type { HomeEvent, HomeMedia, HomeTicketProvider } from './types';
+import type { HomeHeroContent, HomeMedia } from './types';
 import RichText from '@/components/shared/RichText';
 import { PartnerLogo, useSponsors } from '@/components/shared/Sponsors';
 import { useSitePalette } from '@/components/shared/SiteBranding';
@@ -399,12 +399,13 @@ function AudioVisualizer() {
   );
 }
 
-export default function HeroSection({ event, animation = null, background = { image: null, video: null }, ticketProvider = null }: { event: HomeEvent; animation?: HomeMedia | null; background?: { image: string | null; video: string | null }; ticketProvider?: HomeTicketProvider | null }) {
+/** The brand banner: Connection itself, not a single event. Events are chosen in the section below. */
+export default function HeroSection({ content, animation = null, background = { image: null, video: null } }: { content: HomeHeroContent; animation?: HomeMedia | null; background?: { image: string | null; video: string | null } }) {
   const sponsors = useSponsors();
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[84px]">
+    <section data-home-hero="" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[84px]">
       {/* Background layers */}
-      <HeroBackground image={background.image || event.hero?.src || '/assets/hero-crowd.jpg'} video={background.video} />
+      <HeroBackground image={background.image || '/assets/hero-crowd.jpg'} video={background.video} />
 
       {/* Lasers */}
       <EnhancedLaserBeams />
@@ -476,58 +477,35 @@ export default function HeroSection({ event, animation = null, background = { im
           )}
 
           {/* Tagline */}
-          <motion.p
-            variants={fadeUp}
-            className="font-heading uppercase tracking-[0.25em] text-xs sm:text-sm text-white/90 font-medium mb-1"
-          >
-            {event.eyebrow || event.shortDescription || 'EVENT DETAILS'}
-          </motion.p>
+          {content.eyebrow && (
+            <motion.p
+              variants={fadeUp}
+              className="font-heading uppercase tracking-[0.25em] text-xs sm:text-sm text-white/90 font-medium mb-1"
+            >
+              {content.eyebrow}
+            </motion.p>
+          )}
 
-          {/* DESTINY wordmark with pulsing subwoofer circles */}
-          <DestinyTitle text={event.title} animation={animation} />
+          {/* CONNECTION wordmark with pulsing subwoofer circles */}
+          <DestinyTitle text={content.title} animation={animation} />
 
           {/* Audio Visualizer */}
           <AudioVisualizer />
 
-          {/* Paragraph description */}
-          <motion.div variants={fadeUp} className="max-w-2xl mt-2 flex flex-col gap-1">
-            <div className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed font-body font-medium">
-              <RichText text={event.description || event.shortDescription || 'Event details will be published here when confirmed.'} />
-            </div>
-          </motion.div>
+          {content.description && (
+            <motion.div variants={fadeUp} className="max-w-2xl mt-2 flex flex-col gap-1">
+              <div className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed font-body font-medium">
+                <RichText text={content.description} />
+              </div>
+            </motion.div>
+          )}
 
-          {/* Urgency Alert Badge - Animated entrance */}
-          <motion.div
-            variants={bounceIn}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-rave-red/10 border border-rave-red/35 mt-1 animate-border-glow"
-          >
-            <motion.span
-              animate={{ rotate: [-10, 10, -10] }}
-              transition={{ duration: 0.5, repeat: Infinity }}
-              className="text-base sm:text-lg"
-            >
-              ⚠️
-            </motion.span>
-            <span className="font-heading uppercase tracking-[0.15em] text-xs sm:text-sm text-rave-red font-bold">
-              {event.dateStatus.toUpperCase() === 'CONFIRMED' ? 'EVENT DETAILS CONFIRMED' : 'EVENT DETAILS TO BE CONFIRMED'}
-            </span>
-          </motion.div>
-
-          {/* Pill Red Glow Button */}
-          <motion.div variants={fadeUp} className="mt-4 flex flex-col items-center gap-3">
+          <motion.div variants={fadeUp} className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
             <NeonButton
-              href="/tickets"
+              href={content.primary.href}
               variant="primary"
               intense={true}
-              icon={
-                <motion.div
-                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center -ml-2"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                >
-                  <Ticket className="w-4 h-4 text-white" />
-                </motion.div>
-              }
+              icon={<CalendarDays className="w-5 h-5 text-white -ml-1" />}
               rightIcon={
                 <span className="text-white font-extrabold tracking-tighter ml-1 text-xl sm:text-2xl transition-transform duration-300 group-hover:translate-x-1 inline-block">
                   »
@@ -535,28 +513,13 @@ export default function HeroSection({ event, animation = null, background = { im
               }
               className="!px-10 !py-4.5 !rounded-full !text-base sm:!text-lg border border-white/15 hover:border-rave-red shadow-[0_0_30px_rgb(var(--rave-accent-rgb)/0.65)] hover:shadow-[0_0_40px_rgb(var(--rave-accent-rgb)/0.85)]"
             >
-              View Ticket Details
+              {content.primary.label}
             </NeonButton>
-            {/* Second option: the same event on the third-party seller (Ticket Settings › Provider URL). */}
-            {ticketProvider && (
-              <a
-                href={ticketProvider.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-hero-provider=""
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/25 px-6 font-heading text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-rave-red hover:bg-rave-red/10 sm:text-sm"
-              >
-                Or buy on {ticketProvider.name} <span aria-hidden>↗</span>
-                <span className="sr-only">(opens in a new tab)</span>
-              </a>
+            {content.secondary && (
+              <NeonButton href={content.secondary.href} variant="ghost" className="!px-8 !py-4 !rounded-full !text-sm sm:!text-base">
+                {content.secondary.label}
+              </NeonButton>
             )}
-            <motion.span
-              className="font-heading uppercase tracking-[0.2em] text-[10px] sm:text-xs text-rave-muted font-bold"
-              animate={{ opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              {event.scheduleStatus.toUpperCase() === 'CONFIRMED' ? 'SCHEDULE CONFIRMED' : 'SCHEDULE TO BE CONFIRMED'}
-            </motion.span>
           </motion.div>
         </motion.div>
       </Container>

@@ -27,6 +27,7 @@ const content = {
   venue: { image: null, description: 'QA venue description.', directions: 'QA: walk from the train station.' },
   organiser: { name: 'QA Organiser Co', description: 'Runs the night.', website: 'https://example.test', instagram: '', facebook: '' },
   finalCta: { title: 'Ready for QA night?', subtitle: 'See you there.' },
+  barList: [{ category: 'QA Spirits', name: 'QA Vodka 700ml', price: '$300', description: 'With mixers', enabled: true }],
 };
 
 test.beforeAll(async ({ baseURL }) => {
@@ -69,6 +70,33 @@ test('Admin › Event Page Content fills highlights, Good to Know, venue, organi
   await expect(organiser.getByRole('link', { name: /example\.test/ })).toHaveAttribute('href', 'https://example.test');
   await expect(page.getByRole('heading', { name: 'Ready for QA night?' })).toBeVisible();
   await expect(page.locator('[data-event-share]')).toBeVisible();
+  // Bar List appears in the section links once there is a menu.
+  await expect(page.locator('#bar-list')).toContainText('QA Vodka 700ml');
+  await expect(page.locator('#bar-list')).toContainText('$300');
+  await expect(page.locator('[data-event-nav]').getByRole('link', { name: 'Bar List' })).toHaveAttribute('href', '#bar-list');
+});
+
+test('the event page has Details, Lineup, Tickets, VIP Tables and Venue Map, in that order', async ({ page }) => {
+  await page.goto('/events/qa-current');
+  const nav = page.locator('[data-event-nav]');
+  await expect(nav).toBeVisible();
+  const labels = await nav.getByRole('link').allTextContents();
+  expect(labels.filter((label) => ['Details', 'Tickets', 'VIP Tables', 'Venue Map'].includes(label))).toEqual(['Details', 'Tickets', 'VIP Tables', 'Venue Map']);
+  for (const id of ['about', 'tickets', 'vip-tables', 'venue']) await expect(page.locator(`#${id}`)).toHaveCount(1);
+  const order = await page.evaluate(() => ['about', 'tickets', 'vip-tables', 'venue'].map((id) => document.getElementById(id)!.getBoundingClientRect().top));
+  expect([...order].sort((a, b) => a - b)).toEqual(order);
+  // Sold through TicketsCandy only: the Tickets section links there.
+  await expect(page.locator('[data-event-tickets-provider]')).toHaveAttribute('href', /^https:\/\/ticketscandy\.com\//);
+});
+
+test('the homepage introduces Connection and lists upcoming events in the client order', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('h1').first()).toHaveText('CONNECTION');
+  await expect(page.locator('[data-home-hero]').getByRole('link', { name: /upcoming events/i })).toHaveAttribute('href', '#upcoming-events');
+  const order = await page.evaluate(() => [...document.querySelectorAll('[data-home-section]')].map((el) => el.getAttribute('data-home-section')));
+  expect(order.filter((key) => ['upcoming', 'about', 'past', 'partners', 'contact'].includes(key!))).toEqual(['upcoming', 'about', 'past', 'partners', 'contact']);
+  await expect(page.locator('[data-upcoming-event="qa-current"]')).toBeVisible();
+  await expect(page.locator('#newsletter')).toBeVisible();
 });
 
 test('a visitor review stays hidden until an editor approves it in Admin › Reviews', async ({ browser, page }) => {

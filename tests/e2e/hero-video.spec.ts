@@ -67,9 +67,9 @@ test('the homepage plays it muted on a loop behind the hero', async ({ page }) =
   const video = page.locator('video[data-hero-video]');
   await expect(video).toHaveAttribute('src', videoSrc);
   await expect.poll(() => video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, loop: v.loop, inline: v.playsInline, playing: !v.paused && v.readyState >= 2 && v.currentTime > 0 }))).toEqual({ muted: true, loop: true, inline: true, playing: true });
-  // Sponsors, title and the ticket button still sit on top of the video.
+  // Sponsors, title and the main button still sit on top of the video.
   await expect(page.locator('[data-sponsor-slot="hero"]')).toBeVisible();
-  await expect(page.getByRole('link', { name: /view ticket details|get tickets/i }).first()).toBeVisible();
+  await expect(page.locator('[data-home-hero]').getByRole('link', { name: /upcoming events/i })).toBeVisible();
 });
 
 test('reduced-motion visitors get the still image only', async ({ browser }) => {

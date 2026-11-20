@@ -85,7 +85,7 @@ test('seeded sponsor logos are served as SVG files', async ({ request }) => {
   for (const sponsor of SPONSORS) expect(ids).toContain(bySlug.get(sponsor.slug)?.id);
 });
 
-test('home hero, VIP block and footer show every sponsor from Admin, in order', async ({ page }) => {
+test('home hero and footer show every sponsor from Admin, in order', async ({ page }) => {
   await page.goto('/');
   const hero = page.locator('[data-sponsor-slot="hero"]');
   await expect(hero.locator('img[data-partner-logo]')).toHaveCount(SPONSORS.length);
@@ -98,8 +98,7 @@ test('home hero, VIP block and footer show every sponsor from Admin, in order', 
   await expect(page.locator('img[src="/assets/logo-mcq.svg"]:not([data-partner-logo])')).toHaveCount(0);
   await expect(page.locator('img[src="/assets/logo-bihi.svg"]:not([data-partner-logo])')).toHaveCount(0);
 
-  const vipLead = page.locator('section').filter({ has: page.locator('img[data-site-logo]') }).locator(`img[data-partner-logo][src="${SRCS[0]}"]`);
-  await expect(vipLead.first()).toBeAttached();
+  // VIP tables moved to each event page; the homepage no longer has a VIP block.
 
   const footer = page.locator('[data-sponsor-slot="home-footer"]');
   expect(await srcs(footer)).toEqual(SRCS);

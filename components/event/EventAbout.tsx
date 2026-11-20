@@ -22,7 +22,7 @@ export default function EventAbout({ event }: Props) {
   return (
     <section
       id="about"
-      className="relative isolate overflow-hidden py-16 md:py-24 bg-rave-black"
+      className="scroll-mt-32 relative isolate overflow-hidden py-16 md:py-24 bg-rave-black"
       aria-labelledby="about-title"
     >
       <Container>

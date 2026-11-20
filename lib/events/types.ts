@@ -65,6 +65,22 @@ export interface EventReview {
   event: { slug: string; title: string } | null;
 }
 
+export interface EventBarItem {
+  id: string;
+  category: string;
+  name: string;
+  price: string;
+  description: string;
+  image: MediaAsset | null;
+}
+
+export interface EventTicketSettings {
+  enabled: boolean;
+  saleStatus: string;
+  providerName: string | null;
+  providerUrl: string | null;
+}
+
 export interface EventReviews {
   summary: { count: number; average: number | null };
   items: EventReview[];
@@ -145,6 +161,13 @@ export interface EventRecord {
   organiser?: EventOrganiser | null;
   finalCta?: { title: string; subtitle: string } | null;
   reviews?: EventReviews;
+  /** True once the event is marked Past or its date is over. */
+  isPast?: boolean;
+  ticketSettings?: EventTicketSettings;
+  vipEnabled?: boolean;
+  vipBookingEnabled?: boolean;
+  /** Admin bar list, or the VIP bottle choices when none is written. */
+  barList?: EventBarItem[];
   artists: ArtistSummary[];
   venue: EventVenue;
   actions: {

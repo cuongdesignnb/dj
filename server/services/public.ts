@@ -52,7 +52,7 @@ function eventDto(event: any, locale: Locale) {
       availabilityMode: event.vipAvailabilityMode,
       currency: event.vipCurrency,
       squarePaymentEnabled: event.vipSquareEnabled,
-      packages: (event.vipPackages ?? []).map((pkg: any) => ({ id: pkg.id, name: pkg.name, priceMinor: pkg.priceMinor, currency: pkg.currency, paymentMode: pkg.paymentMode, depositAmountMinor: pkg.depositAmountMinor, capacity: pkg.capacity, includedBottleCount: pkg.includedBottleCount, bottles: (pkg.packageBottles ?? []).map((item: any) => ({ id: item.bottleOption?.id ?? item.bottleOptionId, name: item.bottleOption?.name ?? '', image: item.bottleOption?.media ? mediaDto(item.bottleOption.media) : null })) })),
+      packages: (event.vipPackages ?? []).map((pkg: any) => ({ id: pkg.id, name: pkg.name, priceMinor: pkg.priceMinor, currency: pkg.currency, paymentMode: pkg.paymentMode, depositAmountMinor: pkg.depositAmountMinor, capacity: pkg.capacity, includedBottleCount: pkg.includedBottleCount, bottles: (pkg.packageBottles ?? []).filter((item: any) => item.bottleOption?.enabled !== false).map((item: any) => ({ id: item.bottleOption?.id ?? item.bottleOptionId, name: item.bottleOption?.name ?? '', category: item.bottleOption?.category ?? null, description: item.bottleOption?.description ?? null, image: item.bottleOption?.media ? mediaDto(item.bottleOption.media) : null })) })),
       booths: (event.vipBooths ?? []).map((booth: any) => ({ id: booth.id, label: booth.code, zone: booth.zone, x: booth.x == null ? 50 : Number(booth.x), y: booth.y == null ? 50 : Number(booth.y), requestable: booth.requestable, availability: booth.availabilityStatus })),
     },
     faqs: (event.faqItems ?? []).flatMap((item: any) => {
@@ -114,7 +114,7 @@ export async function getPublicEvent(slug: string, locale: Locale) {
       genres: { orderBy: { sortOrder: 'asc' } },
       scheduleItems: { orderBy: { sortOrder: 'asc' } },
       ticketTiers: { where: { enabled: true }, orderBy: { sortOrder: 'asc' } },
-      vipPackages: { where: { enabled: true }, orderBy: { sortOrder: 'asc' }, include: { packageBottles: { include: { bottleOption: true } } } },
+      vipPackages: { where: { enabled: true }, orderBy: { sortOrder: 'asc' }, include: { packageBottles: { include: { bottleOption: { include: { media: true } } } } } },
       vipBooths: { where: { requestable: true }, orderBy: { sortOrder: 'asc' } },
       eventArtists: { orderBy: { sortOrder: 'asc' }, include: { artist: { include: { translations: true, portraitMedia: true } } } },
       faqItems: { orderBy: { sortOrder: 'asc' }, include: { translations: true } },

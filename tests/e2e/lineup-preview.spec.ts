@@ -5,7 +5,7 @@ test.skip(process.env.GALLERY_QA !== '1', 'Dedicated QA stack opt-in required.')
 
 async function expectVisibleCardsRevealed(page: Page) {
   await page.goto('/');
-  await page.getByRole('link', { name: /view full lineup/i }).first().scrollIntoViewIfNeeded();
+  await page.locator('a[href^="/lineup/"]').first().scrollIntoViewIfNeeded();
   const images = page.locator('a[href^="/lineup/"] div[style*="background-image"]');
   await expect(images.first()).toBeAttached();
   // Cards actually showing inside the carousel (it clips the ones further right).

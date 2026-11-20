@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Container from '../ui/Container';
@@ -97,7 +97,12 @@ function MarqueeStrip({ items }: { items: MarqueeItem[] }) {
   );
 }
 
-export default function PartnersFooter({ footer, event = null }: { footer: HomeFooterData; event?: HomeEvent | null }) {
+/**
+ * Sponsors strip + site footer. `brand` (the homepage) drops the per-event info and
+ * the newsletter column, which have their own sections; `children` render between
+ * the sponsors and the footer.
+ */
+export default function PartnersFooter({ footer, event = null, brand = false, copy = null, showPartners = true, children }: { footer: HomeFooterData; event?: HomeEvent | null; brand?: boolean; copy?: { eyebrow: string; title: string } | null; showPartners?: boolean; children?: ReactNode }) {
   const [email, setEmail] = useState('');
   const [newsletterState, setNewsletterState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const toast = useToast();
@@ -139,8 +144,17 @@ export default function PartnersFooter({ footer, event = null }: { footer: HomeF
 
   return (
     <footer className="relative overflow-hidden">
+      {showPartners && (<>
       {/* Partner Strip with Marquee */}
-      <div className="relative border-t border-white/[0.06] bg-rave-deep">
+      <div id="partners" data-home-section="partners" className="relative scroll-mt-24 border-t border-white/[0.06] bg-rave-deep">
+        {brand && copy?.title && (
+          <Container>
+            <div className="pt-14 text-center md:pt-20">
+              {copy.eyebrow && <p className="font-heading text-xs font-semibold uppercase tracking-[0.25em] text-rave-red sm:text-sm">{copy.eyebrow}</p>}
+              <h2 className="mt-2 font-heading text-3xl font-black uppercase text-white md:text-4xl">{copy.title}</h2>
+            </div>
+          </Container>
+        )}
         <MarqueeStrip items={marqueeItems} />
 
         <Container>
@@ -203,6 +217,9 @@ export default function PartnersFooter({ footer, event = null }: { footer: HomeF
           </motion.div>
         </Container>
       </div>
+      </>)}
+
+      {children}
 
       {/* Main Footer */}
       <div className="relative border-t border-white/[0.06] bg-rave-black">
@@ -210,7 +227,7 @@ export default function PartnersFooter({ footer, event = null }: { footer: HomeF
 
         <Container className="relative z-10">
           <div className="py-12 md:py-16">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-10 lg:gap-8 ${brand ? 'lg:grid-cols-3' : 'lg:grid-cols-5'}`}>
               {/* Column 1 - Brand */}
               <motion.div
                 className="lg:col-span-1"
@@ -267,7 +284,7 @@ export default function PartnersFooter({ footer, event = null }: { footer: HomeF
               </motion.div>
 
               {/* Column 3 - Event Info */}
-              <motion.div
+              {!brand && <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -288,7 +305,7 @@ export default function PartnersFooter({ footer, event = null }: { footer: HomeF
                     {homeEventSchedule(event) ?? 'Schedule to be confirmed'}
                   </motion.li>
                 </ul>
-              </motion.div>
+              </motion.div>}
 
               {/* Column 4 - Contact */}
               <motion.div
@@ -299,16 +316,18 @@ export default function PartnersFooter({ footer, event = null }: { footer: HomeF
               >
                 <h4 className="font-heading text-sm uppercase tracking-[0.2em] text-white font-semibold mb-4">Contact</h4>
                 <ul className="flex flex-col gap-2.5 text-sm text-rave-muted">
-                  <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
-                    {footer.address || 'VIP & table details to be confirmed'}
-                  </motion.li>
-                  {footer.email ? <li><a href={`mailto:${footer.email}`} className="hover:text-white transition-colors">{footer.email}</a></li> : <li>Contact details to be confirmed</li>}
+                  {footer.address && (
+                    <motion.li whileHover={{ x: 4, color: '#fff' }} transition={{ type: 'spring', stiffness: 400 }}>
+                      {footer.address}
+                    </motion.li>
+                  )}
+                  {footer.email ? <li><a href={`mailto:${footer.email}`} className="hover:text-white transition-colors">{footer.email}</a></li> : <li><a href="/contact" className="hover:text-white transition-colors">Send us a message</a></li>}
                   {footer.phone && <li><a href={`tel:${footer.phone}`} className="hover:text-white transition-colors">{footer.phone}</a></li>}
                 </ul>
               </motion.div>
 
               {/* Column 5 - Newsletter */}
-              <motion.div
+              {!brand && <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -343,7 +362,7 @@ export default function PartnersFooter({ footer, event = null }: { footer: HomeF
                 </form>
                 {newsletterState === 'success' && <p role="status" className="mt-2 text-xs text-emerald-300">You&apos;re subscribed.</p>}
                 {newsletterState === 'error' && <p role="alert" className="mt-2 text-xs text-rave-red">Could not subscribe. Please try again.</p>}
-              </motion.div>
+              </motion.div>}
             </div>
           </div>
 

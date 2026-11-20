@@ -5,24 +5,6 @@ import type { FieldConfig, FormSection } from '@/lib/admin/common/schema';
 // Page content editors. They edit content and data only — layout and motion
 // stay in code.
 
-function block(id: string, title: string, extra: FieldConfig[] = [], description?: string): FormSection {
-  return section(
-    id,
-    title,
-    [
-      f.toggle(`${id}.enabled`, 'Show this section'),
-      f.number(`${id}.sortOrder`, 'Sort order', { min: 0 }),
-      f.loc(`${id}.eyebrow`, 'Eyebrow', { width: 'half', maxLength: 40 }),
-      f.loc(`${id}.title`, 'Title', { width: 'half', maxLength: 80 }),
-      f.locArea(`${id}.description`, 'Description', { maxLength: 300 }),
-      f.text(`${id}.ctaLabel`, 'CTA label', { width: 'half' }),
-      f.url(`${id}.ctaHref`, 'CTA link', { width: 'half' }),
-      ...extra,
-    ],
-    { tab: title, description },
-  );
-}
-
 const sectionSeed = (sortOrder: number, eyebrow: string, title: string, description = '', ctaLabel = '', ctaHref = '') => ({
   enabled: true,
   sortOrder,
@@ -33,6 +15,36 @@ const sectionSeed = (sortOrder: number, eyebrow: string, title: string, descript
   ctaHref,
 });
 
+/** A homepage section: shown or hidden, with its copy. The order is fixed in code. */
+function homeBlock(id: string, title: string, extra: FieldConfig[] = [], description?: string): FormSection {
+  return section(
+    id,
+    title,
+    [
+      f.toggle(`${id}.enabled`, 'Show this section'),
+      f.loc(`${id}.eyebrow`, 'Eyebrow', { width: 'half', maxLength: 40 }),
+      f.loc(`${id}.title`, 'Title', { width: 'half', maxLength: 80 }),
+      f.locArea(`${id}.description`, 'Description', { maxLength: 600 }),
+      f.text(`${id}.ctaLabel`, 'Button label', { width: 'half' }),
+      f.url(`${id}.ctaHref`, 'Button link', { width: 'half' }),
+      ...extra,
+    ],
+    { tab: title, description },
+  );
+}
+
+/** Homepage order: Hero, Upcoming Events, About, Featured Artists, Past Events & Gallery, Aftermovies, Sponsors, Contact & Newsletter. */
+export const HOME_SECTION_DEFAULTS = {
+  hero: sectionSeed(1, 'Sound Meets Soul', 'CONNECTION', 'Uniting music, energy and people for unforgettable experiences.', 'Upcoming events', '#upcoming-events'),
+  upcoming: sectionSeed(2, 'Upcoming Events', 'Choose Your Night', 'Pick an event to see its lineup, tickets, VIP tables, bar list and venue.', 'All events', '/events'),
+  about: sectionSeed(3, 'About Connection', 'Sound Meets Soul', 'Uniting music, energy and people for unforgettable experiences.', 'Our story', '/about'),
+  lineup: sectionSeed(4, 'Featured Artists', 'The Artists', '', 'View all artists', '/lineup'),
+  pastEvents: sectionSeed(5, 'Past Events & Gallery', 'Relive The Nights', '', 'All past events', '/events/past'),
+  aftermovies: sectionSeed(6, 'Aftermovies', 'Watch The Night Again'),
+  partners: sectionSeed(7, 'In Partnership With', 'Sponsors & Partners'),
+  contact: sectionSeed(8, 'Contact & Newsletter', 'Stay Connected', 'Questions about tickets, VIP tables or partnerships? The team is here to help.', 'Contact us', '/contact'),
+};
+
 export const homeContentDefinition: SingletonDefinition = {
   key: 'content-home',
   label: 'Homepage Content',
@@ -42,27 +54,48 @@ export const homeContentDefinition: SingletonDefinition = {
   apiPath: 'content/home',
   permission: 'content',
   seed: () => ({
-    hero: { ...sectionSeed(1, '', '', '', 'Get Tickets', '/tickets'), media: null, video: null, animation: null, eventId: '' },
-    overview: { ...sectionSeed(2, '', ''), media: null },
-    lineup: sectionSeed(3, 'Lineup / Music', 'The Artists', '', 'View Lineup', '/lineup'),
-    tickets: sectionSeed(4, 'Tickets & Pricing', 'Get Your Tickets', 'Choose your tier. Lock it in. Be part of the night.', 'Get Tickets', '/tickets'),
-    vip: sectionSeed(5, 'Book The Table', 'VIP Table Bookings', 'Reserve your booth. Choose your bottle package. Pick your preferred table location.', 'Book Now', '/book-now'),
-    partners: sectionSeed(6, 'In Partnership With', 'Partners'),
-    footerCta: sectionSeed(7, '', 'Music Connects Us All'),
+    hero: { ...HOME_SECTION_DEFAULTS.hero, secondaryLabel: 'About Connection', secondaryHref: '#about-connection', media: null, video: null, animation: null, eventId: '' },
+    upcoming: HOME_SECTION_DEFAULTS.upcoming,
+    about: { ...HOME_SECTION_DEFAULTS.about, media: null },
+    lineup: { ...HOME_SECTION_DEFAULTS.lineup, featuredOnly: true },
+    pastEvents: HOME_SECTION_DEFAULTS.pastEvents,
+    aftermovies: { ...HOME_SECTION_DEFAULTS.aftermovies, items: [] },
+    partners: HOME_SECTION_DEFAULTS.partners,
+    contact: HOME_SECTION_DEFAULTS.contact,
   }),
   form: {
     titleKey: 'hero.title',
     seo: false,
     publish: null,
-    tabs: ['Hero', 'Event Overview', 'Lineup Preview', 'Tickets', 'VIP Tables', 'Partners', 'Footer CTA'],
+    tabs: ['Hero', 'Upcoming Events', 'About Connection', 'Featured Artists', 'Past Events & Gallery', 'Aftermovies', 'Sponsors & Partners', 'Contact & Newsletter'],
     sections: [
-      block('hero', 'Hero', [{ key: 'hero.eventId', label: 'Current event', type: 'select', optionSource: 'events', width: 'full', help: 'The event the homepage shows, and the one Tickets, VIP Tables, Book Now and /event open by default. Past or unpublished events are skipped. Empty: the next upcoming event.' }, f.media('hero.media', 'Hero background image', { help: 'Shown behind the hero, and as the poster while the video loads. Empty uses the featured event’s hero image.' }), f.videoMedia('hero.video', 'Hero background video', { help: 'Optional. Plays muted on a loop behind the hero. Visitors who prefer reduced motion see the background image instead.' }), f.svgMedia('hero.animation', 'DESTINY SVG animation', { help: 'Upload or choose the animated SVG used for the homepage wordmark.' })]),
-      block('overview', 'Event Overview', [f.media('overview.media', 'Section image')]),
-      block('lineup', 'Lineup Preview', [], 'Artists come from Artist Management.'),
-      block('tickets', 'Tickets', [], 'Tiers come from the event’s ticket settings.'),
-      block('vip', 'VIP Tables', [], 'Package details come from the event’s VIP settings.'),
-      block('partners', 'Partners', [], 'Logos come from Sponsors / Partners.'),
-      block('footerCta', 'Footer CTA'),
+      section('hero', 'Hero', [
+        f.loc('hero.eyebrow', 'Eyebrow', { width: 'half', maxLength: 40 }),
+        f.loc('hero.title', 'Brand name', { width: 'half', maxLength: 80, help: 'Read by screen readers and search engines; the animated wordmark below is what people see.' }),
+        f.locArea('hero.description', 'Description', { maxLength: 600 }),
+        f.text('hero.ctaLabel', 'Main button label', { width: 'half' }),
+        f.url('hero.ctaHref', 'Main button link', { width: 'half', help: '#upcoming-events scrolls to the events below.' }),
+        f.text('hero.secondaryLabel', 'Second button label', { width: 'half' }),
+        f.url('hero.secondaryHref', 'Second button link', { width: 'half' }),
+        f.media('hero.media', 'Hero background image', { help: 'Shown behind the hero, and as the poster while the video loads.' }),
+        f.videoMedia('hero.video', 'Hero background video', { help: 'Optional. Plays muted on a loop behind the hero. Visitors who prefer reduced motion see the background image instead.' }),
+        f.svgMedia('hero.animation', 'Hero wordmark (animated SVG)', { help: 'The CONNECTION wordmark shown in the middle of the hero.' }),
+        { key: 'hero.eventId', label: 'Default event', type: 'select', optionSource: 'events', width: 'full', help: 'The event that /tickets, /tables, /book-now and /event open when no event is chosen. Past or unpublished events are skipped. Empty: the next upcoming event.' },
+      ], { tab: 'Hero', description: 'The top banner introduces Connection itself. Events are picked in Upcoming Events below.' }),
+      homeBlock('upcoming', 'Upcoming Events', [], 'Every published, upcoming event is listed automatically, soonest first. Each card opens the event page.'),
+      homeBlock('about', 'About Connection', [f.media('about.media', 'Image')]),
+      homeBlock('lineup', 'Featured Artists', [f.toggle('lineup.featuredOnly', 'Only artists marked Featured', { help: 'Mark artists as Featured in Artist Management.' })]),
+      homeBlock('pastEvents', 'Past Events & Gallery', [], 'The latest past events and published gallery albums are shown automatically.'),
+      homeBlock('aftermovies', 'Aftermovies', [
+        f.repeater('aftermovies.items', 'Films', [
+          f.text('title', 'Title', { width: 'half' }),
+          f.url('youtubeUrl', 'YouTube link', { width: 'half', help: 'Paste the YouTube video link. Or upload a video file below.' }),
+          f.videoMedia('video', 'Video file'),
+          f.media('poster', 'Cover image', { help: 'Optional for YouTube links; YouTube’s own thumbnail is used otherwise.' }),
+        ], { itemLabelKey: 'title', itemNoun: 'Film' }),
+      ], 'The section is hidden until at least one film is added.'),
+      homeBlock('partners', 'Sponsors & Partners', [], 'Logos come from Sponsors / Partners.'),
+      homeBlock('contact', 'Contact & Newsletter', [], 'Email, phone and address come from Settings › Social / Contact.'),
     ],
   },
 };

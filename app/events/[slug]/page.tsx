@@ -9,6 +9,10 @@ import EventAbout from '@/components/event/EventAbout';
 import EventExpectations from '@/components/event/EventExpectations';
 import EventLineup from '@/components/event/EventLineup';
 import EventVenue from '@/components/event/EventVenue';
+import EventSectionNav from '@/components/event/EventSectionNav';
+import EventTickets from '@/components/event/EventTickets';
+import EventVipTables from '@/components/event/EventVipTables';
+import EventBarList from '@/components/event/EventBarList';
 import EventGoodToKnow from '@/components/event/EventGoodToKnow';
 import EventOrganiser from '@/components/event/EventOrganiser';
 import EventReviews from '@/components/event/EventReviews';
@@ -81,10 +85,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           </div>
         </div>
         <EventHero event={data} routes={routes} />
+        {/* Event Details · DJ Lineup · Tickets · VIP Tables · Bar List · Venue Map */}
+        <EventSectionNav event={data} />
         <EventAbout event={data} />
         <EventExpectations event={data} />
         <EventGoodToKnow event={data} />
         <EventLineup event={data} routes={routes} />
+        <EventTickets event={data} routes={routes} />
+        <EventVipTables event={data} routes={routes} />
+        <EventBarList event={data} />
         <EventVenue event={data} />
         <EventOrganiser event={data} />
         <EventReviews event={data} />

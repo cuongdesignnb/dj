@@ -336,3 +336,13 @@ now expects the next published event when DESTINY is unpublished. Full suite gre
 - Admin list editors (cards, FAQ, steps, string lists) keyed rows by their text, so typing lost focus after one letter. Rows are now keyed by position.
 - QA: `tests/e2e/event-page-extras.spec.ts` (3), unit `tests/unit/event-page-extras.test.ts`. Between runs also delete the QA review rate key `rate:review:*` in the isolated QA Redis (one submission per run).
 
+## 18. Brand homepage and per-event sections (client layout)
+
+- Homepage order (fixed in code, each section can be hidden in Admin › Content › Homepage): Navigation & Logo → CONNECTION hero banner → Upcoming Events → About Connection → Featured Artists → Past Events & Gallery → Aftermovies → Sponsors & Partners → Contact & Newsletter → footer.
+- The hero is about the brand; its main button scrolls to Upcoming Events. Every published upcoming event gets a card (Event details, Tickets: TicketsCandy when set). No upcoming events: a "next night is on its way" panel with a newsletter link.
+- Hero "Current event" is now "Default event": it only decides where /tickets, /tables, /book-now and /event go without `?event=`. A hero saved with the old "Get Tickets → /tickets" button is shown with the new "Upcoming events" button.
+- Aftermovies: Admin › Homepage › Aftermovies › Films (YouTube link or uploaded video, optional cover). Hidden until a film is added; YouTube loads only after Play (youtube-nocookie).
+- Event page: sticky section links (Details · Lineup · Tickets · VIP Tables · Bar List · Venue Map), new Tickets (tiers + on-site checkout and/or provider; "ended" for past events), VIP Tables (packages, request a table, club map) and Bar List (Admin › Event page content › Bar list; falls back to the VIP bottle choices; hidden when empty).
+- Removed homepage blocks: event overview, ticket tiers, VIP package (their content lives on each event page).
+- QA: `tests/e2e/event-page-extras.spec.ts` (6), updated `current-event`, `hero-video`, `lineup-preview`, `sponsor-logos`; unit `tests/unit/home-layout.test.ts`.
+
