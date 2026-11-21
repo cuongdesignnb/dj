@@ -1,6 +1,6 @@
 import 'server-only';
 import { db } from '@/server/db/client';
-import { eventScheduleText } from '@/lib/events/presentation';
+import { eventDateText, eventScheduleText } from '@/lib/events/presentation';
 import {
   bookingReplyEmail,
   bookingTeamEmail,
@@ -44,11 +44,18 @@ type EventRow = {
   posterMedia: { publicUrl: string; mimeType: string; deletedAt: Date | null } | null;
 };
 
+/** "Saturday 05 December 2026 · 09:00 pm – 03:00 am" (event times are stored as wall clock). */
+function whenText(startAt: Date | null, endAt: Date | null) {
+  const start = startAt?.toISOString() ?? null;
+  const end = endAt?.toISOString() ?? null;
+  return [eventDateText(start), eventScheduleText(start, end)].filter(Boolean).join(' · ') || null;
+}
+
 function emailEvent(row: EventRow): EmailEvent {
   const poster = row.posterMedia && !row.posterMedia.deletedAt && row.posterMedia.mimeType.startsWith('image/') && row.posterMedia.mimeType !== 'image/svg+xml' ? row.posterMedia.publicUrl : null;
   return {
     title: row.translations.find((t) => t.locale === 'en')?.title ?? row.translations[0]?.title ?? row.slug,
-    when: eventScheduleText(row.startAt, row.endAt),
+    when: whenText(row.startAt, row.endAt),
     venue: [row.venueName, row.city].filter(Boolean).join(', ') || null,
     url: siteLink(`/events/${encodeURIComponent(row.slug)}`),
     posterUrl: absoluteImage(poster),
