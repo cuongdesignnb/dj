@@ -158,10 +158,11 @@ export const emailSettingsDefinition: SingletonDefinition = {
         { key: 'password', label: 'Password', type: 'secret', width: 'half', help: 'Stored encrypted and never shown again. Leave empty to keep the stored one. Gmail and Outlook need an app password.' },
         f.readonly('passwordStatus', 'Stored password'),
       ], { description: 'Use the SMTP details from your email provider (Gmail / Google Workspace, Outlook, Zoho, your web host…).' }),
-      section('sender', 'Sender', [
+      section('sender', 'Sender & look', [
         f.text('fromName', 'From name', { width: 'half', placeholder: 'Connection Rave' }),
         f.email('fromEmail', 'From email', { help: 'Most providers only allow the address you log in with.' }),
         f.email('replyTo', 'Reply-to email', { help: 'Optional. Notifications reply to the visitor instead.' }),
+        f.media('emailLogo', 'Logo in emails', { help: 'Shown at the top of every email, on a dark background. Empty: the site logo (Settings › Website) is used. A PNG with a transparent background looks best.' }),
       ]),
       section('notifications', 'Notifications to the team', [
         f.textarea('notifyTo', 'Send notifications to', { placeholder: 'bookings@example.com, owner@example.com', help: 'One or more addresses, separated by commas or new lines (up to 10).' }),

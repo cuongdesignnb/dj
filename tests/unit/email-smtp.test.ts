@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { emailSettingsDefaults, headerText, normaliseEmailSettings, parseRecipients, validateEmailSettings } from '@/lib/email/smtp-config';
-import { renderEmail, subject } from '@/lib/email/templates';
+import { bookingReplyEmail, bookingTeamEmail, contactReplyEmail, contactTeamEmail, newsletterTeamEmail, reviewTeamEmail, subject, testEmail, type EmailBrand } from '@/lib/email/templates';
 import { openSecret, sealSecret } from '@/server/security/secret-box';
 import { describeSmtpError } from '@/server/services/mail/mailer';
 
@@ -43,14 +43,44 @@ describe('SMTP settings', () => {
   });
 });
 
-describe('email content', () => {
-  it('escapes everything a visitor typed and drops empty rows', () => {
-    const { html, text } = renderEmail({ siteName: 'Connection', heading: 'New contact message', rows: [['Name', '<script>alert(1)</script>'], ['Phone', null]], message: { label: 'Message', body: 'Hi & <b>bye</b>' } });
-    expect(html).not.toContain('<script>');
-    expect(html).toContain('&lt;script&gt;');
-    expect(html).toContain('Hi &amp; &lt;b&gt;bye&lt;/b&gt;');
-    expect(html).not.toContain('Phone');
-    expect(text).toContain('Name: <script>alert(1)</script>');
+const brand: EmailBrand = { siteName: 'Connection Rave', siteUrl: 'https://connectionland.com.au', logo: { cid: 'logo@x', width: 200, height: 54, alt: 'Connection' }, contactEmail: 'hello@example.com', socials: [{ label: 'Instagram', href: 'https://instagram.com/x' }] };
+const event = { title: 'Hi-Land Perth', when: 'Sat 7 Nov 2026 · 9:00 PM – 3:00 AM', venue: 'Rapture Nightclub, Perth', url: 'https://connectionland.com.au/events/hi-land-perth', posterUrl: 'https://connectionland.com.au/api/v1/media/abc' };
+const booking = { fullName: 'Eve <b>Smith</b>', email: 'eve@example.com', phone: '0400 000 000', groupSize: 6, packageName: 'Gold', table: 'A1', bottles: 'Vodka', specialRequests: 'Birthday', event };
+
+describe('email templates', () => {
+  it('every template shows the inline logo, escapes visitor text and has a plain-text version', () => {
+    const contact = { fullName: '<script>x</script> Eve', email: 'eve@example.com', phone: null, enquiryType: null, message: 'Hi & <b>bye</b>' };
+    const all = [
+      contactTeamEmail(brand, contact), contactReplyEmail(brand, contact), bookingTeamEmail(brand, booking), bookingReplyEmail(brand, booking),
+      reviewTeamEmail(brand, { authorName: 'Eve', email: 'eve@example.com', rating: 4, comment: 'Great <i>night</i>', eventTitle: 'Hi-Land Perth', adminUrl: 'https://x/admin/reviews' }),
+      newsletterTeamEmail(brand, { email: 'eve@example.com', source: 'Homepage', total: 12 }),
+      testEmail(brand, { server: 'smtp.x.com:587', from: 'a@x.com', recipients: ['team@x.com'], sentAt: 'now' }),
+    ];
+    for (const mail of all) {
+      expect(mail.html).toContain('src="cid:logo@x"');
+      expect(mail.html).not.toMatch(/<script>|<b>bye|<i>night|<b>Smith/);
+      expect(mail.text.length).toBeGreaterThan(20);
+      expect(mail.subject).not.toMatch(/[\r\n]/);
+    }
+    expect(all[0].html).toContain('Hi &amp; &lt;b&gt;bye&lt;/b&gt;');
+  });
+
+  it('falls back to the site name when the logo cannot be drawn', () => {
+    const mail = contactReplyEmail({ ...brand, logo: null }, { fullName: 'Eve', email: 'e@x.com', phone: null, enquiryType: null, message: 'Hello there' });
+    expect(mail.html).not.toContain('cid:');
+    expect(mail.html).toContain('Connection Rave');
+  });
+
+  it('VIP emails show the event card and say a request is not a reservation', () => {
+    const team = bookingTeamEmail(brand, booking);
+    expect(team.html).toContain('Hi-Land Perth');
+    expect(team.html).toContain('src="https://connectionland.com.au/api/v1/media/abc"');
+    expect(team.html).toContain('mailto:eve@example.com');
+    expect(bookingReplyEmail(brand, booking).html).toContain('not a reservation yet');
+  });
+
+  it('a review shows its star rating', () => {
+    expect(reviewTeamEmail(brand, { authorName: 'Eve', email: 'e@x.com', rating: 3, comment: 'Good', eventTitle: null, adminUrl: 'https://x' }).html).toContain('3 / 5');
   });
 
   it('keeps subject lines on one line', () => {
@@ -74,5 +104,15 @@ describe('SMTP errors shown in Admin', () => {
   it('explains common failures without echoing credentials', () => {
     expect(describeSmtpError({ code: 'EAUTH', response: '535 auth failed for pass=secret' })).toMatch(/Login rejected/);
     expect(describeSmtpError({ code: 'ETIMEDOUT' })).toMatch(/Cannot reach/);
+  });
+
+  it('says which address was refused and quotes the server', () => {
+    const from = describeSmtpError({ code: 'EENVELOPE', command: 'MAIL FROM', response: '553 5.7.1 Sender address rejected: not owned by user' });
+    expect(from).toMatch(/refused the sender/);
+    expect(from).toContain('not owned by user');
+    expect(from).toMatch(/From email/);
+    const to = describeSmtpError({ code: 'EENVELOPE', command: 'RCPT TO', response: '550 5.7.1 Relaying denied' });
+    expect(to).toMatch(/refused the recipient/);
+    expect(to).toContain('Relaying denied');
   });
 });

@@ -22,7 +22,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-RUN apk add --no-cache libc6-compat openssl curl
+# fontconfig + Liberation fonts: the SVG site logo is rendered to PNG for emails, and SVG text needs a font.
+RUN apk add --no-cache libc6-compat openssl curl fontconfig font-liberation font-liberation-sans-narrow
+COPY docker/fonts.conf /etc/fonts/local.conf
 
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/package-lock.json* ./

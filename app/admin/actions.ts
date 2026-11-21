@@ -687,19 +687,21 @@ export async function paymentAction(id: string, action: 'reconcile' | 'refund', 
 }
 
 /** Sends one test email with the saved SMTP settings. */
-export async function sendTestEmailAction(to: string): Promise<ActionResult<{ ok: boolean; error?: string }>> {
+export async function sendTestEmailAction(to: string, template = 'test'): Promise<ActionResult<{ ok: boolean; error?: string; logo?: boolean }>> {
   const auth = await authorize('settings.edit');
   if (!auth.ok) return auth.result;
   const cookie = (await cookies()).toString();
-  const result = await apiRequest<{ ok: boolean; error?: string }>(getApiBaseUrl(), '/api/v1/admin/settings/email/test', {
+  const result = await apiRequest<{ ok: boolean; error?: string; logo?: boolean }>(getApiBaseUrl(), '/api/v1/admin/settings/email/test', {
     method: 'POST',
-    body: { to: to.trim().slice(0, 254) },
+    body: { to: to.trim().slice(0, 254), template: template.slice(0, 40) },
     cookie,
     csrfToken: csrfFromCookie(cookie),
   });
   if (!result.ok) return result;
   if (!result.data.ok) return { ok: false, error: { message: result.data.error ?? 'The test email could not be sent.' } };
-  return { ok: true, data: result.data, message: `Test email sent to ${to.trim()}. Check the inbox (and spam folder).` };
+  const what = template === 'test' ? 'Test email' : 'Preview';
+  const logoNote = result.data.logo === false ? ' The logo could not be drawn, so the site name is shown — add an Email logo (PNG) above.' : '';
+  return { ok: true, data: result.data, message: `${what} sent to ${to.trim()}. Check the inbox (and spam folder).${logoNote}` };
 }
 
 export async function staffAction(id: string, action: 'invite' | 'resend' | 'disable' | 'enable'): Promise<ActionResult> {

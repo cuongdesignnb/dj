@@ -59,16 +59,19 @@ async function openEmailSettings(page: Page) {
 test('Admin › Settings › Email (SMTP) stores the server with an encrypted password and sends a test email', async ({ browser }) => {
   const page = await (await browser.newContext({ storageState: adminState })).newPage();
   await openEmailSettings(page);
-  await page.getByRole('switch', { name: 'Send emails from the website' }).click();
+  const enabled = page.getByRole('switch', { name: 'Send emails from the website' });
+  if ((await enabled.getAttribute('aria-checked')) !== 'true') await enabled.click();
   await page.getByLabel('SMTP host').fill(sinkHost);
   await page.getByLabel('Port').fill('2525');
   await page.getByLabel('Security').selectOption('none');
   await page.getByLabel('Username').fill('qa-smtp@example.test');
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByLabel('From name').fill('Connection QA');
-  await page.getByLabel('From email').fill('qa-smtp@example.test');
+  // A sender different from the login, as on most real setups (bookings@ vs the mailbox you log in with).
+  await page.getByLabel('From email').fill('bookings@example.test');
   await page.getByLabel('Send notifications to').fill('team-a@example.test, team-b@example.test');
-  await page.getByRole('switch', { name: 'Confirm contact messages' }).click();
+  const autoReply = page.getByRole('switch', { name: 'Confirm contact messages' });
+  if ((await autoReply.getAttribute('aria-checked')) !== 'true') await autoReply.click();
   await page.getByRole('button', { name: 'Save Changes' }).click();
   await expect(page.getByText('Changes saved.').first()).toBeVisible();
 
@@ -88,6 +91,13 @@ test('Admin › Settings › Email (SMTP) stores the server with an encrypted pa
   const mail = await waitForMail((m) => m.to.some((to) => to.includes('owner-check@example.test')));
   expect(mail.auth).toEqual({ user: 'qa-smtp@example.test', pass: PASSWORD });
   expect(subjectOf(mail)).toMatch(/^Test email from /);
+  // The server only accepts the login address as envelope sender; the visible From stays as set.
+  expect(mail.from).toContain('qa-smtp@example.test');
+  expect(mail.data).toMatch(/^From: "?Connection QA"? <bookings@example\.test>/m);
+  // The site logo travels inside the email as a PNG, so it shows without loading remote images.
+  expect(mail.data).toMatch(/Content-Type: image\/png/);
+  expect(mail.data).toContain('Content-ID: <site-logo@connection-email>');
+  expect(mail.data.replace(/=\n/g, '')).toContain('cid:site-logo@connection-email');
   await page.reload();
   await expect(page.getByText(/Test email sent \d{4}-\d{2}-\d{2}/)).toBeVisible();
   await page.context().close();
@@ -103,6 +113,20 @@ test('a contact message emails the team (reply-to the visitor) and sends the vis
   expect(subjectOf(team)).toBe('New contact message — QA Mail Visitor');
   const copy = await waitForMail((m) => m.to.some((to) => to.includes(`qa-visitor-${stamp}@example.test`)));
   expect(subjectOf(copy)).toMatch(/^We received your message — /);
+});
+
+test('Admin can send a preview of each email template', async ({ browser }) => {
+  const page = await (await browser.newContext({ storageState: adminState })).newPage();
+  await openEmailSettings(page);
+  const test = page.locator('[data-email-test]');
+  await test.getByLabel('Email to send').selectOption('booking');
+  await test.getByLabel('Send to').fill('preview-check@example.test');
+  await test.getByRole('button', { name: 'Send preview' }).click();
+  await expect(page.getByText('Preview sent to preview-check@example.test').first()).toBeVisible();
+  const mail = await waitForMail((m) => m.to.some((to) => to.includes('preview-check@example.test')));
+  expect(subjectOf(mail)).toMatch(/^\[Preview\] New VIP table request — /);
+  expect(mail.data.replace(/=\n/g, '')).toContain('Sample Guest');
+  await page.context().close();
 });
 
 test('an unreachable mail server shows a clear error in Admin', async ({ browser }) => {

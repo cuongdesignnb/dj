@@ -10,6 +10,12 @@ export const SMTP_SECURITY_LABELS: Record<SmtpSecurity, string> = {
   none: 'None / opportunistic (port 25)',
 };
 
+export interface EmailLogo {
+  src: string;
+  alt: string;
+  mediaId: string | null;
+}
+
 export interface EmailSettings {
   enabled: boolean;
   host: string;
@@ -19,6 +25,8 @@ export interface EmailSettings {
   fromName: string;
   fromEmail: string;
   replyTo: string;
+  /** Logo at the top of every email. Empty: the site logo from Settings › Website. */
+  emailLogo: EmailLogo | null;
   /** Who receives notifications: one or more addresses, separated by commas or new lines. */
   notifyTo: string;
   notifyContact: boolean;
@@ -41,6 +49,7 @@ export function emailSettingsDefaults(): EmailSettings {
     fromName: '',
     fromEmail: '',
     replyTo: '',
+    emailLogo: null,
     notifyTo: '',
     notifyContact: true,
     notifyBooking: true,
@@ -74,6 +83,21 @@ function text(value: unknown, max: number) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
 
+/** Site paths and https URLs only, like the site logo setting. */
+export function safeImageSrc(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const src = value.trim();
+  return /^\/(?!\/)/.test(src) || /^https:\/\//i.test(src) ? src.slice(0, 2000) : null;
+}
+
+function logo(value: unknown): EmailLogo | null {
+  if (!value || typeof value !== 'object') return null;
+  const r = value as Record<string, unknown>;
+  const src = safeImageSrc(r.src);
+  if (!src) return null;
+  return { src, alt: text(r.alt, 200), mediaId: typeof r.mediaId === 'string' ? r.mediaId.slice(0, 64) : null };
+}
+
 function bool(value: unknown, fallback: boolean) {
   return typeof value === 'boolean' ? value : fallback;
 }
@@ -93,6 +117,7 @@ export function normaliseEmailSettings(raw: unknown): EmailSettings {
     fromName: headerText(text(r.fromName, 120)),
     fromEmail: text(r.fromEmail, 254).toLowerCase(),
     replyTo: text(r.replyTo, 254).toLowerCase(),
+    emailLogo: logo(r.emailLogo),
     notifyTo: text(r.notifyTo, 2000),
     notifyContact: bool(r.notifyContact, d.notifyContact),
     notifyBooking: bool(r.notifyBooking, d.notifyBooking),

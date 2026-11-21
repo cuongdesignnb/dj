@@ -15,9 +15,8 @@ import { readCsrfCookie, requestCsrfToken } from '@/server/security/csrf';
 import { mediaResponse, storeMedia } from '@/server/media/storage';
 import { createBooking, createContact, subscribeNewsletter } from '@/server/services/leads';
 import { after } from 'next/server';
-import { notifyBookingRequest, notifyContactMessage, notifyNewsletterSignup, notifyReview } from '@/server/services/mail/notifications';
+import { EMAIL_PREVIEWS, notifyBookingRequest, notifyContactMessage, notifyNewsletterSignup, notifyReview, sendEmailPreview, type EmailPreview } from '@/server/services/mail/notifications';
 import { EMAIL_SETTING_KEY, readEmailSettingsForAdmin, saveEmailSettings } from '@/server/services/mail/settings';
-import { sendTestEmail } from '@/server/services/mail/mailer';
 import { isEmail } from '@/lib/email/smtp-config';
 
 function logMailError(error: unknown) {
@@ -1535,14 +1534,14 @@ if (second && third === 'vip') { const result = await getPublicVip(second); if (
     if (second === 'settings' && third === 'email' && path[3] === 'test' && request.method === 'POST') {
       assertSameOrigin(request);
       const session = await requirePermission(request, 'settings.edit', true);
-      await enforceRateLimit(`mailtest:${session.user.id}`, 10, 3600);
+      await enforceRateLimit(`mailtest:${session.user.id}`, 30, 3600);
       const input = await body(request);
       const to = isRecord(input) && typeof input.to === 'string' ? input.to.trim().toLowerCase() : '';
       if (!isEmail(to)) throw validationError({ to: 'Enter the address to send the test to.' });
-      const nameRow = await db.siteSetting.findUnique({ where: { key: 'site.name' } });
-      const result = await sendTestEmail(to, typeof nameRow?.valueJson === 'string' && nameRow.valueJson.trim() ? nameRow.valueJson.trim() : 'Connection Rave');
+      const kind = isRecord(input) && (EMAIL_PREVIEWS as readonly unknown[]).includes(input.template) ? (input.template as EmailPreview) : 'test';
+      const result = await sendEmailPreview(kind, to);
       const row = await db.siteSetting.findUnique({ where: { key: EMAIL_SETTING_KEY }, select: { id: true } });
-      if (row) await writeAuditLog({ actorUserId: session.user.id, action: 'settings.email.test', entityType: 'site_setting', entityId: row.id, after: { to, ok: result.ok }, requestId });
+      if (row) await writeAuditLog({ actorUserId: session.user.id, action: 'settings.email.test', entityType: 'site_setting', entityId: row.id, after: { to, template: kind, ok: result.ok }, requestId });
       return dataResponse(result);
     }
     const singleton = singletonRoute(second, third);
