@@ -31,7 +31,7 @@ function serverEnv() {
 
 export interface ResolvedSmtp {
   settings: EmailSettings;
-  transport: { host: string; port: number; secure: boolean; requireTLS: boolean; auth?: { user: string; pass: string } };
+  transport: { host: string; port: number; secure: boolean; requireTLS: boolean; forceAuth?: boolean; auth?: { user: string; pass: string } };
   from: string | { name: string; address: string };
   replyTo: string | null;
   recipients: string[];
@@ -47,7 +47,8 @@ export async function resolveSmtp(): Promise<{ ok: true; smtp: ResolvedSmtp } | 
   if (!host) return { ok: false, reason: 'No SMTP server is set.', settings };
   const port = settings.host ? settings.port : fallback!.port;
   const security = settings.host ? settings.security : fallback!.security;
-  const username = settings.host ? settings.username : fallback!.username;
+  // A password stored with no username: log in as the From email (for Gmail that is the account itself).
+  const username = settings.host ? loginOf(settings, passwordSealed) : fallback!.username;
   let password = '';
   if (username) {
     password = settings.host ? openSecret(passwordSealed, SECRET_PURPOSE) ?? '' : fallback!.password;
@@ -59,13 +60,20 @@ export async function resolveSmtp(): Promise<{ ok: true; smtp: ResolvedSmtp } | 
     ok: true,
     smtp: {
       settings,
-      transport: { host, port, secure: security === 'ssl', requireTLS: security === 'starttls', ...(username ? { auth: { user: username, pass: password } } : {}) },
+      // forceAuth: with a username, always log in. Without it nodemailer silently skips login when the
+      // server has not announced AUTH, and Gmail then answers MAIL FROM with "530 Authentication Required".
+      transport: { host, port, secure: security === 'ssl', requireTLS: security === 'starttls', ...(username ? { forceAuth: true, auth: { user: username, pass: password } } : {}) },
       from: settings.fromEmail && settings.fromName ? { name: settings.fromName, address: settings.fromEmail } : fromAddress,
       replyTo: settings.replyTo || null,
       recipients: parseRecipients(settings.notifyTo).valid,
       source: settings.host ? 'admin' : 'env',
     },
   };
+}
+
+/** The SMTP login: the Username field, or the From email when only a password was saved. */
+export function loginOf(settings: Pick<EmailSettings, 'username' | 'fromEmail'>, passwordSealed: string | null) {
+  return settings.username || (passwordSealed ? settings.fromEmail : '');
 }
 
 function iso(value: Date | null | undefined) {
@@ -78,7 +86,7 @@ export async function readEmailSettingsForAdmin() {
   const fallback = serverEnv();
   const readable = passwordSealed ? openSecret(passwordSealed, SECRET_PURPOSE) !== null : false;
   const passwordStatus = passwordSealed
-    ? readable ? 'Stored (encrypted)' : 'Stored but unreadable — enter it again'
+    ? readable ? (settings.username ? 'Stored (encrypted)' : `Stored (encrypted) — logs in as ${settings.fromEmail || 'the From email'}`) : 'Stored but unreadable — enter it again'
     : !settings.host && fallback?.password ? 'Using SMTP_PASSWORD from the server .env' : 'Not set';
   const source = settings.host ? 'This form' : fallback ? `Server .env (${fallback.host}:${fallback.port})` : 'Not configured';
   const checkedAt = iso(status?.lastCheckedAt);
@@ -95,8 +103,10 @@ export async function saveEmailSettings(values: Record<string, unknown>) {
   const current = await readStored();
   const settings = normaliseEmailSettings({ ...current.settings, ...values });
   const newPassword = typeof values.password === 'string' ? values.password.slice(0, 500) : '';
-  // A different server or username means the old password no longer applies.
-  const keepOld = !newPassword && current.settings.host === settings.host && current.settings.username === settings.username;
+  // A different server or login means the old password no longer applies. Filling in a username
+  // that was empty (the password was used with the From email) keeps it.
+  const sameLogin = current.settings.username === settings.username || (!current.settings.username && settings.username.toLowerCase() === current.settings.fromEmail.toLowerCase());
+  const keepOld = !newPassword && current.settings.host === settings.host && sameLogin;
   const passwordSealed = newPassword ? sealSecret(newPassword, SECRET_PURPOSE) : keepOld ? current.passwordSealed : null;
   const hasPassword = Boolean(passwordSealed && openSecret(passwordSealed, SECRET_PURPOSE));
   const errors = validateEmailSettings(settings, { hasPassword, usesServerEnv: !settings.host && Boolean(serverEnv()) });

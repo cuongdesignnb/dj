@@ -30,6 +30,7 @@ export function describeSmtpError(error: unknown): string {
   const e = (error ?? {}) as SmtpError;
   const first = e.rejectedErrors?.[0];
   if (first && e.code !== 'EENVELOPE') return describeSmtpError(first);
+  if (e.responseCode === 530 || /authentication required|must issue a starttls|relay access denied|not permitted to relay/i.test(e.response ?? '')) return `The mail server wants a login before sending.${serverSaid(e)} Fill in Username (the full email address you sign in with) and Password, with Security STARTTLS and port 587 — for Gmail use an App Password, not your normal password.`;
   if (e.code === 'EAUTH') return `Login rejected — check the username and password (Gmail and Outlook need an app password).${serverSaid(e)}`;
   if (e.code === 'ESOCKET' || e.code === 'ECONNECTION' || e.code === 'ETIMEDOUT' || e.code === 'ECONNREFUSED') return `Cannot reach the SMTP server (${e.code}) — check host, port and security.`;
   if (e.code === 'ETLS' || e.code === 'EREQUIRETLS') return `Secure connection failed — try the other Security option (STARTTLS for 587, SSL/TLS for 465).${serverSaid(e)}`;

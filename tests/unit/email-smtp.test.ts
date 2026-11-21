@@ -106,6 +106,19 @@ describe('SMTP errors shown in Admin', () => {
     expect(describeSmtpError({ code: 'ETIMEDOUT' })).toMatch(/Cannot reach/);
   });
 
+  it('explains Gmail’s "530 Authentication Required" as a missing login', () => {
+    const msg = describeSmtpError({ code: 'EENVELOPE', command: 'MAIL FROM', responseCode: 530, response: '530-5.7.0 Authentication Required. For more information, go to 530 5.7.0 https://support.google.com/accounts/troubleshooter/2402620' });
+    expect(msg).toMatch(/wants a login/);
+    expect(msg).toMatch(/App Password/);
+  });
+
+  it('asks for a login and encryption when the server is Gmail', () => {
+    const gmail = normaliseEmailSettings({ enabled: true, host: 'smtp.gmail.com', security: 'none', fromEmail: 'a@gmail.com', notifyTo: 'team@x.com' });
+    const errors = validateEmailSettings(gmail, { hasPassword: false, usesServerEnv: false });
+    expect(errors.username).toMatch(/needs a login/);
+    expect(errors.security).toMatch(/STARTTLS/);
+  });
+
   it('says which address was refused and quotes the server', () => {
     const from = describeSmtpError({ code: 'EENVELOPE', command: 'MAIL FROM', response: '553 5.7.1 Sender address rejected: not owned by user' });
     expect(from).toMatch(/refused the sender/);

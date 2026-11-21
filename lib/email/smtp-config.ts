@@ -132,6 +132,8 @@ export function normaliseEmailSettings(raw: unknown): EmailSettings {
  * Field errors for a save. Turned-off email may be saved half-filled; turning
  * it on needs a server, a sender and at least one notification address.
  */
+const LOGIN_REQUIRED = /(^|\.)(gmail\.com|googlemail\.com|office365\.com|outlook\.com|zoho\.com|zoho\.com\.au|mail\.yahoo\.com|icloud\.com|sendgrid\.net|mailgun\.org|amazonaws\.com|brevo\.com|sendinblue\.com)$/;
+
 export function validateEmailSettings(settings: EmailSettings, options: { hasPassword: boolean; usesServerEnv: boolean }): Record<string, string> {
   const errors: Record<string, string> = {};
   if (settings.host && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/.test(settings.host)) errors.host = 'Enter a host name like smtp.gmail.com.';
@@ -144,6 +146,9 @@ export function validateEmailSettings(settings: EmailSettings, options: { hasPas
   if (!settings.host && !options.usesServerEnv) errors.host ??= 'Enter the SMTP server to turn email on.';
   if (!settings.fromEmail && !options.usesServerEnv) errors.fromEmail ??= 'Enter the address emails are sent from.';
   if (settings.username && !options.hasPassword && !options.usesServerEnv) errors.password = 'Enter the SMTP password for this username.';
+  // These providers never accept mail without a login.
+  if (settings.host && LOGIN_REQUIRED.test(settings.host) && !settings.username && !(options.hasPassword && settings.fromEmail)) errors.username = 'This provider needs a login: enter the full email address you sign in with (and its app password).';
+  if (settings.host && LOGIN_REQUIRED.test(settings.host) && settings.security === 'none') errors.security = 'This provider needs an encrypted connection: use STARTTLS (port 587) or SSL/TLS (port 465).';
   if (!recipients.valid.length) errors.notifyTo ??= 'Add at least one address that receives notifications.';
   return errors;
 }

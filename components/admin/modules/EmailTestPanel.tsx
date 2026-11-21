@@ -17,7 +17,8 @@ const TEMPLATES: Array<[value: string, label: string]> = [
   ['newsletter', 'Preview: newsletter signup (to the team)'],
 ];
 
-const field = 'min-h-[42px] rounded-[8px] border border-admin-border bg-white/[0.03] px-3 text-sm text-white outline-none focus:border-white/40';
+// [color-scheme:dark] keeps the native option list dark; options also get an explicit dark background.
+const field = 'min-h-[42px] rounded-[8px] border border-admin-border bg-admin-deep px-3 text-sm text-white outline-none [color-scheme:dark] focus:border-white/40';
 
 /** "Send test email" under Settings › Email (SMTP). Uses the saved settings, not unsaved edits. */
 export default function EmailTestPanel({ canEdit, defaultTo }: { canEdit: boolean; defaultTo: string }) {
@@ -50,7 +51,7 @@ export default function EmailTestPanel({ canEdit, defaultTo }: { canEdit: boolea
         <label className="flex flex-col gap-1.5 text-sm text-white/85">
           Email to send
           <select value={template} onChange={(event) => setTemplate(event.target.value)} disabled={!canEdit || busy} className={field}>
-            {TEMPLATES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            {TEMPLATES.map(([value, label]) => <option key={value} value={value} className="bg-admin-deep text-white">{label}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1.5 text-sm text-white/85">
